@@ -1,0 +1,6 @@
+#ifndef H_RTPIDRONE_I2C_DEVICE_ADXL345
+#define H_RTPIDRONE_I2C_DEVICE_ADXL345
+
+#include 
+int ADXL345_init
+#endif

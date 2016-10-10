@@ -20,7 +20,16 @@
 #ifndef  H_DRONE_I2C_DEVICE
 #define  H_DRONE_I2C_DEVICE
 
-typedef struct Drone_I2C_Device   Drone_I2C_Device;
+typedef struct __Drone_I2C_Device {
+    int (*init_func)(struct __Drone_I2C_Device*);
+    int (*rawdata_func)(struct __Drone_I2C_Device*);
+    int (*data_func)(struct __Drone_I2C_Device*);
+    int (*cali_func)(struct __Drone_I2C_Device*);
+    int (*end_func)(struct __Drone_I2C_Device*);
+}Drone_I2C_Device;
+
+void Drone_I2C_Device_SetFunction(Drone_I2C_Device*, int (*)(Drone_I2C_Device*),
+        int (*)(Drone_I2C_Device*), int (*)(Drone_I2C_Device*), int (*)(Drone_I2C_Device*), int (*)(Drone_I2C_Device*));
 
 int Drone_I2C_Device_Init(Drone_I2C_Device**);
 int Drone_I2C_Device_Calibration(Drone_I2C_Device*);
