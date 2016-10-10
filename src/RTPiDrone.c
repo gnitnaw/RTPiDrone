@@ -34,31 +34,22 @@ typedef enum {
  * Drone object class.
  */
 struct Drone{
-//    bool    debugMode;
-    char    logfileName[LENGTH]; //!< \private Name of log file.
+    char    logfileName[LENGTH];	//!< \private Name of log file.
 };
 
-static void getTimeString(char*);
-static int getKernelString(char*);
-static kernelType getKernelType(char*);
-static int generateFileName(char*);
+static void getTimeString(char*);	//!< \private function : get time string
+static int getKernelString(char*);	//!< \private function : get kernel string
+static kernelType getKernelType(char*); //!< \private function : get kernel type
+static int generateFileName(char*);     //!< \private function : generate logfile name
 
+/* Initialize the Drone */
 int Drone_init(Drone** rpiDrone) {
-/*
-#ifdef DEBUGMODE
-    rpiDrone->debugMode = true;
-#else
-    rpiDrone->debugMode = false;
-#endif
-*/
     *rpiDrone = (Drone*) malloc(sizeof(Drone));
     if (generateFileName((*rpiDrone)->logfileName)) {
         perror("Cannot decide log file Name");
     }
 
-//    if (rpiDrone->debugMode) {
-        printf("%s\n", (*rpiDrone)->logfileName);
-//    }
+    printf("%s\n", (*rpiDrone)->logfileName);
 
     return 0;
 }
