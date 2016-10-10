@@ -32,7 +32,7 @@ typedef enum {
 
 struct str_drone{
 //    bool    debugMode;
-    char    logfileName[LENGTH];
+    char    logfileName[LENGTH]; //!< \private Name of log file.
 };
 
 static void getTimeString(char*);
