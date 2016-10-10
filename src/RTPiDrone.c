@@ -33,7 +33,7 @@ typedef enum {
 /*!
  * Drone object class.
  */
-struct str_drone{
+struct Drone{
 //    bool    debugMode;
     char    logfileName[LENGTH]; //!< \private Name of log file.
 };

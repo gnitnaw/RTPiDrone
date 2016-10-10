@@ -21,7 +21,7 @@
 #define H_RTPIDRONE
 
 //struct str_drone;
-typedef struct str_drone Drone; //!< Drone type
+typedef struct Drone Drone; //!< Drone type
 
 /* Initialize the Drone */
 int Drone_init(Drone** rpiDrone);
