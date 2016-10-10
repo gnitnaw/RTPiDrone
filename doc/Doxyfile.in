@@ -9,4 +9,8 @@ FILE_PATTERNS          = *.h \
                          *.cc \
 			 *.c
 RECURSIVE              = YES
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+EXCLUDE_PATTERNS       = */thirdparty/*
 USE_MDFILE_AS_MAINPAGE = @doxy_main_page@
