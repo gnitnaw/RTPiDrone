@@ -30,6 +30,9 @@ typedef enum {
     xenomai
 } kernelType;
 
+/*!
+ * Drone object class.
+ */
 struct str_drone{
 //    bool    debugMode;
     char    logfileName[LENGTH]; //!< \private Name of log file.
