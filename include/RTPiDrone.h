@@ -20,19 +20,19 @@
 #ifndef H_RTPIDRONE
 #define H_RTPIDRONE
 
-struct str_drone;
-typedef struct str_drone Drone;
+//struct str_drone;
+typedef struct str_drone Drone; //!< Drone type
 
-// Initialize the Drone
+/* Initialize the Drone */
 int Drone_init(Drone** rpiDrone);
 
-// Calibrate the Drone
+/* Calibrate the Drone */
 int Drone_Calibration(Drone* rpiDrone);
 
-// If everything is fine, start the Drone
+/* If everything is fine, start the Drone */
 void Drone_Start(Drone* rpiDrone);
 
-// If something abnormal happens or controller asks to stop, this step will terminate everything.
+/* If something abnormal happens or controller asks to stop, this step will terminate everything. */
 int Drone_End(Drone** rpiDrone);
 
 #endif
