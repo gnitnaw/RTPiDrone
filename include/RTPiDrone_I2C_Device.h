@@ -1,5 +1,5 @@
 /*
-    RTPiDrone -- RTPiDrone_I2C.h
+    RTPiDrone -- RTPiDrone_I2C_Device.h
     Copyright 2016 Wan-Ting CHEN (wanting@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
@@ -17,14 +17,14 @@
 */
 
 
-#ifndef  H_DRONE_I2C
-#define  H_DRONE_I2C
+#ifndef  H_DRONE_I2C_DEVICE
+#define  H_DRONE_I2C_DEVICE
 
-typedef struct Drone_I2C   Drone_I2C;
+typedef struct Drone_I2C_Device   Drone_I2C_Device;
 
-int Drone_I2C_Init(Drone_I2C**);
-int Drone_I2C_Calibration(Drone_I2C*);
-void Drone_I2C_Start(Drone_I2C*);
-int Drone_I2C_End(Drone_I2C**);
+int Drone_I2C_Device_Init(Drone_I2C_Device**);
+int Drone_I2C_Device_Calibration(Drone_I2C_Device*);
+void Drone_I2C_Device_Start(Drone_I2C_Device*);
+int Drone_I2C_Device_End(Drone_I2C_Device**);
 
 #endif

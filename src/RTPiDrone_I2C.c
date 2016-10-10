@@ -1,10 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <bcm2835.h>
+#include "RTPiDrone_I2C_Device.h"
 #include "RTPiDrone_I2C.h"
 
 struct Drone_I2C {
-    int nDevice;
+    Drone_I2C_Device* ADXL345;
+    Drone_I2C_Device* L3G4200D;
+    Drone_I2C_Device* HMC5883L;
+    Drone_I2C_Device* BMP085;
 };
 
 int Drone_I2C_Init(Drone_I2C** i2c){
