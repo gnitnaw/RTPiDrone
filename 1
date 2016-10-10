@@ -79,15 +79,14 @@ void Drone_Start(Drone* rpiDrone){
 
 int Drone_End(Drone** rpiDrone){
     fclose((*rpiDrone)->fLog);
+    free(*rpiDrone);
+    *rpiDrone = NULL;
 
-    puts("End Test");
+    puts("End Test");   
     if (Drone_I2C_End(&(*rpiDrone)->i2c)) {
         perror("Drone I2C End error");
         return -1;
     }
-
-    free(*rpiDrone);
-    *rpiDrone = NULL;
 
     return bcm2835_close();
 }

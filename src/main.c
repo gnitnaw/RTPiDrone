@@ -4,7 +4,7 @@
 int main(void) {
 
     Drone *rpiDrone = NULL;
-    if (Drone_init(&rpiDrone)) {
+    if (Drone_Init(&rpiDrone)) {
         perror("Error at Dron_init");
         return -1;
     }
