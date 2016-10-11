@@ -18,7 +18,7 @@
 #endif
 
 struct Drone_I2C_Device_ADXL345 {
-    Drone_I2C_Device dev;
+   Drone_I2C_Device dev;
     int16_t rawData[3];
     float   readData[3];
 };
