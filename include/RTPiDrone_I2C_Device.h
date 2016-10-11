@@ -20,14 +20,15 @@
 #ifndef  H_DRONE_I2C_DEVICE
 #define  H_DRONE_I2C_DEVICE
 
-typedef struct {
+typedef struct
+{
     char name[16];
     int (*init_func)(void*);
     int (*rawdata_func)(void*);
     int (*data_func)(void*);
     int (*cali_func)(void*);
     int (*end_func)(void*);
-}Drone_I2C_Device;
+} Drone_I2C_Device;
 
 void Drone_I2C_Device_SetName(Drone_I2C_Device*, const char*);
 void Drone_I2C_Device_SetInitFunction(Drone_I2C_Device*, int (*)(void*));
