@@ -6,9 +6,11 @@
 typedef struct {
     Drone_I2C_Device dev;
     int16_t rawData[3];
+    float   readData[3];
 } Drone_I2C_Device_ADXL345;
 
-int ADXL345_init(Drone_I2C_Device*);
-int ADXL345_getRawValue(short*) ;
+void ADXL345_setup(Drone_I2C_Device_ADXL345*);
+int ADXL345_init(void*);
+int ADXL345_getRawValue(void*) ;
 
 #endif

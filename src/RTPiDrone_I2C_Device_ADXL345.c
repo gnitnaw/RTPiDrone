@@ -7,6 +7,7 @@
 #define ADXL345_DATA_FORMAT     0x31
 #define ADXL345_BW_RATE         0x2C
 #define ADXL345_FIFO_CTL        0x38
+#define ADXL345_DATAX0          0x32
 
 #ifndef ADXL345_RANGE
 #define ADXL345_RANGE           8
@@ -15,7 +16,11 @@
 #define ADXL345_RATE            400
 #endif
 
-int ADXL345_init(Drone_I2C_Device* i2c_dev){
+void ADXL345_setup(Drone_I2C_Device_ADXL345* axdl345) {
+    Drone_I2C_Device_Init(&axdl345->dev);
+    Drone_I2C_Device_SetInitFunction(&axdl345->dev, ADXL345_init);
+}
+int ADXL345_init(void* i2c_dev){
     bcm2835_i2c_setSlaveAddress(ADXL345_ADDR);
     char regaddr[2];
     regaddr[0] = ADXL345_POWER_CTL;                     // Standby
@@ -84,6 +89,22 @@ int ADXL345_init(Drone_I2C_Device* i2c_dev){
         return -5;
     }
 
+    puts("ADXL345 initialization is done");
+    return 0;
+}
+
+int ADXL345_getRawValue(void* i2c_dev) {
+    bcm2835_i2c_setSlaveAddress(ADXL345_ADDR);
+    char regaddr = ADXL345_DATAX0;
+    if (bcm2835_i2c_write(&regaddr,1) != BCM2835_I2C_REASON_OK) {
+        perror("ADXL345 getRaw Error 1");
+        return -1;
+    }
+    char* acc = (char*)((Drone_I2C_Device_ADXL345*)i2c_dev)->rawData;
+    if ( bcm2835_i2c_read(acc, 6) != BCM2835_I2C_REASON_OK ) {
+        perror("ADXL345 getRaw Error 2");
+        return -2;
+    }
     return 0;
 }
 

@@ -21,19 +21,25 @@
 #define  H_DRONE_I2C_DEVICE
 
 typedef struct __Drone_I2C_Device {
-    int (*init_func)(struct __Drone_I2C_Device*);
-    int (*rawdata_func)(struct __Drone_I2C_Device*);
-    int (*data_func)(struct __Drone_I2C_Device*);
-    int (*cali_func)(struct __Drone_I2C_Device*);
-    int (*end_func)(struct __Drone_I2C_Device*);
+    int (*init_func)(void*);
+    int (*rawdata_func)(void*);
+    int (*data_func)(void*);
+    int (*cali_func)(void*);
+    int (*end_func)(void*);
 }Drone_I2C_Device;
 
-void Drone_I2C_Device_SetFunction(Drone_I2C_Device*, int (*)(Drone_I2C_Device*),
-        int (*)(Drone_I2C_Device*), int (*)(Drone_I2C_Device*), int (*)(Drone_I2C_Device*), int (*)(Drone_I2C_Device*));
+void Drone_I2C_Device_SetInitFunction(Drone_I2C_Device*, int (*)(void*));
+void Drone_I2C_Device_SetRawFunction(Drone_I2C_Device*, int (*)(void*));
+void Drone_I2C_Device_SetRealFunction(Drone_I2C_Device*, int (*)(void*));
+void Drone_I2C_Device_SetCaliFunction(Drone_I2C_Device*, int (*)(void*));
+void Drone_I2C_Device_SetEndFunction(Drone_I2C_Device*, int (*)(void*));
 
-int Drone_I2C_Device_Init(Drone_I2C_Device**);
+void Drone_I2C_Device_Init(Drone_I2C_Device*);
+/*
 int Drone_I2C_Device_Calibration(Drone_I2C_Device*);
 void Drone_I2C_Device_Start(Drone_I2C_Device*);
-int Drone_I2C_Device_End(Drone_I2C_Device**);
+*/
+int Drone_I2C_Device_End(Drone_I2C_Device*);
+
 
 #endif
