@@ -23,8 +23,8 @@ struct Drone_I2C_Device_ADXL345 {
     float   readData[3];
 };
 
-static int ADXL345_init(void*);
-static int ADXL345_getRawValue(void*) ;
+static int ADXL345_init(void*);        //!< \private \memberof Drone_I2C_Device_ADXL345 function : Initialization of ADXL345
+static int ADXL345_getRawValue(void*); //!< \private \memberof Drone_I2C_Device_ADXL345 function : get raw value from ADXL345
 //static int ADXL345_end(void*);
 
 void ADXL345_setup(Drone_I2C_Device_ADXL345** axdl345)
