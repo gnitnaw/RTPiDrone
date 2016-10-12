@@ -1,4 +1,5 @@
 #include "RTPiDrone_I2C_Device_ADXL345.h"
+#include "RTPiDrone_I2C_Device.h"
 #include <bcm2835.h>
 #include <stdio.h>
 #include <stdlib.h>

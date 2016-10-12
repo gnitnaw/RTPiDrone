@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <bcm2835.h>
 #include "RTPiDrone_I2C.h"
+#include "RTPiDrone_I2C_Device.h"
 #include "RTPiDrone_I2C_Device_ADXL345.h"
 #include "RTPiDrone_I2C_Device_L3G4200D.h"
 

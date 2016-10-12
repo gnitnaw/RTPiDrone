@@ -68,15 +68,22 @@ int Drone_I2C_Device_Init(Drone_I2C_Device* i2c_dev)
 {
     return i2c_dev->init_func(i2c_dev);
 }
-/*
-int Drone_I2C_Device_Calibration(Drone_I2C_Device* i2c_dev){
-    return 0;
+
+int Drone_I2C_Device_GetRawData(Drone_I2C_Device* i2c_dev)
+{
+    return i2c_dev->rawdata_func(i2c_dev);
 }
 
-void Drone_I2C_Device_Start(Drone_I2C_Device* i2c_dev){
-    puts("Start device");
+int Drone_I2C_Device_GetRealData(Drone_I2C_Device* i2c_dev)
+{
+    return i2c_dev->data_func(i2c_dev);
 }
-*/
+
+int Drone_I2C_Device_Calibration(Drone_I2C_Device* i2c_dev)
+{
+    return i2c_dev->cali_func(i2c_dev);
+}
+
 int Drone_I2C_Device_End(Drone_I2C_Device* i2c_dev)
 {
     return i2c_dev->end_func(i2c_dev);

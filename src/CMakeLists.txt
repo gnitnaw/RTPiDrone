@@ -5,6 +5,7 @@ set(VERSION_PATCH   1   CACHE STRING "Project patch version number.")
 set(I2C_ELEMENT
   RTPiDrone_I2C_Device_ADXL345.c
   RTPiDrone_I2C_Device_L3G4200D.c
+  RTPiDrone_I2C_Device_DOF6.c
   RTPiDrone_I2C_Device_HMC5883L.c
 )
 mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)

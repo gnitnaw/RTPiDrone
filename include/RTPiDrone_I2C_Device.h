@@ -80,10 +80,24 @@ void Drone_I2C_Device_Create(Drone_I2C_Device*);
  */
 int Drone_I2C_Device_Init(Drone_I2C_Device*);
 
-/*
+/*!
+ * Get raw data
+ * \public \memberof Drone_I2C_Device
+ */
+int Drone_I2C_Device_GetRawData(Drone_I2C_Device*);
+
+/*!
+ * Convert raw to real data
+ * \public \memberof Drone_I2C_Device
+ */
+int Drone_I2C_Device_GetRealData(Drone_I2C_Device*);
+
+/*!
+ * Calibration of an I2C device
+ * \public \memberof Drone_I2C_Device
+ */
 int Drone_I2C_Device_Calibration(Drone_I2C_Device*);
-void Drone_I2C_Device_Start(Drone_I2C_Device*);
-*/
+
 
 /*!
  * Terminate an I2C device
