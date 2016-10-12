@@ -6,9 +6,9 @@
 #include <stdlib.h>
 
 struct Drone_I2C_Device_DOF6 {
+    Drone_I2C_Device            dev;
     Drone_I2C_Device_ADXL345*   ADXL345;
     Drone_I2C_Device_L3G4200D*  L3G4200D;
-    Drone_I2C_Device            dev;
 };
 
 static int DOF6_getRawValue(void*); //!< \private \memberof Drone_I2C_Device_DOF6 function : Get raw value from DOF6
@@ -30,6 +30,14 @@ int DOF6_setup(Drone_I2C_Device_DOF6** DOF6)
     Drone_I2C_Device_SetRawFunction(&(*DOF6)->dev, DOF6_getRawValue);
     Drone_I2C_Device_SetRealFunction(&(*DOF6)->dev, DOF6_convertRawToReal);
     return 0;
+}
+
+void DOF6_delete(Drone_I2C_Device_DOF6** DOF6)
+{
+    ADXL345_delete(&(*DOF6)->ADXL345);
+    L3G4200D_delete(&(*DOF6)->L3G4200D);
+    free(*DOF6);
+    *DOF6 = NULL;
 }
 
 static int DOF6_getRawValue(void* i2c_dev)
