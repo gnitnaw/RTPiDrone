@@ -6,7 +6,7 @@
 #include "RTPiDrone_I2C_Device_ADXL345.h"
 
 struct Drone_I2C {
-    Drone_I2C_Device_ADXL345* ADXL345;
+    Drone_I2C_Device_ADXL345* ADXL345;  //!< \private ADXL345 : 3-axis accelerometer
     //Drone_I2C_Device* L3G4200D;
     //Drone_I2C_Device* HMC5883L;
     //Drone_I2C_Device* BMP085;
