@@ -4,12 +4,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-static inline int dummyFunction(void* e)        //!< \private function : default function
+static inline int dummyFunction(void* e)        //!< \private \memberof Drone_I2C_Device function : default function
 {
     return 0;
 }
 
-static inline int dummyEndFunction(void* e)     //!< \private function : default end function
+static inline int dummyEndFunction(void* e)     //!< \private \memberof Drone_I2C_Device function : default end function
 {
     printf("%s END!\n", ((Drone_I2C_Device*)e)->name);
     return 0;
