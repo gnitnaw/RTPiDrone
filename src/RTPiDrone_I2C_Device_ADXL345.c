@@ -18,9 +18,9 @@
 #endif
 
 struct Drone_I2C_Device_ADXL345 {
-    Drone_I2C_Device dev;
-    int16_t rawData[3];
-    float   readData[3];
+    Drone_I2C_Device dev;           //!< \private I2C device prototype
+    int16_t rawData[3];             //!< \private Raw data
+    float   readData[3];            //!< \private Real data
 };
 
 static int ADXL345_init(void*);        //!< \private \memberof Drone_I2C_Device_ADXL345 function : Initialization of ADXL345
