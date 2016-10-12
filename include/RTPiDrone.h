@@ -23,16 +23,29 @@
 //struct str_drone;
 typedef struct Drone Drone; //!< Drone type
 
-/* Initialize the Drone */
+/*!
+ * Initialize the Drone
+ * \public \memberof Drone
+ */
 int Drone_Init(Drone** rpiDrone);
 
-/* Calibrate the Drone */
+/*!
+ * Calibrate the Drone
+ * \public \memberof Drone
+ */
 int Drone_Calibration(Drone* rpiDrone);
 
-/* If everything is fine, start the Drone */
+/*!
+ * If everything is fine, start the Drone
+ * \public \memberof Drone
+ */
 void Drone_Start(Drone* rpiDrone);
 
-/* If something abnormal happens or controller asks to stop, this step will terminate everything. */
+/*!
+ * If something abnormal happens or controller asks to stop, this step will terminate everything.
+ * \public \memberof Drone
+ */
+
 int Drone_End(Drone** rpiDrone);
 
 #endif
