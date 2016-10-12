@@ -13,7 +13,7 @@ typedef struct Drone_I2C_Device_ADXL345 Drone_I2C_Device_ADXL345;   //!< Drone_I
  * Setup of ADXL345.
  * \public \memberof Drone_I2C_Device_ADXL345
  */
-void ADXL345_setup(Drone_I2C_Device_ADXL345**);
+int ADXL345_setup(Drone_I2C_Device_ADXL345**);
 //static int ADXL345_init(void*);
 //static int ADXL345_getRawValue(void*) ;
 //static int ADXL345_end(void*);

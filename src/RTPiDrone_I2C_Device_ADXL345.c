@@ -10,6 +10,8 @@
 #define ADXL345_FIFO_CTL        0x38
 #define ADXL345_DATAX0          0x32
 
+#define ADXL345_UNIT            0.004           // Unit of ADXL345 is 4mg
+
 #ifndef ADXL345_RANGE
 #define ADXL345_RANGE           8
 #endif
@@ -20,20 +22,23 @@
 struct Drone_I2C_Device_ADXL345 {
     Drone_I2C_Device dev;           //!< \private I2C device prototype
     int16_t rawData[3];             //!< \private Raw data
-    float   readData[3];            //!< \private Real data
+    float   realData[3];            //!< \private Real data
 };
 
 static int ADXL345_init(void*);        //!< \private \memberof Drone_I2C_Device_ADXL345 function : Initialization of ADXL345
-static int ADXL345_getRawValue(void*); //!< \private \memberof Drone_I2C_Device_ADXL345 function : get raw value from ADXL345
+static int ADXL345_getRawValue(void*); //!< \private \memberof Drone_I2C_Device_ADXL345 function : Get raw value from ADXL345
+static int ADXL345_convertRawToReal(void*); //!< \private \memberof Drone_I2C_Device_ADXL345 function : Convert to real value
 //static int ADXL345_end(void*);
 
-void ADXL345_setup(Drone_I2C_Device_ADXL345** axdl345)
+int ADXL345_setup(Drone_I2C_Device_ADXL345** axdl345)
 {
     *axdl345 = (Drone_I2C_Device_ADXL345*) malloc(sizeof(Drone_I2C_Device_ADXL345));
     Drone_I2C_Device_Create(&(*axdl345)->dev);
     Drone_I2C_Device_SetName(&(*axdl345)->dev, "ADXL345");
     Drone_I2C_Device_SetInitFunction(&(*axdl345)->dev, ADXL345_init);
     Drone_I2C_Device_SetRawFunction(&(*axdl345)->dev, ADXL345_getRawValue);
+    Drone_I2C_Device_SetRealFunction(&(*axdl345)->dev, ADXL345_convertRawToReal);
+    return Drone_I2C_Device_Init(&(*axdl345)->dev);
     //Drone_I2C_Device_SetEndFunction(&(*axdl345)->dev, ADXL345_end);
 }
 static int ADXL345_init(void* i2c_dev)
@@ -125,6 +130,16 @@ static int ADXL345_getRawValue(void* i2c_dev)
     }
     return 0;
 }
+
+static int ADXL345_convertRawToReal(void* i2c_dev)
+{
+    Drone_I2C_Device_ADXL345* dev = (Drone_I2C_Device_ADXL345*)i2c_dev;
+    for (int i=0; i<3; ++i) {
+        dev->realData[i] = dev->rawData[i] * ADXL345_UNIT;
+    }
+    return 0;
+}
+
 /*
 static int ADXL345_end(void* i2c_dev) {
     puts("End ADXL345");
