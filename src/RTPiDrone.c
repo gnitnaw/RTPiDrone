@@ -37,14 +37,14 @@ typedef enum {
  */
 struct Drone {
     char        logfileName[LENGTH];	//!< \private Name of log file.
-    FILE*       fLog;
-    Drone_I2C*  i2c;
+    FILE*       fLog;                   //!< \private File output
+    Drone_I2C*  i2c;                    //!< \private All I2C devices
 };
 
-static void getTimeString(char*);	//!< \private function : get time string
-static int getKernelString(char*);	//!< \private function : get kernel string
-static kernelType getKernelType(char*); //!< \private function : get kernel type
-static int generateFileName(char*);     //!< \private function : generate logfile name
+static void getTimeString(char*);	//!< \private \memberof Drone function : get time string
+static int getKernelString(char*);	//!< \private \memberof Drone function : get kernel string
+static kernelType getKernelType(char*); //!< \private \memberof Drone function : get kernel type
+static int generateFileName(char*);     //!< \private \memberof Drone function : generate logfile name
 
 /* Initialize the Drone */
 int Drone_Init(Drone** rpiDrone)
