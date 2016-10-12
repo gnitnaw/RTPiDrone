@@ -26,8 +26,7 @@
 #include "RTPiDrone.h"
 #define LENGTH 128
 
-typedef enum
-{
+typedef enum {
     vanilla,
     preemptRT,
     xenomai
@@ -36,8 +35,7 @@ typedef enum
 /*!
  * Drone object class.
  */
-struct Drone
-{
+struct Drone {
     char        logfileName[LENGTH];	//!< \private Name of log file.
     FILE*       fLog;
     Drone_I2C*  i2c;
@@ -52,8 +50,7 @@ static int generateFileName(char*);     //!< \private function : generate logfil
 int Drone_Init(Drone** rpiDrone)
 {
     *rpiDrone = (Drone*) malloc(sizeof(Drone));
-    if (generateFileName((*rpiDrone)->logfileName))
-    {
+    if (generateFileName((*rpiDrone)->logfileName)) {
         perror("Cannot decide log file Name");
         return -1;
     }
@@ -61,14 +58,12 @@ int Drone_Init(Drone** rpiDrone)
     (*rpiDrone)->fLog = fopen((*rpiDrone)->logfileName, "w");
     printf("%s\n", (*rpiDrone)->logfileName);
 
-    if (!bcm2835_init())
-    {
+    if (!bcm2835_init()) {
         perror("bcm2835_init error");
         return -2;
     }
 
-    if (Drone_I2C_Init(&(*rpiDrone)->i2c))
-    {
+    if (Drone_I2C_Init(&(*rpiDrone)->i2c)) {
         perror("Drone I2C Init error");
         return -3;
     }
@@ -89,8 +84,7 @@ int Drone_End(Drone** rpiDrone)
 {
     fclose((*rpiDrone)->fLog);
 
-    if (Drone_I2C_End(&(*rpiDrone)->i2c))
-    {
+    if (Drone_I2C_End(&(*rpiDrone)->i2c)) {
         perror("Drone I2C End error");
         return -1;
     }
@@ -111,14 +105,12 @@ static void getTimeString(char* timeStr)
 static int getKernelString(char* kStr)
 {
     FILE *fkernel = fopen("/proc/version", "r");
-    if (!fkernel)
-    {
+    if (!fkernel) {
         perror("fopen( \"/proc/version\", \"r\" )");
         return -1;
     }
     char buf[LENGTH];
-    if (!fgets(buf, LENGTH, fkernel))
-    {
+    if (!fgets(buf, LENGTH, fkernel)) {
         perror("fgets error!");
         return -2;
     }

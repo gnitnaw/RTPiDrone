@@ -17,8 +17,7 @@
 #define ADXL345_RATE            400
 #endif
 
-struct Drone_I2C_Device_ADXL345
-{
+struct Drone_I2C_Device_ADXL345 {
     Drone_I2C_Device dev;
     int16_t rawData[3];
     float   readData[3];
@@ -43,15 +42,13 @@ static int ADXL345_init(void* i2c_dev)
     char regaddr[2];
     regaddr[0] = ADXL345_POWER_CTL;                     // Standby
     regaddr[1] = 0x00;
-    if (bcm2835_i2c_write(regaddr,2) != BCM2835_I2C_REASON_OK)
-    {
+    if (bcm2835_i2c_write(regaddr,2) != BCM2835_I2C_REASON_OK) {
         perror("ADXL345 Init 1 fail : Standby");
         return -1;
     }
 
     regaddr[0] = ADXL345_DATA_FORMAT;                   // Range
-    switch (ADXL345_RANGE)
-    {
+    switch (ADXL345_RANGE) {
         case 2 :
             regaddr[1] = 0x08;
             break;
@@ -62,15 +59,13 @@ static int ADXL345_init(void* i2c_dev)
             regaddr[1] = 0x0A;
             break;
     }
-    if (bcm2835_i2c_write(regaddr,2) != BCM2835_I2C_REASON_OK)
-    {
+    if (bcm2835_i2c_write(regaddr,2) != BCM2835_I2C_REASON_OK) {
         perror("ADXL345 Init 2 fail : Range");
         return -2;
     }
 
     regaddr[0] = ADXL345_BW_RATE;                       // Sampling rate
-    switch (ADXL345_RATE)
-    {
+    switch (ADXL345_RATE) {
         case 100 :
             regaddr[1] = 0x0A;
             break;
@@ -90,8 +85,7 @@ static int ADXL345_init(void* i2c_dev)
             regaddr[1] = 0x0F;
             break;
     }
-    if (bcm2835_i2c_write(regaddr,2) != BCM2835_I2C_REASON_OK)
-    {
+    if (bcm2835_i2c_write(regaddr,2) != BCM2835_I2C_REASON_OK) {
         perror("ADXL345 Init 3 fail : Sampling rate");
         return -3;
     }
@@ -99,8 +93,7 @@ static int ADXL345_init(void* i2c_dev)
     regaddr[0] = ADXL345_FIFO_CTL;                      // by-Pass mode
     regaddr[1] = 0x00;
 
-    if (bcm2835_i2c_write(regaddr,2) != BCM2835_I2C_REASON_OK)
-    {
+    if (bcm2835_i2c_write(regaddr,2) != BCM2835_I2C_REASON_OK) {
         perror("ADXL345 Init 4 fail : by-pass");
         return -4;
     }
@@ -108,8 +101,7 @@ static int ADXL345_init(void* i2c_dev)
     regaddr[0] = ADXL345_POWER_CTL;                     // Switch ON
     regaddr[1] = 0x08;
 
-    if (bcm2835_i2c_write(regaddr,2) != BCM2835_I2C_REASON_OK)
-    {
+    if (bcm2835_i2c_write(regaddr,2) != BCM2835_I2C_REASON_OK) {
         perror("ADXL345 Init 5 fail : Switch on");
         return -5;
     }
@@ -122,14 +114,12 @@ static int ADXL345_getRawValue(void* i2c_dev)
 {
     bcm2835_i2c_setSlaveAddress(ADXL345_ADDR);
     char regaddr = ADXL345_DATAX0;
-    if (bcm2835_i2c_write(&regaddr,1) != BCM2835_I2C_REASON_OK)
-    {
+    if (bcm2835_i2c_write(&regaddr,1) != BCM2835_I2C_REASON_OK) {
         perror("ADXL345 getRaw Error 1");
         return -1;
     }
     char* acc = (char*)((Drone_I2C_Device_ADXL345*)i2c_dev)->rawData;
-    if ( bcm2835_i2c_read(acc, 6) != BCM2835_I2C_REASON_OK )
-    {
+    if ( bcm2835_i2c_read(acc, 6) != BCM2835_I2C_REASON_OK ) {
         perror("ADXL345 getRaw Error 2");
         return -2;
     }

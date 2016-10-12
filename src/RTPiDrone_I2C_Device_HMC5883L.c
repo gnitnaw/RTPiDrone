@@ -17,8 +17,7 @@ int HMC5883L_init(Drone_I2C_Device* i2c_dev)
     char regaddr[2];
     regaddr[0] = HMC5883L_MODE_REG;
     regaddr[1] = 0x00;
-    if (bcm2835_i2c_write(regaddr,2) != BCM2835_I2C_REASON_OK)
-    {
+    if (bcm2835_i2c_write(regaddr,2) != BCM2835_I2C_REASON_OK) {
         perror("HMC5883L Init 1 fail : Continue mode");
         return -1;
     }
@@ -26,8 +25,7 @@ int HMC5883L_init(Drone_I2C_Device* i2c_dev)
     regaddr[0] = HMC5883L_CONF_REG_A;           // No. of Sampling and data rate
     regaddr[1] = 0x60;                          // 8
 
-    switch (HMC5883L_RATE)
-    {
+    switch (HMC5883L_RATE) {
         case 0 :
             regaddr[1] += 0x00;
             break;
@@ -50,16 +48,14 @@ int HMC5883L_init(Drone_I2C_Device* i2c_dev)
             regaddr[1] += 0x18;
             break;
     }
-    if (bcm2835_i2c_write(regaddr,2) != BCM2835_I2C_REASON_OK)
-    {
+    if (bcm2835_i2c_write(regaddr,2) != BCM2835_I2C_REASON_OK) {
         perror("HMC5883L Init 2 fail : Range");
         return -2;
     }
 
     regaddr[0] = HMC5883L_CONF_REG_B;           // Range
     regaddr[1] = 0x20;                          // +- 1.3 Ga
-    if (bcm2835_i2c_write(regaddr,2) != BCM2835_I2C_REASON_OK)
-    {
+    if (bcm2835_i2c_write(regaddr,2) != BCM2835_I2C_REASON_OK) {
         perror("HMC5883L Init 3 fail : Range");
         return -3;
     }

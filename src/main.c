@@ -5,14 +5,12 @@ int main(void)
 {
 
     Drone *rpiDrone = NULL;
-    if (Drone_Init(&rpiDrone))
-    {
+    if (Drone_Init(&rpiDrone)) {
         perror("Error at Dron_init");
         return -1;
     }
 
-    if (Drone_Calibration(rpiDrone))
-    {
+    if (Drone_Calibration(rpiDrone)) {
         perror("Error at Dron_Calibration");
         return -2;
     }

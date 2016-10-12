@@ -20,30 +20,75 @@
 #ifndef  H_DRONE_I2C_DEVICE
 #define  H_DRONE_I2C_DEVICE
 
-typedef struct
-{
-    char name[16];
-    int (*init_func)(void*);
-    int (*rawdata_func)(void*);
-    int (*data_func)(void*);
-    int (*cali_func)(void*);
-    int (*end_func)(void*);
-} Drone_I2C_Device;
+/*!
+ * Prototype of all I2C Devices.
+ */
+typedef struct {
+    char name[16];                  //!< \private Name of device.
+    int (*init_func)(void*);        //!< \private Initialization function
+    int (*rawdata_func)(void*);     //!< \private Function to get raw data from I2C device
+    int (*data_func)(void*);        //!< \private Function to convert raw data to real data
+    int (*cali_func)(void*);        //!< \private Calibration function
+    int (*end_func)(void*);         //!< \private Termination of I2C device
+} Drone_I2C_Device; //!< Drone_I2C_Device type, prototype of all I2C Devices
 
+/*!
+ * Set name of I2C device.
+ * \public \memberof Drone_I2C_Device
+ */
 void Drone_I2C_Device_SetName(Drone_I2C_Device*, const char*);
+
+/*!
+ * Set initialization function.
+ * \public \memberof Drone_I2C_Device
+ */
 void Drone_I2C_Device_SetInitFunction(Drone_I2C_Device*, int (*)(void*));
+
+/*!
+ * Set function to get raw data from I2C device
+ * \public \memberof Drone_I2C_Device
+ */
 void Drone_I2C_Device_SetRawFunction(Drone_I2C_Device*, int (*)(void*));
+
+/*!
+ * Set function to convert raw data to real data.
+ * \public \memberof Drone_I2C_Device
+ */
 void Drone_I2C_Device_SetRealFunction(Drone_I2C_Device*, int (*)(void*));
+
+/*!
+ * Set calibration function.
+ * \public \memberof Drone_I2C_Device
+ */
 void Drone_I2C_Device_SetCaliFunction(Drone_I2C_Device*, int (*)(void*));
+
+/*!
+ * Set termination of I2C device
+ * \public \memberof Drone_I2C_Device
+ */
 void Drone_I2C_Device_SetEndFunction(Drone_I2C_Device*, int (*)(void*));
 
+/*!
+ * Create an I2C device
+ * \public \memberof Drone_I2C_Device
+ */
 void Drone_I2C_Device_Create(Drone_I2C_Device*);
+
+/*!
+ * Initialize an I2C device
+ * \public \memberof Drone_I2C_Device
+ */
 int Drone_I2C_Device_Init(Drone_I2C_Device*);
 
 /*
 int Drone_I2C_Device_Calibration(Drone_I2C_Device*);
 void Drone_I2C_Device_Start(Drone_I2C_Device*);
 */
+
+/*!
+ * Terminate an I2C device
+ * \public \memberof Drone_I2C_Device
+ */
 int Drone_I2C_Device_End(Drone_I2C_Device*);
 
 
