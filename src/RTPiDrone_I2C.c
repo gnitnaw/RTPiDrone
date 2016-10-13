@@ -37,7 +37,7 @@ void Drone_I2C_Start(Drone_I2C* i2c)
 int Drone_I2C_End(Drone_I2C** i2c)
 {
     if (Drone_I2C_Device_End((Drone_I2C_Device*)(*i2c)->DOF6)) {
-        perror("End DOF6");
+        perror("End DOF6 Error");
         return -1;
     }
 
