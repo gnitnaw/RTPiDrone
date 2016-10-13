@@ -1,6 +1,11 @@
 #include <stdio.h>
 #include "RTPiDrone.h"
 
+/*!
+ * Main function.
+ *
+ * Ref Drone_Init(), Drone_Calibration(), Drone_Start(), Drone_End().
+ */
 int main(void)
 {
 

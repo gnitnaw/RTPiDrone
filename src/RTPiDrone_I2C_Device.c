@@ -54,7 +54,7 @@ void Drone_I2C_Device_SetEndFunction(Drone_I2C_Device* dev, int (*end)(void*))
 }
 
 
-
+/* implementation */
 void Drone_I2C_Device_Create(Drone_I2C_Device* i2c_dev)
 {
     Drone_I2C_Device_SetInitFunction(i2c_dev, dummyFunction);
