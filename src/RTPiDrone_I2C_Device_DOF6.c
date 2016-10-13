@@ -21,6 +21,7 @@ int DOF6_setup(Drone_I2C_Device_DOF6** DOF6)
     *DOF6 = (Drone_I2C_Device_DOF6*) malloc(sizeof(Drone_I2C_Device_DOF6));
     Drone_I2C_Device_Create(&(*DOF6)->dev);
     Drone_I2C_Device_SetName(&(*DOF6)->dev, "DOF6");
+    Drone_I2C_Device_SetNSample(&(*DOF6)->dev, 1);
     Drone_I2C_Device_SetInitFunction(&(*DOF6)->dev, DOF6_init);
     Drone_I2C_Device_SetRawFunction(&(*DOF6)->dev, DOF6_getRawValue);
     Drone_I2C_Device_SetRealFunction(&(*DOF6)->dev, DOF6_convertRawToReal);

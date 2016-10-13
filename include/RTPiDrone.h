@@ -30,12 +30,6 @@ typedef struct Drone Drone; //!< Drone type
 int Drone_Init(Drone** rpiDrone);
 
 /*!
- * Calibrate the Drone
- * \public \memberof Drone
- */
-int Drone_Calibration(Drone* rpiDrone);
-
-/*!
  * If everything is fine, start the Drone
  * \public \memberof Drone
  */

@@ -4,7 +4,7 @@
 /*!
  * Main function.
  *
- * Ref Drone_Init(), Drone_Calibration(), Drone_Start(), Drone_End().
+ * Ref Drone_Init(), Drone_Start(), Drone_End().
  */
 int main(void)
 {
@@ -13,11 +13,6 @@ int main(void)
     if (Drone_Init(&rpiDrone)) {
         perror("Error at Dron_init");
         return -1;
-    }
-
-    if (Drone_Calibration(rpiDrone)) {
-        perror("Error at Dron_Calibration");
-        return -2;
     }
 
     Drone_Start(rpiDrone);

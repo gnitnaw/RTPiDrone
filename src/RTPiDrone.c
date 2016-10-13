@@ -70,11 +70,6 @@ int Drone_Init(Drone** rpiDrone)
     return 0;
 }
 
-int Drone_Calibration(Drone* rpiDrone)
-{
-    return 0;
-}
-
 void Drone_Start(Drone* rpiDrone)
 {
     puts("Start Test");

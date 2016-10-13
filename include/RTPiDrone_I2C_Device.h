@@ -19,17 +19,19 @@
 
 #ifndef  H_DRONE_I2C_DEVICE
 #define  H_DRONE_I2C_DEVICE
-
+#include <stdint.h>
 /*!
  * Prototype of all I2C Devices.
  */
 typedef struct {
     char name[16];                  //!< \private Name of device.
+    uint16_t nCaliFrac;	    //!< \private Number of samples for calibration.
+    int nItem;			    //!< \private Number of items (float) used for the system.
     int (*init_func)(void*);        //!< \private Initialization function
     int (*rawdata_func)(void*);     //!< \private Function to get raw data from I2C device
     int (*data_func)(void*);        //!< \private Function to convert raw data to real data
-    int (*cali_func)(void*);        //!< \private Calibration function
     int (*end_func)(void*);         //!< \private Termination of I2C device
+    float*	getData;	    //!< \private Pointer of real data
 } Drone_I2C_Device; //!< Drone_I2C_Device type, prototype of all I2C Devices
 
 /*!
@@ -37,6 +39,12 @@ typedef struct {
  * \public \memberof Drone_I2C_Device
  */
 void Drone_I2C_Device_SetName(Drone_I2C_Device*, const char*);
+
+/*!
+ * Set number of Samples for calibration of I2C device.
+ * \public \memberof Drone_I2C_Device
+ */
+void Drone_I2C_Device_SetNSample(Drone_I2C_Device*, uint16_t);
 
 /*!
  * Set initialization function.
@@ -69,6 +77,12 @@ void Drone_I2C_Device_SetCaliFunction(Drone_I2C_Device*, int (*)(void*));
 void Drone_I2C_Device_SetEndFunction(Drone_I2C_Device*, int (*)(void*));
 
 /*!
+ * Set data point of I2C device
+ * \public \memberof Drone_I2C_Device
+ */
+void Drone_I2C_Device_SetDataPointer(Drone_I2C_Device*, float*);
+
+/*!
  * Create an I2C device
  * \public \memberof Drone_I2C_Device
  */
@@ -93,17 +107,15 @@ int Drone_I2C_Device_GetRawData(Drone_I2C_Device*);
 int Drone_I2C_Device_GetRealData(Drone_I2C_Device*);
 
 /*!
- * Calibration of an I2C device
- * \public \memberof Drone_I2C_Device
- */
-int Drone_I2C_Device_Calibration(Drone_I2C_Device*);
-
-
-/*!
  * Terminate an I2C device
  * \public \memberof Drone_I2C_Device
  */
 int Drone_I2C_Device_End(Drone_I2C_Device*);
 
+/*!
+ * return the location of real data
+ * \public \memberof Drone_I2C_Device
+ */
+float* Drone_I2C_Device_GetData(Drone_I2C_Device*);
 
 #endif
