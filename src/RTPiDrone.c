@@ -75,6 +75,11 @@ void Drone_Start(Drone* rpiDrone)
     puts("Start Test");
 }
 
+int Drone_Calibration(Drone* rpiDrone)
+{
+    return Drone_I2C_Calibration(rpiDrone->i2c);
+}
+
 int Drone_End(Drone** rpiDrone)
 {
     fclose((*rpiDrone)->fLog);

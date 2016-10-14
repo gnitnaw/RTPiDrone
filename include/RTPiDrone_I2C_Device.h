@@ -25,8 +25,6 @@
  */
 typedef struct {
     char name[16];                  //!< \private Name of device.
-    uint16_t nCaliFrac;	    //!< \private Number of samples for calibration.
-    int nItem;			    //!< \private Number of items (float) used for the system.
     int (*init_func)(void*);        //!< \private Initialization function
     int (*rawdata_func)(void*);     //!< \private Function to get raw data from I2C device
     int (*data_func)(void*);        //!< \private Function to convert raw data to real data
@@ -117,5 +115,4 @@ int Drone_I2C_Device_End(Drone_I2C_Device*);
  * \public \memberof Drone_I2C_Device
  */
 float* Drone_I2C_Device_GetData(Drone_I2C_Device*);
-
 #endif

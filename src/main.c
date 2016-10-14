@@ -14,6 +14,10 @@ int main(void)
         perror("Error at Dron_init");
         return -1;
     }
+    if (Drone_Calibration(rpiDrone)) {
+        perror("Error at Dron_Calibration");
+        return -2;
+    }
 
     Drone_Start(rpiDrone);
     return Drone_End(&rpiDrone);

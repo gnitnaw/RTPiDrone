@@ -32,18 +32,15 @@ struct Drone_I2C_Device_L3G4200D {
 static int L3G4200D_init(void*);        //!< \private \memberof Drone_I2C_Device_L3G4200D function : Initialization of L3G4200D
 static int L3G4200D_getRawValue(void*); //!< \private \memberof Drone_I2C_Device_L3G4200D function : Get raw value from L3G4200D
 static int L3G4200D_convertRawToReal(void*); //!< \private \memberof Drone_I2C_Device_L3G4200D function : Convert to real value
-static int L3G4200D_calibration(void*); //!< \private \memberof Drone_I2C_Device_L3G4200D function : Calibration step
 
 int L3G4200D_setup(Drone_I2C_Device_L3G4200D** L3G4200D)
 {
     *L3G4200D = (Drone_I2C_Device_L3G4200D*) malloc(sizeof(Drone_I2C_Device_L3G4200D));
     Drone_I2C_Device_Create(&(*L3G4200D)->dev);
     Drone_I2C_Device_SetName(&(*L3G4200D)->dev, "L3G4200D");
-    Drone_I2C_Device_SetNSample(&(*L3G4200D)->dev, 1);
     Drone_I2C_Device_SetInitFunction(&(*L3G4200D)->dev, L3G4200D_init);
     Drone_I2C_Device_SetRawFunction(&(*L3G4200D)->dev, L3G4200D_getRawValue);
     Drone_I2C_Device_SetRealFunction(&(*L3G4200D)->dev, L3G4200D_convertRawToReal);
-    Drone_I2C_Device_SetCaliFunction(&(*L3G4200D)->dev, L3G4200D_calibration);
     Drone_I2C_Device_SetDataPointer(&(*L3G4200D)->dev, (*L3G4200D)->realData);
     return Drone_I2C_Device_Init(&(*L3G4200D)->dev);
     //Drone_I2C_Device_SetEndFunction(&(*L3G4200D)->dev, L3G4200D_end);
@@ -145,12 +142,6 @@ static int L3G4200D_convertRawToReal(void* i2c_dev)
         else if (L3G4200D_RANGE == 2000) dev->realData[i] *= 8;
     }
     return 0;
-}
-
-static int L3G4200D_calibration(void* i2c_dev)
-{
-    while (L3G4200D_getRawValue(i2c_dev));
-    return L3G4200D_convertRawToReal(i2c_dev);
 }
 
 void L3G4200D_delete(Drone_I2C_Device_L3G4200D** L3G4200D)

@@ -28,11 +28,6 @@ void Drone_I2C_Device_SetName(Drone_I2C_Device* dev, const char* str)
     strcpy(dev->name, str);
 }
 
-void Drone_I2C_Device_SetNSample(Drone_I2C_Device* dev, uint16_t N)
-{
-    dev->nCaliFrac = N;
-}
-
 void Drone_I2C_Device_SetInitFunction(Drone_I2C_Device* dev, int (*init)(void*))
 {
     dev->init_func = init;
@@ -65,10 +60,7 @@ void Drone_I2C_Device_Create(Drone_I2C_Device* i2c_dev)
     Drone_I2C_Device_SetInitFunction(i2c_dev, dummyFunction);
     Drone_I2C_Device_SetRawFunction(i2c_dev, dummyFunction);
     Drone_I2C_Device_SetRealFunction(i2c_dev, dummyFunction);
-    Drone_I2C_Device_SetCaliFunction(i2c_dev, dummyFunction);
     Drone_I2C_Device_SetEndFunction(i2c_dev, dummyEndFunction);
-    i2c_dev->nCaliFrac = 1;
-    i2c_dev->nItem = 3;
     i2c_dev->getData = NULL;
 }
 
@@ -94,7 +86,6 @@ int Drone_I2C_Device_End(Drone_I2C_Device* i2c_dev)
 
 float* Drone_I2C_Device_GetData(Drone_I2C_Device* i2c_dev)
 {
-    return &(i2c_dev->getData);
+    return i2c_dev->getData;
 }
-
 
