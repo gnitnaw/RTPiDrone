@@ -8,7 +8,7 @@
 #include "RTPiDrone_I2C_Device.h"
 #include "RTPiDrone_I2C_Device_ADXL345.h"
 #include "RTPiDrone_I2C_Device_L3G4200D.h"
-#define N_SAMPLE_CALIBRATION    100
+#define N_SAMPLE_CALIBRATION    1000
 #define NUM_CALI_THREADS        2
 #define NDATA_ADXL345           3
 #define NDATA_L3G4200D          3
@@ -29,16 +29,16 @@ typedef struct {
 
 static int i2c_stat = 0;           //!< Indicate if I2C is occupied
 
-static int Calibration_Single_L3G4200D(Drone_I2C*);
-static int Calibration_Single_ADXL345(Drone_I2C*);
-static void* Calibration_Single_Thread(void*);
-static void I2CCaliThread_Init(I2CCaliThread*);
-static void I2CCaliThread_Delete(I2CCaliThread*);
+static int Calibration_Single_L3G4200D(Drone_I2C*); //!< \private \memberof Drone_I2C: Calibration step for L3G4200D
+static int Calibration_Single_ADXL345(Drone_I2C*);  //!< \private \memberof Drone_I2C: Calibration step for ADXL345
+static void* Calibration_Single_Thread(void*);      //!< \private \memberof tempCali: Template for calibration
+static void I2CCaliThread_Init(I2CCaliThread*);     //!< \private \memberof I2CCaliThread: Initialize I2CCaliThread
+static void I2CCaliThread_Delete(I2CCaliThread*);   //!< \private \memberof I2CCaliThread: Terminate I2CCaliThread
 
 struct Drone_I2C {
     Drone_I2C_Device_ADXL345*       ADXL345;    //!< \private ADXL345 : 3-axis accelerometer + 3-axis gyro
     Drone_I2C_Device_L3G4200D*      L3G4200D;   //!< \private L3G4200D : 3-axis gyroscope
-    I2CCaliThread accCali, gyrCali, magCali;
+    I2CCaliThread accCali, gyrCali, magCali;    //!< \private Parameters for the calibration
     //Drone_I2C_Device* HMC5883L;
     //Drone_I2C_Device* BMP085;
 };
@@ -143,12 +143,12 @@ static void* Calibration_Single_Thread(void* temp)
     float* data = ((tempCali*)temp)->data;
     for (int i=0; i<nSample; ++i) {
         if (!f(i2c)) {
-            printf("%d th: ", i);
+            //printf("%d th: ", i);
             for (int j=0; j<nData; ++j) {
                 vCali[j][i] = data[j];
-                printf("%f, ", data[j]);
+                //printf("%f, ", data[j]);
             }
-            puts("");
+            //puts("");
         } else {
             --i;
         }
