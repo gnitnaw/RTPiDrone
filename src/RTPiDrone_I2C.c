@@ -38,7 +38,9 @@ static void I2CCaliThread_Delete(I2CCaliThread*);   //!< \private \memberof I2CC
 struct Drone_I2C {
     Drone_I2C_Device_ADXL345*       ADXL345;    //!< \private ADXL345 : 3-axis accelerometer + 3-axis gyro
     Drone_I2C_Device_L3G4200D*      L3G4200D;   //!< \private L3G4200D : 3-axis gyroscope
-    I2CCaliThread accCali, gyrCali, magCali;    //!< \private Parameters for the calibration
+    I2CCaliThread   accCali;                    //!< \private Parameters for the calibration of ADXL345
+    I2CCaliThread   gyrCali;                    //!< \private Parameters for the calibration of L3G4200D
+    I2CCaliThread   magCali;                    //!< \private Parameters for the calibration
     //Drone_I2C_Device* HMC5883L;
     //Drone_I2C_Device* BMP085;
 };
