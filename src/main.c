@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+![System structure](http://wantingchen.github.io/public/imgs/Sheme_drone.jpg)
     \author  Wan-Ting CHEN (wanting@gmail.com)
 */
 #include <stdio.h>
