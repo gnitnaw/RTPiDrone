@@ -29,7 +29,6 @@ struct Drone_I2C_Device_ADXL345 {
 static int ADXL345_init(void*);        //!< \private \memberof Drone_I2C_Device_ADXL345 function : Initialization of ADXL345
 static int ADXL345_getRawValue(void*); //!< \private \memberof Drone_I2C_Device_ADXL345 function : Get raw value from ADXL345
 static int ADXL345_convertRawToReal(void*); //!< \private \memberof Drone_I2C_Device_ADXL345 function : Convert to real value
-//static int ADXL345_end(void*);
 
 int ADXL345_setup(Drone_I2C_Device_ADXL345** axdl345)
 {
@@ -41,8 +40,8 @@ int ADXL345_setup(Drone_I2C_Device_ADXL345** axdl345)
     Drone_I2C_Device_SetRealFunction(&(*axdl345)->dev, ADXL345_convertRawToReal);
     Drone_I2C_Device_SetDataPointer(&(*axdl345)->dev, (*axdl345)->realData);
     return Drone_I2C_Device_Init(&(*axdl345)->dev);
-    //Drone_I2C_Device_SetEndFunction(&(*axdl345)->dev, ADXL345_end);
 }
+
 static int ADXL345_init(void* i2c_dev)
 {
     bcm2835_i2c_setSlaveAddress(ADXL345_ADDR);

@@ -8,10 +8,12 @@
 #include "RTPiDrone_I2C_Device.h"
 #include "RTPiDrone_I2C_Device_ADXL345.h"
 #include "RTPiDrone_I2C_Device_L3G4200D.h"
+#include "RTPiDrone_I2C_Device_HMC5883L.h"
 #define N_SAMPLE_CALIBRATION    1000
 #define NUM_CALI_THREADS        2
 #define NDATA_ADXL345           3
 #define NDATA_L3G4200D          3
+#define NDATA_HMC5883L          3
 
 typedef struct {
     int   nItem;
@@ -36,8 +38,9 @@ static void I2CCaliThread_Init(I2CCaliThread*);     //!< \private \memberof I2CC
 static void I2CCaliThread_Delete(I2CCaliThread*);   //!< \private \memberof I2CCaliThread: Terminate I2CCaliThread
 
 struct Drone_I2C {
-    Drone_I2C_Device_ADXL345*       ADXL345;    //!< \private ADXL345 : 3-axis accelerometer + 3-axis gyro
+    Drone_I2C_Device_ADXL345*       ADXL345;    //!< \private ADXL345 : 3-axis accelerometer
     Drone_I2C_Device_L3G4200D*      L3G4200D;   //!< \private L3G4200D : 3-axis gyroscope
+    Drone_I2C_Device_HMC5883L*      HMC5883L;   //!< \private HMC5883L : 3-axis digital compass
     I2CCaliThread   accCali;                    //!< \private Parameters for the calibration of ADXL345
     I2CCaliThread   gyrCali;                    //!< \private Parameters for the calibration of L3G4200D
     I2CCaliThread   magCali;                    //!< \private Parameters for the calibration
@@ -58,10 +61,17 @@ int Drone_I2C_Init(Drone_I2C** i2c)
         perror("Init L3G4200D");
         return -2;
     }
+    if (HMC5883L_setup(&(*i2c)->HMC5883L)) {
+        perror("Init HMC5883L");
+        return -3;
+    }
+
     (*i2c)->accCali.nItem = NDATA_ADXL345;
     (*i2c)->gyrCali.nItem = NDATA_L3G4200D;
+    (*i2c)->magCali.nItem = NDATA_HMC5883L;
     I2CCaliThread_Init(&(*i2c)->accCali);
     I2CCaliThread_Init(&(*i2c)->gyrCali);
+    I2CCaliThread_Init(&(*i2c)->magCali);
     return 0;
 }
 
@@ -92,6 +102,7 @@ int Drone_I2C_End(Drone_I2C** i2c)
 {
     I2CCaliThread_Delete(&(*i2c)->accCali);
     I2CCaliThread_Delete(&(*i2c)->gyrCali);
+    I2CCaliThread_Delete(&(*i2c)->magCali);
 
     if (Drone_I2C_Device_End((Drone_I2C_Device*)(*i2c)->ADXL345)) {
         perror("End ADXL345 Error");
@@ -101,9 +112,14 @@ int Drone_I2C_End(Drone_I2C** i2c)
         perror("End L3G4200D Error");
         return -2;
     }
+    if (Drone_I2C_Device_End((Drone_I2C_Device*)(*i2c)->HMC5883L)) {
+        perror("End HMC5883L Error");
+        return -2;
+    }
 
     ADXL345_delete(&(*i2c)->ADXL345);
     L3G4200D_delete(&(*i2c)->L3G4200D);
+    HMC5883L_delete(&(*i2c)->HMC5883L);
     free(*i2c);
     *i2c = NULL;
     bcm2835_i2c_end();
@@ -129,6 +145,7 @@ static int Calibration_Single_L3G4200D(Drone_I2C* i2c)
     bcm2835_delay(3);
     return ret;
 }
+
 
 static void* Calibration_Single_Thread(void* temp)
 {
