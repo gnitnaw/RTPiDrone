@@ -89,3 +89,8 @@ float* Drone_I2C_Device_GetData(Drone_I2C_Device* i2c_dev)
     return i2c_dev->getData;
 }
 
+char* Drone_I2C_Device_GetName(Drone_I2C_Device* i2c_dev)
+{
+    return i2c_dev->name;
+}
+

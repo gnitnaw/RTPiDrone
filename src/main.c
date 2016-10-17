@@ -19,6 +19,8 @@
     \author  Wan-Ting CHEN (wanting@gmail.com)
 */
 #include <stdio.h>
+#include <sched.h>
+#include <sys/mman.h>
 #include "RTPiDrone.h"
 
 /*!
@@ -28,6 +30,10 @@
  */
 int main(void)
 {
+    struct sched_param sp = {0};
+    sp.sched_priority = 49;
+    sched_setscheduler(0, SCHED_FIFO, &sp);
+    mlockall(MCL_CURRENT | MCL_FUTURE);
 
     Drone *rpiDrone = NULL;
     if (Drone_Init(&rpiDrone)) {

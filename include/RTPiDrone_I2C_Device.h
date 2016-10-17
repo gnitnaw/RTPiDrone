@@ -115,4 +115,11 @@ int Drone_I2C_Device_End(Drone_I2C_Device*);
  * \public \memberof Drone_I2C_Device
  */
 float* Drone_I2C_Device_GetData(Drone_I2C_Device*);
+
+/*!
+ * return the name of device
+ * \public \memberof Drone_I2C_Device
+ */
+char* Drone_I2C_Device_GetName(Drone_I2C_Device*);
+
 #endif

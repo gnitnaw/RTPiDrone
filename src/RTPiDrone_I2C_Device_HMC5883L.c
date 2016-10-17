@@ -1,5 +1,6 @@
 #include "RTPiDrone_I2C_Device_HMC5883L.h"
 #include "RTPiDrone_I2C_Device.h"
+#include "Common.h"
 #include <bcm2835.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,12 +28,6 @@ static int HMC5883L_init(void*);        //!< \private \memberof Drone_I2C_Device
 static int HMC5883L_getRawValue(void*); //!< \private \memberof Drone_I2C_Device_HMC5883L function : Get raw value from HMC5883L
 static int HMC5883L_convertRawToReal(void*); //!< \private \memberof Drone_I2C_Device_HMC5883L function : Convert to real value
 static int HMC5883L_singleMeasurement(void);//!< \private \memberof Drone_I2C_Device_HMC5883L function:Trigger single measurement
-
-/*!
- * \private Exchange the char between buf[i] and buf[i+1] when i%2==0 and i < len
- * Need to do it when the data (each element is usually 2 bytes) is MSB
- */
-static void exchange(char*, int);
 
 int HMC5883L_setup(Drone_I2C_Device_HMC5883L** HMC5883L)
 {
@@ -101,6 +96,11 @@ static int HMC5883L_init(void* i2c_dev)
         return -3;
     }
 
+    if (HMC5883L_singleMeasurement()) {
+        perror("HMC5883L single trig");
+        return -4;
+    }
+    _usleep(6000);
     return 0;
 }
 
@@ -139,18 +139,6 @@ void HMC5883L_delete(Drone_I2C_Device_HMC5883L** HMC5883L)
 {
     free(*HMC5883L);
     *HMC5883L = NULL;
-}
-
-static void exchange(char *buf, int len)
-{
-    char tmp;
-    int i;
-    for (i=0; i<len; ++i) {
-        tmp = buf[i];
-        buf[i] = buf[i+1];
-        buf[i+1] = tmp;
-        ++i;
-    }
 }
 
 static int HMC5883L_singleMeasurement(void)
