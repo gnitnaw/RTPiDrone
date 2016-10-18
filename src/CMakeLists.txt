@@ -7,6 +7,7 @@ set(I2C_ELEMENT
   RTPiDrone_I2C_Device_L3G4200D.c
   RTPiDrone_I2C_Device_HMC5883L.c
   RTPiDrone_I2C_Device_BMP085.c
+  RTPiDrone_I2C_Device_PCA9685PW.c
   RTPiDrone_I2C_Device.c
 )
 mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)

@@ -12,6 +12,7 @@
 #include "RTPiDrone_I2C_Device_L3G4200D.h"
 #include "RTPiDrone_I2C_Device_HMC5883L.h"
 #include "RTPiDrone_I2C_Device_BMP085.h"
+#include "RTPiDrone_I2C_Device_PCA9685PW.h"
 #include "Common.h"
 #define FILENAMESIZE            64
 #define N_SAMPLE_CALIBRATION    2000
@@ -52,6 +53,7 @@ struct Drone_I2C {
     Drone_I2C_Device_L3G4200D*      L3G4200D;   //!< \private L3G4200D : 3-axis gyroscope
     Drone_I2C_Device_HMC5883L*      HMC5883L;   //!< \private HMC5883L : 3-axis digital compass
     Drone_I2C_Device_BMP085*        BMP085;     //!< \private BMP085 : Barometric Pressure/Temperature/Altitude
+    Drone_I2C_Device_PCA9685PW*     PCA9685PW;  //!< \private PCA9685PW : Pulse Width Modulator
     I2CCaliThread   accCali;                    //!< \private Parameters for the calibration of ADXL345
     I2CCaliThread   gyrCali;                    //!< \private Parameters for the calibration of L3G4200D
     I2CCaliThread   magCali;                    //!< \private Parameters for the calibration of HMC5883L
@@ -80,6 +82,10 @@ int Drone_I2C_Init(Drone_I2C** i2c)
     if (BMP085_setup(&(*i2c)->BMP085)) {
         perror("Init BMP085");
         return -4;
+    }
+    if (PCA9685PW_setup(&(*i2c)->PCA9685PW)) {
+        perror("Init PCA9685PW");
+        return -5;
     }
 
     (*i2c)->accCali.nItem = NDATA_ADXL345;
@@ -137,27 +143,33 @@ int Drone_I2C_End(Drone_I2C** i2c)
     I2CCaliThread_Delete(&(*i2c)->magCali);
     I2CCaliThread_Delete(&(*i2c)->barCali);
 
+    if (Drone_I2C_Device_End((Drone_I2C_Device*)(*i2c)->PCA9685PW)) {
+        perror("End PCA9685PW Error");
+        return -1;
+    }
     if (Drone_I2C_Device_End((Drone_I2C_Device*)(*i2c)->ADXL345)) {
         perror("End ADXL345 Error");
-        return -1;
+        return -2;
     }
     if (Drone_I2C_Device_End((Drone_I2C_Device*)(*i2c)->L3G4200D)) {
         perror("End L3G4200D Error");
-        return -2;
+        return -3;
     }
     if (Drone_I2C_Device_End((Drone_I2C_Device*)(*i2c)->HMC5883L)) {
         perror("End HMC5883L Error");
-        return -3;
+        return -4;
     }
     if (Drone_I2C_Device_End((Drone_I2C_Device*)(*i2c)->BMP085)) {
         perror("End BMP085 Error");
-        return -4;
+        return -5;
     }
+
 
     ADXL345_delete(&(*i2c)->ADXL345);
     L3G4200D_delete(&(*i2c)->L3G4200D);
     HMC5883L_delete(&(*i2c)->HMC5883L);
     BMP085_delete(&(*i2c)->BMP085);
+    PCA9685PW_delete(&(*i2c)->PCA9685PW);
     free(*i2c);
     *i2c = NULL;
     bcm2835_i2c_end();
