@@ -4,6 +4,7 @@
 #include <bcm2835.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #define PCA9685PW_ADDR                  0x40            // PWM                          PCA9685PW
 #define PCA9685PW_MODE1                 0x00
@@ -16,13 +17,20 @@
 #define PCA9685PW_ALL_LED_ON_H          0xFB
 #define PCA9685PW_ALL_LED_OFF_L         0xFC
 #define PCA9685PW_ALL_LED_OFF_H         0xFD
-
+#define PCA9685PW_NMOTOR                4
+#define PCA9685PW_POWER_ZERO            1640
+#define PCA9685PW_POWER_FULL            3280
 #ifndef PCA9685PW_FREQ
 #define PCA9685PW_FREQ                  400
 #endif
 
+#ifndef PCA9685PW_CHANNEL
+#define PCA9685PW_CHANNEL               0
+#endif
+
 struct Drone_I2C_Device_PCA9685PW {
     Drone_I2C_Device dev;           //!< \private I2C device prototype
+    uint32_t PWM_CHANNEL[PCA9685PW_NMOTOR];        //!< \private PWM Value
 };
 
 static int PCA9685PW_init(void*);
@@ -44,6 +52,15 @@ void PCA9685PW_delete(Drone_I2C_Device_PCA9685PW** PCA9685PW)
 {
     free(*PCA9685PW);
     *PCA9685PW = NULL;
+}
+
+int PCA9685PW_write(Drone_I2C_Device_PCA9685PW* PCA9685PW, float* power)
+{
+    for (int i=0; i<PCA9685PW_NMOTOR; ++i) {
+        PCA9685PW->PWM_CHANNEL[i] = floor(PCA9685PW_POWER_ZERO * power[i]);
+    }
+
+    return 0;
 }
 
 static int PCA9685PW_init(void* i2c_dev)

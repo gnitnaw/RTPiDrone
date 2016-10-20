@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <stdatomic.h>
 #include <sched.h>
 #include <pthread.h>
 #include <bcm2835.h>
@@ -38,7 +39,7 @@ typedef struct {
     char* name;
 } tempCali;
 
-static int i2c_stat = 0;           //!< Indicate if I2C is occupied
+static _Atomic(int) i2c_stat = 0;           //!< Indicate if I2C is occupied
 static struct timespec tp1, tp2;
 static int Calibration_Single_L3G4200D(Drone_I2C*); //!< \private \memberof Drone_I2C: Calibration step for L3G4200D
 static int Calibration_Single_ADXL345(Drone_I2C*);  //!< \private \memberof Drone_I2C: Calibration step for ADXL345
@@ -178,9 +179,10 @@ int Drone_I2C_End(Drone_I2C** i2c)
 
 static int Calibration_Single_ADXL345(Drone_I2C* i2c)
 {
-    while ( __sync_lock_test_and_set(&i2c_stat, 1) ) sched_yield() ;
+    while (i2c_stat) sched_yield() ;
+    atomic_fetch_add_explicit(&i2c_stat, 1, memory_order_seq_cst);
     int ret = Drone_I2C_Device_GetRawData((Drone_I2C_Device*)(i2c->ADXL345));
-    __sync_lock_release(&i2c_stat);
+    atomic_fetch_sub(&i2c_stat, 1);
     ret += Drone_I2C_Device_GetRealData((Drone_I2C_Device*)(i2c->ADXL345));
     bcm2835_delay(3);
     return ret;
@@ -188,9 +190,10 @@ static int Calibration_Single_ADXL345(Drone_I2C* i2c)
 
 static int Calibration_Single_L3G4200D(Drone_I2C* i2c)
 {
-    while ( __sync_lock_test_and_set(&i2c_stat, 1) ) sched_yield() ;
+    while (i2c_stat) sched_yield() ;
+    atomic_fetch_add_explicit(&i2c_stat, 1, memory_order_seq_cst);
     int ret = Drone_I2C_Device_GetRawData((Drone_I2C_Device*)(i2c->L3G4200D));
-    __sync_lock_release(&i2c_stat);
+    atomic_fetch_sub(&i2c_stat, 1);
     ret += Drone_I2C_Device_GetRealData((Drone_I2C_Device*)(i2c->L3G4200D));
     bcm2835_delay(3);
     return ret;
@@ -198,9 +201,10 @@ static int Calibration_Single_L3G4200D(Drone_I2C* i2c)
 
 static int Calibration_Single_HMC5883L(Drone_I2C* i2c)
 {
-    while ( __sync_lock_test_and_set(&i2c_stat, 1) ) sched_yield() ;
+    while (i2c_stat) sched_yield() ;
+    atomic_fetch_add_explicit(&i2c_stat, 1, memory_order_seq_cst);
     int ret = Drone_I2C_Device_GetRawData((Drone_I2C_Device*)(i2c->HMC5883L));
-    __sync_lock_release(&i2c_stat);
+    atomic_fetch_sub(&i2c_stat, 1);
     ret += Drone_I2C_Device_GetRealData((Drone_I2C_Device*)(i2c->HMC5883L));
     bcm2835_delay(6);
     return ret;
@@ -211,9 +215,10 @@ static int Calibration_Single_BMP085(Drone_I2C* i2c)
     static const int sleepTime[] = {25500, 4500};
     int ret, ret2;
     for (int i=0; i<2; ++i) {
-        while ( __sync_lock_test_and_set(&i2c_stat, 1) ) sched_yield() ;
+        while (i2c_stat) sched_yield() ;
+        atomic_fetch_add_explicit(&i2c_stat, 1, memory_order_seq_cst);
         ret = Drone_I2C_Device_GetRawData((Drone_I2C_Device*)(i2c->BMP085));
-        __sync_lock_release(&i2c_stat);
+        atomic_fetch_sub(&i2c_stat, 1);
         ret2 = Drone_I2C_Device_GetRealData((Drone_I2C_Device*)(i2c->BMP085));
         _usleep(sleepTime[ret]);
     }
