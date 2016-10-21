@@ -38,7 +38,7 @@ int ADXL345_setup(Drone_I2C_Device_ADXL345** axdl345)
     Drone_I2C_Device_SetInitFunction(&(*axdl345)->dev, ADXL345_init);
     Drone_I2C_Device_SetRawFunction(&(*axdl345)->dev, ADXL345_getRawValue);
     Drone_I2C_Device_SetRealFunction(&(*axdl345)->dev, ADXL345_convertRawToReal);
-    Drone_I2C_Device_SetDataPointer(&(*axdl345)->dev, (*axdl345)->realData);
+    Drone_I2C_Device_SetDataPointer(&(*axdl345)->dev, (void*)(*axdl345)->realData);
     return Drone_I2C_Device_Init(&(*axdl345)->dev);
 }
 

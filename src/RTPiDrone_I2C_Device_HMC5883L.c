@@ -37,7 +37,7 @@ int HMC5883L_setup(Drone_I2C_Device_HMC5883L** HMC5883L)
     Drone_I2C_Device_SetInitFunction(&(*HMC5883L)->dev, HMC5883L_init);
     Drone_I2C_Device_SetRawFunction(&(*HMC5883L)->dev, HMC5883L_getRawValue);
     Drone_I2C_Device_SetRealFunction(&(*HMC5883L)->dev, HMC5883L_convertRawToReal);
-    Drone_I2C_Device_SetDataPointer(&(*HMC5883L)->dev, (*HMC5883L)->realData);
+    Drone_I2C_Device_SetDataPointer(&(*HMC5883L)->dev, (void*)(*HMC5883L)->realData);
     (*HMC5883L)->mag_offset[0] = -276.919983;
     (*HMC5883L)->mag_offset[1] = -137.080002;
     (*HMC5883L)->mag_offset[2] = -82.799988;

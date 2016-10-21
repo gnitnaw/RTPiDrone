@@ -57,7 +57,7 @@ int BMP085_setup(Drone_I2C_Device_BMP085** BMP085)
     Drone_I2C_Device_SetInitFunction(&(*BMP085)->dev, BMP085_init);
     Drone_I2C_Device_SetRawFunction(&(*BMP085)->dev, BMP085_getRawValue);
     Drone_I2C_Device_SetRealFunction(&(*BMP085)->dev, BMP085_convertRawToReal);
-    Drone_I2C_Device_SetDataPointer(&(*BMP085)->dev, &(*BMP085)->altitude);
+    Drone_I2C_Device_SetDataPointer(&(*BMP085)->dev, (void*)&(*BMP085)->altitude);
     return Drone_I2C_Device_Init(&(*BMP085)->dev);
 }
 

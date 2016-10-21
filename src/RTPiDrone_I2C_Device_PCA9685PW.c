@@ -17,6 +17,8 @@
 #define PCA9685PW_ALL_LED_ON_H          0xFB
 #define PCA9685PW_ALL_LED_OFF_L         0xFC
 #define PCA9685PW_ALL_LED_OFF_H         0xFD
+#define PCA9685PW_LED0_ON_L             0x06
+
 #define PCA9685PW_NMOTOR                4
 #define PCA9685PW_POWER_ZERO            1640
 #define PCA9685PW_POWER_FULL            3280
@@ -36,6 +38,14 @@ struct Drone_I2C_Device_PCA9685PW {
 static int PCA9685PW_init(void*);
 static int PCA9685PWMFreq(void);
 static int PCA9685PW_PWMReset(void*);
+static int PCA9685PW_Read(void*);
+static int pca9685PWMWriteSingleOff(const int, const uint32_t);
+static int pca9685PWMWriteMultiOff(const int*, const uint32_t*);
+static int pca9685PWMReadSingleOff(const int, uint32_t*);
+static int pca9685PWMReadMultiOff(const int*, uint32_t*);
+static int baseReg(const int);
+
+static int nChannel[] = {PCA9685PW_CHANNEL, PCA9685PW_CHANNEL+1, PCA9685PW_CHANNEL+2, PCA9685PW_CHANNEL+3};
 
 int PCA9685PW_setup(Drone_I2C_Device_PCA9685PW** PCA9685PW)
 {
@@ -43,8 +53,9 @@ int PCA9685PW_setup(Drone_I2C_Device_PCA9685PW** PCA9685PW)
     Drone_I2C_Device_Create(&(*PCA9685PW)->dev);
     Drone_I2C_Device_SetName(&(*PCA9685PW)->dev, "PCA9685PW");
     Drone_I2C_Device_SetInitFunction(&(*PCA9685PW)->dev, PCA9685PW_init);
+    Drone_I2C_Device_SetRealFunction(&(*PCA9685PW)->dev, PCA9685PW_Read);
     Drone_I2C_Device_SetEndFunction(&(*PCA9685PW)->dev, PCA9685PW_PWMReset);
-    Drone_I2C_Device_SetDataPointer(&(*PCA9685PW)->dev, NULL);
+    Drone_I2C_Device_SetDataPointer(&(*PCA9685PW)->dev, (void*)(*PCA9685PW)->PWM_CHANNEL);
     return Drone_I2C_Device_Init(&(*PCA9685PW)->dev);
 }
 
@@ -54,13 +65,17 @@ void PCA9685PW_delete(Drone_I2C_Device_PCA9685PW** PCA9685PW)
     *PCA9685PW = NULL;
 }
 
-int PCA9685PW_write(Drone_I2C_Device_PCA9685PW* PCA9685PW, float* power)
+int PCA9685PW_write(Drone_I2C_Device_PCA9685PW* PCA9685PW, const float* power)
 {
     for (int i=0; i<PCA9685PW_NMOTOR; ++i) {
         PCA9685PW->PWM_CHANNEL[i] = floor(PCA9685PW_POWER_ZERO * power[i]);
     }
+    return pca9685PWMWriteMultiOff(nChannel, PCA9685PW->PWM_CHANNEL);
+}
 
-    return 0;
+static int PCA9685PW_Read(void* i2c_dev)
+{
+    return pca9685PWMReadMultiOff(nChannel, ((Drone_I2C_Device_PCA9685PW*)i2c_dev)->PWM_CHANNEL);
 }
 
 static int PCA9685PW_init(void* i2c_dev)
@@ -163,6 +178,54 @@ static int PCA9685PW_PWMReset(void* P)                           // == All turn 
     }
 
     puts("PCA9685PW reset!");
+    return 0;
+}
+
+static int pca9685PWMWriteSingleOff(const int pin, const uint32_t off)
+{
+    char regaddr[] = {baseReg(pin)+2, off&0xFF, off >> 8};
+    return bcm2835_i2c_write(regaddr,3);
+}
+
+static int pca9685PWMWriteMultiOff(const int* pin, const uint32_t* data)
+{
+    bcm2835_i2c_setSlaveAddress(PCA9685PW_ADDR);
+    int ret = 0;
+    for (int i=0; i<PCA9685PW_NMOTOR; ++i) {
+        ret += pca9685PWMWriteSingleOff(pin[i], data[i]);
+    }
+    return ret;
+}
+
+static int baseReg(const int pin)
+{
+    return PCA9685PW_LED0_ON_L + pin * 4;
+}
+
+static int pca9685PWMReadSingleOff(const int pin, uint32_t* off)
+{
+    char regaddr[] = {baseReg(pin)+2, 0};
+    if (bcm2835_i2c_write(regaddr,1) != BCM2835_I2C_REASON_OK) {
+        perror("PCA9685PW read error 1");
+        return -1;
+    }
+
+    if ( bcm2835_i2c_read(regaddr, 2) != BCM2835_I2C_REASON_OK) {
+        perror("PCA9685PW read error 2");
+        return -2;
+    }
+
+    *off = (regaddr[0] + ((int)regaddr[1]<<8)) & 0xFFF;
+    return 0;
+}
+
+static int pca9685PWMReadMultiOff(const int* pin, uint32_t* data)
+{
+    bcm2835_i2c_setSlaveAddress(PCA9685PW_ADDR);
+    int ret = 0;
+    for (int i=0; i<PCA9685PW_NMOTOR; ++i) {
+        ret += pca9685PWMReadSingleOff(pin[i], &data[i]);
+    }
     return 0;
 }
 

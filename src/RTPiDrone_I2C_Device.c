@@ -43,7 +43,7 @@ void Drone_I2C_Device_SetRealFunction(Drone_I2C_Device* dev, int (*data)(void*))
     dev->data_func = data;
 }
 
-void Drone_I2C_Device_SetDataPointer(Drone_I2C_Device* dev, float* f)
+void Drone_I2C_Device_SetDataPointer(Drone_I2C_Device* dev, void* f)
 {
     dev->getData = f;
 }

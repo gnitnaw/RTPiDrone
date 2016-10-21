@@ -10,8 +10,12 @@ set(I2C_ELEMENT
   RTPiDrone_I2C_Device_PCA9685PW.c
   RTPiDrone_I2C_Device.c
 )
+set(SPI_ELEMENT
+    RTPiDrone_SPI_Device.c
+    RTPiDrone_SPI_Device_MCP3008.c
+)
 mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 include_directories(${RTPiDrone_SOURCE_DIR}/include)
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic -O3 -std=gnu11")
-add_executable(RTPiDrone ${I2C_ELEMENT} RTPiDrone_I2C.c RTPiDrone.c Common.c main.c)
+add_executable(RTPiDrone ${I2C_ELEMENT} RTPiDrone_I2C.c ${SPI_ELEMENT} RTPiDrone_SPI.c RTPiDrone.c Common.c main.c)
 target_link_libraries(RTPiDrone -lbcm2835 -lgsl -lgslcblas -lpthread -lm)

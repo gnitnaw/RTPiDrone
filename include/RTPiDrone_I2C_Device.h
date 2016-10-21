@@ -29,7 +29,7 @@ typedef struct {
     int (*rawdata_func)(void*);     //!< \private Function to get raw data from I2C device
     int (*data_func)(void*);        //!< \private Function to convert raw data to real data
     int (*end_func)(void*);         //!< \private Termination of I2C device
-    float*	getData;	    //!< \private Pointer of real data
+    void*	getData;	    //!< \private Pointer of real data
 } Drone_I2C_Device; //!< Drone_I2C_Device type, prototype of all I2C Devices
 
 /*!
@@ -37,12 +37,6 @@ typedef struct {
  * \public \memberof Drone_I2C_Device
  */
 void Drone_I2C_Device_SetName(Drone_I2C_Device*, const char*);
-
-/*!
- * Set number of Samples for calibration of I2C device.
- * \public \memberof Drone_I2C_Device
- */
-void Drone_I2C_Device_SetNSample(Drone_I2C_Device*, uint16_t);
 
 /*!
  * Set initialization function.
@@ -63,12 +57,6 @@ void Drone_I2C_Device_SetRawFunction(Drone_I2C_Device*, int (*)(void*));
 void Drone_I2C_Device_SetRealFunction(Drone_I2C_Device*, int (*)(void*));
 
 /*!
- * Set calibration function.
- * \public \memberof Drone_I2C_Device
- */
-void Drone_I2C_Device_SetCaliFunction(Drone_I2C_Device*, int (*)(void*));
-
-/*!
  * Set termination of I2C device
  * \public \memberof Drone_I2C_Device
  */
@@ -78,7 +66,7 @@ void Drone_I2C_Device_SetEndFunction(Drone_I2C_Device*, int (*)(void*));
  * Set data point of I2C device
  * \public \memberof Drone_I2C_Device
  */
-void Drone_I2C_Device_SetDataPointer(Drone_I2C_Device*, float*);
+void Drone_I2C_Device_SetDataPointer(Drone_I2C_Device*, void*);
 
 /*!
  * Create an I2C device

@@ -41,7 +41,7 @@ int L3G4200D_setup(Drone_I2C_Device_L3G4200D** L3G4200D)
     Drone_I2C_Device_SetInitFunction(&(*L3G4200D)->dev, L3G4200D_init);
     Drone_I2C_Device_SetRawFunction(&(*L3G4200D)->dev, L3G4200D_getRawValue);
     Drone_I2C_Device_SetRealFunction(&(*L3G4200D)->dev, L3G4200D_convertRawToReal);
-    Drone_I2C_Device_SetDataPointer(&(*L3G4200D)->dev, (*L3G4200D)->realData);
+    Drone_I2C_Device_SetDataPointer(&(*L3G4200D)->dev, (void*)(*L3G4200D)->realData);
     return Drone_I2C_Device_Init(&(*L3G4200D)->dev);
     //Drone_I2C_Device_SetEndFunction(&(*L3G4200D)->dev, L3G4200D_end);
 }
