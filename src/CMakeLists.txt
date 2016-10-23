@@ -21,13 +21,14 @@ set(MAIN_ELEMENT
     RTPiDrone.c
 )
 set(RF24_ELEMENT
-    RF24.cpp 
-    spi.cpp 
-    compatibility.c 
-    RF24_Interface.cpp    
+    RF24/RF24.cpp 
+    RF24/spi.cpp 
+    RF24/compatibility.c 
+    RF24/RF24_Interface.cpp    
 )
 include_directories(${RTPiDrone_SOURCE_DIR}/include)
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic -O3 -std=gnu11")
 link_directories(${RTPiDrone_SOURCE_DIR}/src)
-add_executable(RTPiDrone ${I2C_ELEMENT} ${MAIN_ELEMENT} ${SPI_ELEMENT} ${RF24_ELEMENT} Common.c main.c)
-target_link_libraries(RTPiDrone -lbcm2835 -lgsl -lgslcblas -lpthread -lm -lrt)
+add_library(RF24WT ${RF24_ELEMENT})
+add_executable(RTPiDrone ${I2C_ELEMENT} ${MAIN_ELEMENT} ${SPI_ELEMENT} Common.c main.c)
+target_link_libraries(RTPiDrone RF24WT -lbcm2835 -lgsl -lgslcblas -lpthread -lm -lrt)
