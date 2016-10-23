@@ -1,5 +1,5 @@
 #include "RTPiDrone_I2C_Device_ADXL345.h"
-#include "RTPiDrone_I2C_Device.h"
+#include "RTPiDrone_Device.h"
 #include <bcm2835.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,7 +21,7 @@
 #endif
 
 struct Drone_I2C_Device_ADXL345 {
-    Drone_I2C_Device dev;           //!< \private I2C device prototype
+    Drone_Device dev;           //!< \private I2C device prototype
     int16_t rawData[3];             //!< \private Raw data
     float   realData[3];            //!< \private Real data
 };
@@ -33,13 +33,13 @@ static int ADXL345_convertRawToReal(void*); //!< \private \memberof Drone_I2C_De
 int ADXL345_setup(Drone_I2C_Device_ADXL345** axdl345)
 {
     *axdl345 = (Drone_I2C_Device_ADXL345*) malloc(sizeof(Drone_I2C_Device_ADXL345));
-    Drone_I2C_Device_Create(&(*axdl345)->dev);
-    Drone_I2C_Device_SetName(&(*axdl345)->dev, "ADXL345");
-    Drone_I2C_Device_SetInitFunction(&(*axdl345)->dev, ADXL345_init);
-    Drone_I2C_Device_SetRawFunction(&(*axdl345)->dev, ADXL345_getRawValue);
-    Drone_I2C_Device_SetRealFunction(&(*axdl345)->dev, ADXL345_convertRawToReal);
-    Drone_I2C_Device_SetDataPointer(&(*axdl345)->dev, (void*)(*axdl345)->realData);
-    return Drone_I2C_Device_Init(&(*axdl345)->dev);
+    Drone_Device_Create(&(*axdl345)->dev);
+    Drone_Device_SetName(&(*axdl345)->dev, "ADXL345");
+    Drone_Device_SetInitFunction(&(*axdl345)->dev, ADXL345_init);
+    Drone_Device_SetRawFunction(&(*axdl345)->dev, ADXL345_getRawValue);
+    Drone_Device_SetRealFunction(&(*axdl345)->dev, ADXL345_convertRawToReal);
+    Drone_Device_SetDataPointer(&(*axdl345)->dev, (void*)(*axdl345)->realData);
+    return Drone_Device_Init(&(*axdl345)->dev);
 }
 
 static int ADXL345_init(void* i2c_dev)

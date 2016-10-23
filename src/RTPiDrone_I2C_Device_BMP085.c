@@ -1,5 +1,5 @@
 #include "RTPiDrone_I2C_Device_BMP085.h"
-#include "RTPiDrone_I2C_Device.h"
+#include "RTPiDrone_Device.h"
 #include "Common.h"
 #include <bcm2835.h>
 #include <stdio.h>
@@ -32,7 +32,7 @@ BMP085_Parameters;
 static uint64_t BMP085_Trigger_Switch = 0;
 
 struct Drone_I2C_Device_BMP085 {
-    Drone_I2C_Device dev;           //!< \private I2C device prototype
+    Drone_Device dev;           //!< \private I2C device prototype
     long UT;                        //!< \private Raw Temperature
     long UP;                        //!< \private Raw Pressure
     long   RT;                      //!< \private Real Temperature
@@ -52,13 +52,13 @@ static int BMP085_convertRawToReal(void*);
 int BMP085_setup(Drone_I2C_Device_BMP085** BMP085)
 {
     *BMP085 = (Drone_I2C_Device_BMP085*) malloc(sizeof(Drone_I2C_Device_BMP085));
-    Drone_I2C_Device_Create(&(*BMP085)->dev);
-    Drone_I2C_Device_SetName(&(*BMP085)->dev, "BMP085");
-    Drone_I2C_Device_SetInitFunction(&(*BMP085)->dev, BMP085_init);
-    Drone_I2C_Device_SetRawFunction(&(*BMP085)->dev, BMP085_getRawValue);
-    Drone_I2C_Device_SetRealFunction(&(*BMP085)->dev, BMP085_convertRawToReal);
-    Drone_I2C_Device_SetDataPointer(&(*BMP085)->dev, (void*)&(*BMP085)->altitude);
-    return Drone_I2C_Device_Init(&(*BMP085)->dev);
+    Drone_Device_Create(&(*BMP085)->dev);
+    Drone_Device_SetName(&(*BMP085)->dev, "BMP085");
+    Drone_Device_SetInitFunction(&(*BMP085)->dev, BMP085_init);
+    Drone_Device_SetRawFunction(&(*BMP085)->dev, BMP085_getRawValue);
+    Drone_Device_SetRealFunction(&(*BMP085)->dev, BMP085_convertRawToReal);
+    Drone_Device_SetDataPointer(&(*BMP085)->dev, (void*)&(*BMP085)->altitude);
+    return Drone_Device_Init(&(*BMP085)->dev);
 }
 
 static int BMP085_init(void* i2c_dev)

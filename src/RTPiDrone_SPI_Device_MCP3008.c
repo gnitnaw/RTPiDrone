@@ -1,12 +1,12 @@
 #include "RTPiDrone_SPI_Device_MCP3008.h"
-#include "RTPiDrone_SPI_Device.h"
+#include "RTPiDrone_Device.h"
 #include <bcm2835.h>
 #include <stdio.h>
 #include <stdlib.h>
 #define FULLVALUE   1024
 #define V_INPUT     (5.0f)
 struct Drone_SPI_Device_MCP3008 {
-    Drone_SPI_Device dev;
+    Drone_Device dev;
     char receive_buf[3];
     float volt;
 };
@@ -19,12 +19,12 @@ static int MCP3008_convertRawToReal(void*);
 int MCP3008_setup(Drone_SPI_Device_MCP3008** MCP3008)
 {
     *MCP3008 = (Drone_SPI_Device_MCP3008*) malloc(sizeof(Drone_SPI_Device_MCP3008));
-    Drone_SPI_Device_Create(&(*MCP3008)->dev);
-    Drone_SPI_Device_SetName(&(*MCP3008)->dev, "MCP3008");
-    Drone_SPI_Device_SetInitFunction(&(*MCP3008)->dev, MCP3008_init);
-    Drone_SPI_Device_SetRawFunction(&(*MCP3008)->dev, MCP3008_getRawValue);
-    Drone_SPI_Device_SetRealFunction(&(*MCP3008)->dev, MCP3008_convertRawToReal);
-    Drone_SPI_Device_SetDataPointer(&(*MCP3008)->dev, (void*)&(*MCP3008)->volt);
+    Drone_Device_Create(&(*MCP3008)->dev);
+    Drone_Device_SetName(&(*MCP3008)->dev, "MCP3008");
+    Drone_Device_SetInitFunction(&(*MCP3008)->dev, MCP3008_init);
+    Drone_Device_SetRawFunction(&(*MCP3008)->dev, MCP3008_getRawValue);
+    Drone_Device_SetRealFunction(&(*MCP3008)->dev, MCP3008_convertRawToReal);
+    Drone_Device_SetDataPointer(&(*MCP3008)->dev, (void*)&(*MCP3008)->volt);
     return MCP3008_init(&(*MCP3008)->dev);
 }
 

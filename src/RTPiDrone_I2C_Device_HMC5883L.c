@@ -1,5 +1,5 @@
 #include "RTPiDrone_I2C_Device_HMC5883L.h"
-#include "RTPiDrone_I2C_Device.h"
+#include "RTPiDrone_Device.h"
 #include "Common.h"
 #include <bcm2835.h>
 #include <stdio.h>
@@ -17,7 +17,7 @@
 #endif
 
 struct Drone_I2C_Device_HMC5883L {
-    Drone_I2C_Device dev;           //!< \private I2C device prototype
+    Drone_Device dev;           //!< \private I2C device prototype
     int16_t rawData[3];             //!< \private Raw data
     float   realData[3];            //!< \private Real data
     float   mag_offset[3];          //!< \private The offset due to the structure of drone
@@ -32,19 +32,19 @@ static int HMC5883L_singleMeasurement(void);//!< \private \memberof Drone_I2C_De
 int HMC5883L_setup(Drone_I2C_Device_HMC5883L** HMC5883L)
 {
     *HMC5883L = (Drone_I2C_Device_HMC5883L*) malloc(sizeof(Drone_I2C_Device_HMC5883L));
-    Drone_I2C_Device_Create(&(*HMC5883L)->dev);
-    Drone_I2C_Device_SetName(&(*HMC5883L)->dev, "HMC5883L");
-    Drone_I2C_Device_SetInitFunction(&(*HMC5883L)->dev, HMC5883L_init);
-    Drone_I2C_Device_SetRawFunction(&(*HMC5883L)->dev, HMC5883L_getRawValue);
-    Drone_I2C_Device_SetRealFunction(&(*HMC5883L)->dev, HMC5883L_convertRawToReal);
-    Drone_I2C_Device_SetDataPointer(&(*HMC5883L)->dev, (void*)(*HMC5883L)->realData);
+    Drone_Device_Create(&(*HMC5883L)->dev);
+    Drone_Device_SetName(&(*HMC5883L)->dev, "HMC5883L");
+    Drone_Device_SetInitFunction(&(*HMC5883L)->dev, HMC5883L_init);
+    Drone_Device_SetRawFunction(&(*HMC5883L)->dev, HMC5883L_getRawValue);
+    Drone_Device_SetRealFunction(&(*HMC5883L)->dev, HMC5883L_convertRawToReal);
+    Drone_Device_SetDataPointer(&(*HMC5883L)->dev, (void*)(*HMC5883L)->realData);
     (*HMC5883L)->mag_offset[0] = -276.919983;
     (*HMC5883L)->mag_offset[1] = -137.080002;
     (*HMC5883L)->mag_offset[2] = -82.799988;
     (*HMC5883L)->mag_gain[0] = 1.000000;
     (*HMC5883L)->mag_gain[1] = 0.992958;
     (*HMC5883L)->mag_gain[2] = 1.128000;
-    return Drone_I2C_Device_Init(&(*HMC5883L)->dev);
+    return Drone_Device_Init(&(*HMC5883L)->dev);
 }
 
 static int HMC5883L_init(void* i2c_dev)

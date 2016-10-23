@@ -14,7 +14,7 @@
 */
 #ifndef H_RF24_INTERFACE
 #define H_RF24_INTERFACE
-#include <pthread.h>
+#include <stddef.h>
 #ifdef __cplusplus
 extern "C" {
 #endif

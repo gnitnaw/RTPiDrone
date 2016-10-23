@@ -29,6 +29,12 @@ typedef struct Drone_SPI    Drone_SPI;   //!< Drone_SPI type
 int Drone_SPI_Init(Drone_SPI**);
 
 /*!
+ * Calibrate all SPI devices
+ * \public \memberof Drone_SPI
+ */
+int Drone_SPI_Calibration(Drone_SPI*);
+
+/*!
  * Start all SPI devices
  * \public \memberof Drone_SPI
  */

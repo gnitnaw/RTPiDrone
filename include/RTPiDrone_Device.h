@@ -1,5 +1,5 @@
 /*
-    RTPiDrone -- RTPiDrone_I2C_Device.h
+    RTPiDrone -- RTPiDrone_Device.h
     Copyright 2016 Wan-Ting CHEN (wanting@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,8 @@
 */
 
 
-#ifndef  H_DRONE_I2C_DEVICE
-#define  H_DRONE_I2C_DEVICE
+#ifndef  H_DRONE_DEVICE
+#define  H_DRONE_DEVICE
 #include <stdint.h>
 /*!
  * Prototype of all I2C Devices.
@@ -30,84 +30,84 @@ typedef struct {
     int (*data_func)(void*);        //!< \private Function to convert raw data to real data
     int (*end_func)(void*);         //!< \private Termination of I2C device
     void*	getData;	    //!< \private Pointer of real data
-} Drone_I2C_Device; //!< Drone_I2C_Device type, prototype of all I2C Devices
+} Drone_Device; //!< Drone_Device type, prototype of all I2C Devices
 
 /*!
  * Set name of I2C device.
- * \public \memberof Drone_I2C_Device
+ * \public \memberof Drone_Device
  */
-void Drone_I2C_Device_SetName(Drone_I2C_Device*, const char*);
+void Drone_Device_SetName(Drone_Device*, const char*);
 
 /*!
  * Set initialization function.
- * \public \memberof Drone_I2C_Device
+ * \public \memberof Drone_Device
  */
-void Drone_I2C_Device_SetInitFunction(Drone_I2C_Device*, int (*)(void*));
+void Drone_Device_SetInitFunction(Drone_Device*, int (*)(void*));
 
 /*!
  * Set function to get raw data from I2C device
- * \public \memberof Drone_I2C_Device
+ * \public \memberof Drone_Device
  */
-void Drone_I2C_Device_SetRawFunction(Drone_I2C_Device*, int (*)(void*));
+void Drone_Device_SetRawFunction(Drone_Device*, int (*)(void*));
 
 /*!
  * Set function to convert raw data to real data.
- * \public \memberof Drone_I2C_Device
+ * \public \memberof Drone_Device
  */
-void Drone_I2C_Device_SetRealFunction(Drone_I2C_Device*, int (*)(void*));
+void Drone_Device_SetRealFunction(Drone_Device*, int (*)(void*));
 
 /*!
  * Set termination of I2C device
- * \public \memberof Drone_I2C_Device
+ * \public \memberof Drone_Device
  */
-void Drone_I2C_Device_SetEndFunction(Drone_I2C_Device*, int (*)(void*));
+void Drone_Device_SetEndFunction(Drone_Device*, int (*)(void*));
 
 /*!
  * Set data point of I2C device
- * \public \memberof Drone_I2C_Device
+ * \public \memberof Drone_Device
  */
-void Drone_I2C_Device_SetDataPointer(Drone_I2C_Device*, void*);
+void Drone_Device_SetDataPointer(Drone_Device*, void*);
 
 /*!
  * Create an I2C device
- * \public \memberof Drone_I2C_Device
+ * \public \memberof Drone_Device
  */
-void Drone_I2C_Device_Create(Drone_I2C_Device*);
+void Drone_Device_Create(Drone_Device*);
 
 /*!
  * Initialize an I2C device
- * \public \memberof Drone_I2C_Device
+ * \public \memberof Drone_Device
  */
-int Drone_I2C_Device_Init(Drone_I2C_Device*);
+int Drone_Device_Init(Drone_Device*);
 
 /*!
  * Get raw data
- * \public \memberof Drone_I2C_Device
+ * \public \memberof Drone_Device
  */
-int Drone_I2C_Device_GetRawData(Drone_I2C_Device*);
+int Drone_Device_GetRawData(Drone_Device*);
 
 /*!
  * Convert raw to real data
- * \public \memberof Drone_I2C_Device
+ * \public \memberof Drone_Device
  */
-int Drone_I2C_Device_GetRealData(Drone_I2C_Device*);
+int Drone_Device_GetRealData(Drone_Device*);
 
 /*!
  * Terminate an I2C device
- * \public \memberof Drone_I2C_Device
+ * \public \memberof Drone_Device
  */
-int Drone_I2C_Device_End(Drone_I2C_Device*);
+int Drone_Device_End(Drone_Device*);
 
 /*!
  * return the location of real data
- * \public \memberof Drone_I2C_Device
+ * \public \memberof Drone_Device
  */
-float* Drone_I2C_Device_GetData(Drone_I2C_Device*);
+float* Drone_Device_GetData(Drone_Device*);
 
 /*!
  * return the name of device
- * \public \memberof Drone_I2C_Device
+ * \public \memberof Drone_Device
  */
-char* Drone_I2C_Device_GetName(Drone_I2C_Device*);
+char* Drone_Device_GetName(Drone_Device*);
 
 #endif

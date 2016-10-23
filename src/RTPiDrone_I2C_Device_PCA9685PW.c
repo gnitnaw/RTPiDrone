@@ -1,5 +1,5 @@
 #include "RTPiDrone_I2C_Device_PCA9685PW.h"
-#include "RTPiDrone_I2C_Device.h"
+#include "RTPiDrone_Device.h"
 #include "Common.h"
 #include <bcm2835.h>
 #include <stdio.h>
@@ -31,7 +31,7 @@
 #endif
 
 struct Drone_I2C_Device_PCA9685PW {
-    Drone_I2C_Device dev;           //!< \private I2C device prototype
+    Drone_Device dev;           //!< \private I2C device prototype
     uint32_t PWM_CHANNEL[PCA9685PW_NMOTOR];        //!< \private PWM Value
 };
 
@@ -50,13 +50,13 @@ static int nChannel[] = {PCA9685PW_CHANNEL, PCA9685PW_CHANNEL+1, PCA9685PW_CHANN
 int PCA9685PW_setup(Drone_I2C_Device_PCA9685PW** PCA9685PW)
 {
     *PCA9685PW = (Drone_I2C_Device_PCA9685PW*) malloc(sizeof(Drone_I2C_Device_PCA9685PW));
-    Drone_I2C_Device_Create(&(*PCA9685PW)->dev);
-    Drone_I2C_Device_SetName(&(*PCA9685PW)->dev, "PCA9685PW");
-    Drone_I2C_Device_SetInitFunction(&(*PCA9685PW)->dev, PCA9685PW_init);
-    Drone_I2C_Device_SetRealFunction(&(*PCA9685PW)->dev, PCA9685PW_Read);
-    Drone_I2C_Device_SetEndFunction(&(*PCA9685PW)->dev, PCA9685PW_PWMReset);
-    Drone_I2C_Device_SetDataPointer(&(*PCA9685PW)->dev, (void*)(*PCA9685PW)->PWM_CHANNEL);
-    return Drone_I2C_Device_Init(&(*PCA9685PW)->dev);
+    Drone_Device_Create(&(*PCA9685PW)->dev);
+    Drone_Device_SetName(&(*PCA9685PW)->dev, "PCA9685PW");
+    Drone_Device_SetInitFunction(&(*PCA9685PW)->dev, PCA9685PW_init);
+    Drone_Device_SetRealFunction(&(*PCA9685PW)->dev, PCA9685PW_Read);
+    Drone_Device_SetEndFunction(&(*PCA9685PW)->dev, PCA9685PW_PWMReset);
+    Drone_Device_SetDataPointer(&(*PCA9685PW)->dev, (void*)(*PCA9685PW)->PWM_CHANNEL);
+    return Drone_Device_Init(&(*PCA9685PW)->dev);
 }
 
 void PCA9685PW_delete(Drone_I2C_Device_PCA9685PW** PCA9685PW)

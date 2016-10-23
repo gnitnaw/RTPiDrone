@@ -21,11 +21,13 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <time.h>
+#include <pthread.h>
 #include <bcm2835.h>
 #include "RTPiDrone_I2C.h"
 #include "RTPiDrone_SPI.h"
 #include "RTPiDrone.h"
 #define LENGTH 128
+#define NUM_CALI_THREADS        2
 
 typedef enum {
     vanilla,
@@ -47,6 +49,8 @@ static void getTimeString(char*);	//!< \private \memberof Drone function : get t
 static int getKernelString(char*);	//!< \private \memberof Drone function : get kernel string
 static kernelType getKernelType(char*); //!< \private \memberof Drone function : get kernel type
 static int generateFileName(char*);     //!< \private \memberof Drone function : generate logfile name
+static void* Calibration_I2C_Thread(void*);
+static void* Calibration_SPI_Thread(void*);
 
 /* Initialize the Drone */
 int Drone_Init(Drone** rpiDrone)
@@ -85,7 +89,11 @@ void Drone_Start(Drone* rpiDrone)
 
 int Drone_Calibration(Drone* rpiDrone)
 {
-    return Drone_I2C_Calibration(rpiDrone->i2c);
+    pthread_t thread_cali[NUM_CALI_THREADS];
+    pthread_create(&thread_cali[0], NULL, Calibration_I2C_Thread, (void*) rpiDrone);
+    pthread_create(&thread_cali[1], NULL, Calibration_SPI_Thread, (void*) rpiDrone);
+    for (int i=0; i<NUM_CALI_THREADS; ++i) pthread_join(thread_cali[i],NULL);
+    return 0;
 }
 
 int Drone_End(Drone** rpiDrone)
@@ -154,3 +162,18 @@ static int generateFileName(char* fileName)
 
     return 0;
 }
+
+static void* Calibration_I2C_Thread(void* temp)
+{
+    Drone* rpiDrone = (Drone*) temp;
+    Drone_I2C_Calibration(rpiDrone->i2c);
+    pthread_exit(NULL);
+}
+
+static void* Calibration_SPI_Thread(void* temp)
+{
+    Drone* rpiDrone = (Drone*) temp;
+    Drone_SPI_Calibration(rpiDrone->spi);
+    pthread_exit(NULL);
+}
+

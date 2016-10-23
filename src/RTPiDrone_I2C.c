@@ -8,7 +8,7 @@
 #include <bcm2835.h>
 #include <gsl/gsl_statistics.h>
 #include "RTPiDrone_I2C.h"
-#include "RTPiDrone_I2C_Device.h"
+#include "RTPiDrone_Device.h"
 #include "RTPiDrone_I2C_Device_ADXL345.h"
 #include "RTPiDrone_I2C_Device_L3G4200D.h"
 #include "RTPiDrone_I2C_Device_HMC5883L.h"
@@ -104,26 +104,26 @@ int Drone_I2C_Calibration(Drone_I2C* i2c)
 {
     pthread_t thread_i2c[NUM_CALI_THREADS];
     tempCali accTemp = {i2c, &i2c->accCali, Calibration_Single_ADXL345,
-                        Drone_I2C_Device_GetData((Drone_I2C_Device*)(i2c->ADXL345)), N_SAMPLE_CALIBRATION, 3,
-                        Drone_I2C_Device_GetName((Drone_I2C_Device*)(i2c->ADXL345))
+                        Drone_Device_GetData((Drone_Device*)(i2c->ADXL345)), N_SAMPLE_CALIBRATION, 3,
+                        Drone_Device_GetName((Drone_Device*)(i2c->ADXL345))
                        };
     pthread_create(&thread_i2c[0], NULL, Calibration_Single_Thread, (void*) &accTemp);
 
     tempCali gyrTemp = {i2c, &i2c->gyrCali, Calibration_Single_L3G4200D,
-                        Drone_I2C_Device_GetData((Drone_I2C_Device*)(i2c->L3G4200D)), N_SAMPLE_CALIBRATION, 3,
-                        Drone_I2C_Device_GetName((Drone_I2C_Device*)(i2c->L3G4200D))
+                        Drone_Device_GetData((Drone_Device*)(i2c->L3G4200D)), N_SAMPLE_CALIBRATION, 3,
+                        Drone_Device_GetName((Drone_Device*)(i2c->L3G4200D))
                        };
     pthread_create(&thread_i2c[1], NULL, Calibration_Single_Thread, (void*) &gyrTemp);
 
     tempCali magTemp = {i2c, &i2c->magCali, Calibration_Single_HMC5883L,
-                        Drone_I2C_Device_GetData((Drone_I2C_Device*)(i2c->HMC5883L)), N_SAMPLE_CALIBRATION/2, 3,
-                        Drone_I2C_Device_GetName((Drone_I2C_Device*)(i2c->HMC5883L))
+                        Drone_Device_GetData((Drone_Device*)(i2c->HMC5883L)), N_SAMPLE_CALIBRATION/2, 3,
+                        Drone_Device_GetName((Drone_Device*)(i2c->HMC5883L))
                        };
     pthread_create(&thread_i2c[2], NULL, Calibration_Single_Thread, (void*) &magTemp);
 
     tempCali barTemp = {i2c, &i2c->barCali, Calibration_Single_BMP085,
-                        Drone_I2C_Device_GetData((Drone_I2C_Device*)(i2c->BMP085)), N_SAMPLE_CALIBRATION/10, 1,
-                        Drone_I2C_Device_GetName((Drone_I2C_Device*)(i2c->BMP085))
+                        Drone_Device_GetData((Drone_Device*)(i2c->BMP085)), N_SAMPLE_CALIBRATION/10, 1,
+                        Drone_Device_GetName((Drone_Device*)(i2c->BMP085))
                        };
     pthread_create(&thread_i2c[3], NULL, Calibration_Single_Thread, (void*) &barTemp);
 
@@ -144,23 +144,23 @@ int Drone_I2C_End(Drone_I2C** i2c)
     I2CCaliThread_Delete(&(*i2c)->magCali);
     I2CCaliThread_Delete(&(*i2c)->barCali);
 
-    if (Drone_I2C_Device_End((Drone_I2C_Device*)(*i2c)->PCA9685PW)) {
+    if (Drone_Device_End((Drone_Device*)(*i2c)->PCA9685PW)) {
         perror("End PCA9685PW Error");
         return -1;
     }
-    if (Drone_I2C_Device_End((Drone_I2C_Device*)(*i2c)->ADXL345)) {
+    if (Drone_Device_End((Drone_Device*)(*i2c)->ADXL345)) {
         perror("End ADXL345 Error");
         return -2;
     }
-    if (Drone_I2C_Device_End((Drone_I2C_Device*)(*i2c)->L3G4200D)) {
+    if (Drone_Device_End((Drone_Device*)(*i2c)->L3G4200D)) {
         perror("End L3G4200D Error");
         return -3;
     }
-    if (Drone_I2C_Device_End((Drone_I2C_Device*)(*i2c)->HMC5883L)) {
+    if (Drone_Device_End((Drone_Device*)(*i2c)->HMC5883L)) {
         perror("End HMC5883L Error");
         return -4;
     }
-    if (Drone_I2C_Device_End((Drone_I2C_Device*)(*i2c)->BMP085)) {
+    if (Drone_Device_End((Drone_Device*)(*i2c)->BMP085)) {
         perror("End BMP085 Error");
         return -5;
     }
@@ -181,10 +181,10 @@ static int Calibration_Single_ADXL345(Drone_I2C* i2c)
 {
     while (i2c_stat) sched_yield() ;
     atomic_fetch_add_explicit(&i2c_stat, 1, memory_order_seq_cst);
-    int ret = Drone_I2C_Device_GetRawData((Drone_I2C_Device*)(i2c->ADXL345));
+    int ret = Drone_Device_GetRawData((Drone_Device*)(i2c->ADXL345));
     atomic_fetch_sub(&i2c_stat, 1);
-    ret += Drone_I2C_Device_GetRealData((Drone_I2C_Device*)(i2c->ADXL345));
-    bcm2835_delay(3);
+    ret += Drone_Device_GetRealData((Drone_Device*)(i2c->ADXL345));
+    _usleep(3000);
     return ret;
 }
 
@@ -192,10 +192,10 @@ static int Calibration_Single_L3G4200D(Drone_I2C* i2c)
 {
     while (i2c_stat) sched_yield() ;
     atomic_fetch_add_explicit(&i2c_stat, 1, memory_order_seq_cst);
-    int ret = Drone_I2C_Device_GetRawData((Drone_I2C_Device*)(i2c->L3G4200D));
+    int ret = Drone_Device_GetRawData((Drone_Device*)(i2c->L3G4200D));
     atomic_fetch_sub(&i2c_stat, 1);
-    ret += Drone_I2C_Device_GetRealData((Drone_I2C_Device*)(i2c->L3G4200D));
-    bcm2835_delay(3);
+    ret += Drone_Device_GetRealData((Drone_Device*)(i2c->L3G4200D));
+    _usleep(3000);
     return ret;
 }
 
@@ -203,10 +203,10 @@ static int Calibration_Single_HMC5883L(Drone_I2C* i2c)
 {
     while (i2c_stat) sched_yield() ;
     atomic_fetch_add_explicit(&i2c_stat, 1, memory_order_seq_cst);
-    int ret = Drone_I2C_Device_GetRawData((Drone_I2C_Device*)(i2c->HMC5883L));
+    int ret = Drone_Device_GetRawData((Drone_Device*)(i2c->HMC5883L));
     atomic_fetch_sub(&i2c_stat, 1);
-    ret += Drone_I2C_Device_GetRealData((Drone_I2C_Device*)(i2c->HMC5883L));
-    bcm2835_delay(6);
+    ret += Drone_Device_GetRealData((Drone_Device*)(i2c->HMC5883L));
+    _usleep(6000);
     return ret;
 }
 
@@ -217,9 +217,9 @@ static int Calibration_Single_BMP085(Drone_I2C* i2c)
     for (int i=0; i<2; ++i) {
         while (i2c_stat) sched_yield() ;
         atomic_fetch_add_explicit(&i2c_stat, 1, memory_order_seq_cst);
-        ret = Drone_I2C_Device_GetRawData((Drone_I2C_Device*)(i2c->BMP085));
+        ret = Drone_Device_GetRawData((Drone_Device*)(i2c->BMP085));
         atomic_fetch_sub(&i2c_stat, 1);
-        ret2 = Drone_I2C_Device_GetRealData((Drone_I2C_Device*)(i2c->BMP085));
+        ret2 = Drone_Device_GetRealData((Drone_Device*)(i2c->BMP085));
         _usleep(sleepTime[ret]);
     }
     return ret2;
@@ -260,6 +260,7 @@ static void* Calibration_Single_Thread(void* temp)
             }
             //puts("");
         } else {
+            fprintf(fout, "===========\n");
             --i;
         }
     }

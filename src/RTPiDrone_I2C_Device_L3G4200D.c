@@ -1,5 +1,5 @@
 #include "RTPiDrone_I2C_Device_L3G4200D.h"
-#include "RTPiDrone_I2C_Device.h"
+#include "RTPiDrone_Device.h"
 #include <bcm2835.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,7 +24,7 @@
 #endif
 
 struct Drone_I2C_Device_L3G4200D {
-    Drone_I2C_Device dev;           //!< \private I2C device prototype
+    Drone_Device dev;           //!< \private I2C device prototype
     int16_t rawData[3];             //!< \private Raw data
     float   realData[3];            //!< \private Real data
 };
@@ -36,14 +36,13 @@ static int L3G4200D_convertRawToReal(void*); //!< \private \memberof Drone_I2C_D
 int L3G4200D_setup(Drone_I2C_Device_L3G4200D** L3G4200D)
 {
     *L3G4200D = (Drone_I2C_Device_L3G4200D*) malloc(sizeof(Drone_I2C_Device_L3G4200D));
-    Drone_I2C_Device_Create(&(*L3G4200D)->dev);
-    Drone_I2C_Device_SetName(&(*L3G4200D)->dev, "L3G4200D");
-    Drone_I2C_Device_SetInitFunction(&(*L3G4200D)->dev, L3G4200D_init);
-    Drone_I2C_Device_SetRawFunction(&(*L3G4200D)->dev, L3G4200D_getRawValue);
-    Drone_I2C_Device_SetRealFunction(&(*L3G4200D)->dev, L3G4200D_convertRawToReal);
-    Drone_I2C_Device_SetDataPointer(&(*L3G4200D)->dev, (void*)(*L3G4200D)->realData);
-    return Drone_I2C_Device_Init(&(*L3G4200D)->dev);
-    //Drone_I2C_Device_SetEndFunction(&(*L3G4200D)->dev, L3G4200D_end);
+    Drone_Device_Create(&(*L3G4200D)->dev);
+    Drone_Device_SetName(&(*L3G4200D)->dev, "L3G4200D");
+    Drone_Device_SetInitFunction(&(*L3G4200D)->dev, L3G4200D_init);
+    Drone_Device_SetRawFunction(&(*L3G4200D)->dev, L3G4200D_getRawValue);
+    Drone_Device_SetRealFunction(&(*L3G4200D)->dev, L3G4200D_convertRawToReal);
+    Drone_Device_SetDataPointer(&(*L3G4200D)->dev, (void*)(*L3G4200D)->realData);
+    return Drone_Device_Init(&(*L3G4200D)->dev);
 }
 
 static int L3G4200D_init(void* i2c_dev)
