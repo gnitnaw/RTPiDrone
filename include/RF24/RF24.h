@@ -747,8 +747,6 @@ public:
      * transmit the maximum payload size (32 bytes), no matter how much
      * was sent to write().
      *
-     * @todo Implement variable-sized payloads feature
-     *
      * @param size The number of bytes in the payload
      */
     void setPayloadSize(uint8_t size);
