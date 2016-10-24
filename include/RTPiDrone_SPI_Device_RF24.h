@@ -1,5 +1,7 @@
 #ifndef H_RTPIDRONE_SPI_DEVICE_RF24
 #define H_RTPIDRONE_SPI_DEVICE_RF24
+#include "RTPiDrone_Device.h"
+
 /*!
  * Drone_SPI_Device_RF24 class.
  * \extends Drone_SPI_Device

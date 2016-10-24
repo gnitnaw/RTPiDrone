@@ -20,6 +20,7 @@
 #ifndef  H_DRONE_DEVICE
 #define  H_DRONE_DEVICE
 #include <stdint.h>
+
 /*!
  * Prototype of all I2C Devices.
  */

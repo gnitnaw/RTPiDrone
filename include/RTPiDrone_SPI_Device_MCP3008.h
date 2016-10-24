@@ -1,5 +1,7 @@
 #ifndef H_RTPIDRONE_SPI_DEVICE_MCP3008
 #define H_RTPIDRONE_SPI_DEVICE_MCP3008
+#include "RTPiDrone_Device.h"
+
 /*!
  * Drone_SPI_Device_MCP3008 class.
  * \extends Drone_SPI_Device

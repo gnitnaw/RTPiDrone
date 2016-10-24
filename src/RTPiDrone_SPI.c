@@ -13,6 +13,7 @@
 #define FILENAMESIZE            64
 #define N_SAMPLE_CALIBRATION    2000
 #define NUM_CALI_THREADS        2
+
 typedef struct {
     Drone_SPI*      spi;
     int (*func)(Drone_SPI*);

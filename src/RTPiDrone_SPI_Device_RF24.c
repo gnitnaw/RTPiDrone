@@ -1,5 +1,4 @@
 #include "RTPiDrone_SPI_Device_RF24.h"
-#include "RTPiDrone_Device.h"
 #include "RF24_Interface.h"
 #include <bcm2835.h>
 #include <stdio.h>

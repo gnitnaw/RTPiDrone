@@ -6,7 +6,7 @@
    6  version 2 as published by the Free Software Foundation.
    7  */
 
-#include "spi.h"
+#include "RF24/spi.h"
 
 SPI::SPI()
 {

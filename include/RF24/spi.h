@@ -11,8 +11,7 @@
 #define _SPI_H_INCLUDED
 
 #include <stdio.h>
-#include "bcm2835.h"
-#define millis() bcm2835_millis()
+#include <bcm2835.h>
 
 class SPI
 {
