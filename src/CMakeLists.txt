@@ -15,6 +15,7 @@ set(SPI_ELEMENT
     RTPiDrone_SPI_Device_RF24.c
 )
 set(MAIN_ELEMENT
+    RTPiDrone_I2C_CaliInfo.c
     RTPiDrone_I2C.c
     RTPiDrone_Device.c
     RTPiDrone_SPI.c

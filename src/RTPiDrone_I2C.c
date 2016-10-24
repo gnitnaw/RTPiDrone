@@ -4,6 +4,7 @@
 
 #include "RTPiDrone_I2C.h"
 #include "RTPiDrone_Device.h"
+#include "RTPiDrone_I2C_CaliInfo.h"
 #include "RTPiDrone_I2C_Device_ADXL345.h"
 #include "RTPiDrone_I2C_Device_L3G4200D.h"
 #include "RTPiDrone_I2C_Device_HMC5883L.h"
@@ -29,22 +30,12 @@
 #define NDATA_BMP085            1
 
 /*!
- * \brief Private I2CCaliThread type
- * This structure allow to save the results of calibration.
- */
-typedef struct {
-    int   nItem;
-    float *mean;
-    float *sd;
-} I2CCaliThread;
-
-/*!
  * \brief Private tempCali type
  * This structure allow to generate a single thread for calibration of a single device.
  */
 typedef struct {
     Drone_I2C*      i2c;
-    I2CCaliThread*  cali;
+    Drone_I2C_CaliInfo*  i2c_cali;
     int (*func)(Drone_I2C*);
     float* data;
     int nSample;
@@ -59,8 +50,6 @@ static int Calibration_Single_ADXL345(Drone_I2C*);  //!< \private \memberof Dron
 static int Calibration_Single_HMC5883L(Drone_I2C*); //!< \private \memberof Drone_I2C: Calibration step for HMC5883L
 static int Calibration_Single_BMP085(Drone_I2C*);   //!< \private \memberof Drone_I2C: Calibration step for BMP085
 static void* Calibration_Single_Thread(void*);      //!< \private \memberof tempCali: Template for calibration
-static void I2CCaliThread_Init(I2CCaliThread*);     //!< \private \memberof I2CCaliThread: Initialize I2CCaliThread
-static void I2CCaliThread_Delete(I2CCaliThread*);   //!< \private \memberof I2CCaliThread: Terminate I2CCaliThread
 
 /*!
  * \struct Drone_I2C
@@ -72,10 +61,10 @@ struct Drone_I2C {
     Drone_I2C_Device_HMC5883L*      HMC5883L;   //!< \private HMC5883L : 3-axis digital compass
     Drone_I2C_Device_BMP085*        BMP085;     //!< \private BMP085 : Barometric Pressure/Temperature/Altitude
     Drone_I2C_Device_PCA9685PW*     PCA9685PW;  //!< \private PCA9685PW : Pulse Width Modulator
-    I2CCaliThread   accCali;                    //!< \private Parameters for the calibration of ADXL345
-    I2CCaliThread   gyrCali;                    //!< \private Parameters for the calibration of L3G4200D
-    I2CCaliThread   magCali;                    //!< \private Parameters for the calibration of HMC5883L
-    I2CCaliThread   barCali;                    //!< \private Parameters for the calibration of BMP085
+    Drone_I2C_CaliInfo*             accCali;    //!< \private Parameters for the calibration of ADXL345
+    Drone_I2C_CaliInfo*             gyrCali;    //!< \private Parameters for the calibration of L3G4200D
+    Drone_I2C_CaliInfo*             magCali;    //!< \private Parameters for the calibration of HMC5883L
+    Drone_I2C_CaliInfo*             barCali;    //!< \private Parameters for the calibration of BMP085
 };
 
 int Drone_I2C_Init(Drone_I2C** i2c)
@@ -104,39 +93,36 @@ int Drone_I2C_Init(Drone_I2C** i2c)
         return -5;
     }
 
-    (*i2c)->accCali.nItem = NDATA_ADXL345;
-    (*i2c)->gyrCali.nItem = NDATA_L3G4200D;
-    (*i2c)->magCali.nItem = NDATA_HMC5883L;
-    (*i2c)->barCali.nItem = NDATA_BMP085;
-    I2CCaliThread_Init(&(*i2c)->accCali);
-    I2CCaliThread_Init(&(*i2c)->gyrCali);
-    I2CCaliThread_Init(&(*i2c)->magCali);
-    I2CCaliThread_Init(&(*i2c)->barCali);
+    Drone_I2C_Cali_Init(&(*i2c)->accCali, NDATA_ADXL345);
+    Drone_I2C_Cali_Init(&(*i2c)->gyrCali, NDATA_L3G4200D);
+    Drone_I2C_Cali_Init(&(*i2c)->magCali, NDATA_HMC5883L);
+    Drone_I2C_Cali_Init(&(*i2c)->barCali, NDATA_BMP085);
+
     return 0;
 }
 
 int Drone_I2C_Calibration(Drone_I2C* i2c)
 {
     pthread_t thread_i2c[NUM_CALI_THREADS];
-    tempCali accTemp = {i2c, &i2c->accCali, Calibration_Single_ADXL345,
+    tempCali accTemp = {i2c, i2c->accCali, Calibration_Single_ADXL345,
                         Drone_Device_GetData((Drone_Device*)(i2c->ADXL345)), N_SAMPLE_CALIBRATION, 3,
                         Drone_Device_GetName((Drone_Device*)(i2c->ADXL345))
                        };
     pthread_create(&thread_i2c[0], NULL, Calibration_Single_Thread, (void*) &accTemp);
 
-    tempCali gyrTemp = {i2c, &i2c->gyrCali, Calibration_Single_L3G4200D,
+    tempCali gyrTemp = {i2c, i2c->gyrCali, Calibration_Single_L3G4200D,
                         Drone_Device_GetData((Drone_Device*)(i2c->L3G4200D)), N_SAMPLE_CALIBRATION, 3,
                         Drone_Device_GetName((Drone_Device*)(i2c->L3G4200D))
                        };
     pthread_create(&thread_i2c[1], NULL, Calibration_Single_Thread, (void*) &gyrTemp);
 
-    tempCali magTemp = {i2c, &i2c->magCali, Calibration_Single_HMC5883L,
+    tempCali magTemp = {i2c, i2c->magCali, Calibration_Single_HMC5883L,
                         Drone_Device_GetData((Drone_Device*)(i2c->HMC5883L)), N_SAMPLE_CALIBRATION/2, 3,
                         Drone_Device_GetName((Drone_Device*)(i2c->HMC5883L))
                        };
     pthread_create(&thread_i2c[2], NULL, Calibration_Single_Thread, (void*) &magTemp);
 
-    tempCali barTemp = {i2c, &i2c->barCali, Calibration_Single_BMP085,
+    tempCali barTemp = {i2c, i2c->barCali, Calibration_Single_BMP085,
                         Drone_Device_GetData((Drone_Device*)(i2c->BMP085)), N_SAMPLE_CALIBRATION/10, 1,
                         Drone_Device_GetName((Drone_Device*)(i2c->BMP085))
                        };
@@ -180,16 +166,17 @@ int Drone_I2C_End(Drone_I2C** i2c)
     bcm2835_i2c_end();
 
     // Clean the file structures
-    I2CCaliThread_Delete(&(*i2c)->accCali);
-    I2CCaliThread_Delete(&(*i2c)->gyrCali);
-    I2CCaliThread_Delete(&(*i2c)->magCali);
-    I2CCaliThread_Delete(&(*i2c)->barCali);
+    Drone_I2C_Cali_Delete(&(*i2c)->accCali);
+    Drone_I2C_Cali_Delete(&(*i2c)->gyrCali);
+    Drone_I2C_Cali_Delete(&(*i2c)->magCali);
+    Drone_I2C_Cali_Delete(&(*i2c)->barCali);
 
     ADXL345_delete(&(*i2c)->ADXL345);
     L3G4200D_delete(&(*i2c)->L3G4200D);
     HMC5883L_delete(&(*i2c)->HMC5883L);
     BMP085_delete(&(*i2c)->BMP085);
     PCA9685PW_delete(&(*i2c)->PCA9685PW);
+
     free(*i2c);
     *i2c = NULL;
     return 0;
@@ -246,7 +233,7 @@ static int Calibration_Single_BMP085(Drone_I2C* i2c)
 static void* Calibration_Single_Thread(void* temp)
 {
     Drone_I2C* i2c = ((tempCali*)temp)->i2c;
-    I2CCaliThread* cali = ((tempCali*)temp)->cali;
+    Drone_I2C_CaliInfo* cali = ((tempCali*)temp)->i2c_cali;
     int (*f)(Drone_I2C*) = ((tempCali*)temp)->func;
     int nSample = ((tempCali*)temp)->nSample;
     int nData = ((tempCali*)temp)->nData;
@@ -284,21 +271,23 @@ static void* Calibration_Single_Thread(void* temp)
     }
 
     fclose(fout);
+    float* mean = Drone_I2C_Cali_getMean(cali);
+    float* sd = Drone_I2C_Cali_getSD(cali);
     for (int i=0; i<nData; ++i) {
-        cali->mean[i] = (float) gsl_stats_float_mean(&vCali[i][0], 1, nSample);
-        cali->sd[i] = (float) gsl_stats_float_sd(&vCali[i][0], 1, nSample);
+        mean[i] = (float) gsl_stats_float_mean(&vCali[i][0], 1, nSample);
+        sd[i] = (float) gsl_stats_float_sd(&vCali[i][0], 1, nSample);
         free(vCali[i]);
     }
 
     printf("Mean :");
     for (int i=0; i<nData; ++i) {
-        printf("%f, ", cali->mean[i]);
+        printf("%f, ", mean[i]);
     }
     puts("");
 
     printf("SD :");
     for (int i=0; i<nData; ++i) {
-        printf("%f, ", cali->sd[i]);
+        printf("%f, ", sd[i]);
     }
     puts("");
 
@@ -306,14 +295,3 @@ static void* Calibration_Single_Thread(void* temp)
     pthread_exit(NULL);
 }
 
-static void I2CCaliThread_Init(I2CCaliThread* cali)
-{
-    cali->mean = calloc(cali->nItem, sizeof(float));
-    cali->sd = calloc(cali->nItem, sizeof(float));
-}
-
-static void I2CCaliThread_Delete(I2CCaliThread* cali)
-{
-    free(cali->mean);
-    free(cali->sd);
-}
