@@ -49,6 +49,9 @@ static void* Calibration_Single_Thread(void*);      //!< \private \memberof temp
 static void I2CCaliThread_Init(I2CCaliThread*);     //!< \private \memberof I2CCaliThread: Initialize I2CCaliThread
 static void I2CCaliThread_Delete(I2CCaliThread*);   //!< \private \memberof I2CCaliThread: Terminate I2CCaliThread
 
+/*!
+ * Drone_I2C object class.
+ */
 struct Drone_I2C {
     Drone_I2C_Device_ADXL345*       ADXL345;    //!< \private ADXL345 : 3-axis accelerometer
     Drone_I2C_Device_L3G4200D*      L3G4200D;   //!< \private L3G4200D : 3-axis gyroscope

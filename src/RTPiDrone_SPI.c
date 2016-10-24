@@ -16,7 +16,7 @@
 
 typedef struct {
     Drone_SPI*      spi;
-    int (*func)(Drone_SPI*);
+    int (*func_cali)(Drone_SPI*);
     int nSample;
     char* name;
 } tempCali;
@@ -29,6 +29,9 @@ static int Calibration_Single_MCP3008(Drone_SPI*); //!< \private \memberof Drone
 static int Calibration_Single_RF24(Drone_SPI*); //!< \private \memberof Drone_SPI: Calibration step for RF24
 static void* Calibration_Single_Thread(void*);
 
+/*!
+ * Drone_SPI object class.
+ */
 struct Drone_SPI {
     Drone_SPI_Device_RF24*     RF24;
     Drone_SPI_Device_MCP3008*  MCP3008;
@@ -117,7 +120,7 @@ static int Calibration_Single_RF24(Drone_SPI* spi)
 static void* Calibration_Single_Thread(void* temp)
 {
     Drone_SPI* spi = ((tempCali*)temp)->spi;
-    int (*f)(Drone_SPI*) = ((tempCali*)temp)->func;
+    int (*f)(Drone_SPI*) = ((tempCali*)temp)->func_cali;
     int nSample = ((tempCali*)temp)->nSample;
     char* name = ((tempCali*)temp)->name;
     char fileName[FILENAMESIZE];
