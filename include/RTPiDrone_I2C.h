@@ -1,9 +1,3 @@
-/**
- *   \file RTPiDrone_I2C.h
- *   Copyright 2016 Wan-Ting CHEN (wanting@gmail.com)
- */
-
-
 #ifndef  H_DRONE_I2C
 #define  H_DRONE_I2C
 

@@ -1,4 +1,5 @@
 #include "RTPiDrone_SPI_Device_MCP3008.h"
+#include "RTPiDrone_Device.h"
 #include <bcm2835.h>
 #include <stdio.h>
 #include <stdlib.h>
