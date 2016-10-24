@@ -86,7 +86,7 @@ int Drone_Device_End(Drone_Device*);
  * return the location of real data
  * \public \memberof Drone_Device
  */
-float* Drone_Device_GetData(Drone_Device*);
+void* Drone_Device_GetData(Drone_Device*);
 
 /*!
  * return the name of device

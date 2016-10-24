@@ -31,8 +31,8 @@
 #endif
 
 struct Drone_I2C_Device_PCA9685PW {
-    Drone_Device dev;           //!< \private I2C device prototype
-    uint32_t PWM_CHANNEL[PCA9685PW_NMOTOR];        //!< \private PWM Value
+    Drone_Device dev;                                                           //!< \private I2C device prototype
+    uint32_t PWM_CHANNEL[PCA9685PW_NMOTOR];                                     //!< \private PWM Value
 };
 
 static int PCA9685PW_init(void*);
@@ -68,7 +68,7 @@ void PCA9685PW_delete(Drone_I2C_Device_PCA9685PW** PCA9685PW)
 int PCA9685PW_write(Drone_I2C_Device_PCA9685PW* PCA9685PW, const float* power)
 {
     for (int i=0; i<PCA9685PW_NMOTOR; ++i) {
-        PCA9685PW->PWM_CHANNEL[i] = floor(PCA9685PW_POWER_ZERO * power[i]);
+        if (power[i]<1.0f) PCA9685PW->PWM_CHANNEL[i] = floor(PCA9685PW_POWER_ZERO * (1.0f + power[i]));
     }
     return pca9685PWMWriteMultiOff(nChannel, PCA9685PW->PWM_CHANNEL);
 }

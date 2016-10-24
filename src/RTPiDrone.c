@@ -91,6 +91,7 @@ int Drone_Init(Drone** rpiDrone)
 void Drone_Start(Drone* rpiDrone)
 {
     puts("Start Test");
+    Drone_I2C_Start(rpiDrone->i2c);
 }
 
 int Drone_Calibration(Drone* rpiDrone)

@@ -43,13 +43,16 @@ typedef struct {
     char* name;
 } tempCali;
 
-static atomic_int i2c_stat = 0;                   //!< \private Drone_I2C: Indicate if I2C is occupied
-static struct timespec tp1, tp2;                    //!< \private Drone_I2C: Internal Timer
+static atomic_int i2c_stat = 0;                     //!< \private Drone_I2C: Indicate if I2C is occupied
 static int Calibration_Single_L3G4200D(Drone_I2C*); //!< \private \memberof Drone_I2C: Calibration step for L3G4200D
 static int Calibration_Single_ADXL345(Drone_I2C*);  //!< \private \memberof Drone_I2C: Calibration step for ADXL345
 static int Calibration_Single_HMC5883L(Drone_I2C*); //!< \private \memberof Drone_I2C: Calibration step for HMC5883L
 static int Calibration_Single_BMP085(Drone_I2C*);   //!< \private \memberof Drone_I2C: Calibration step for BMP085
 static void* Calibration_Single_Thread(void*);      //!< \private \memberof tempCali: Template for calibration
+static int GetData_ADXL345(Drone_I2C*);             //!< \private \memberof Drone_I2C: take data from ADXL345
+static int GetData_L3G4200D(Drone_I2C*);            //!< \private \memberof Drone_I2C: take data from L3G4200D
+static int GetData_HMC5883L(Drone_I2C*);            //!< \private \memberof Drone_I2C: take data from HMC5883L
+static int GetData_BMP085(Drone_I2C*);              //!< \private \memberof Drone_I2C: take data from BMP085
 
 /*!
  * \struct Drone_I2C
@@ -127,6 +130,16 @@ int Drone_I2C_Calibration(Drone_I2C* i2c)
 void Drone_I2C_Start(Drone_I2C* i2c)
 {
     puts("I2C Start");
+    float testPWM[] = {0.1f, 0.2f, 0.3f, 0.4f};
+    uint32_t* data = (uint32_t*) Drone_Device_GetData((Drone_Device*)(i2c->PCA9685PW));
+    for (int i=0; i<10; ++i) {
+        for (int j=0; j<4; ++j) testPWM[j] += 0.05;
+        PCA9685PW_write(i2c->PCA9685PW, testPWM);
+        Drone_Device_GetRealData((Drone_Device*)(i2c->PCA9685PW));
+        printf("%d th : ", i);
+        for (int j=0; j<4; ++j) printf("%u, ", data[j]);
+        puts("");
+    }
 }
 
 int Drone_I2C_End(Drone_I2C** i2c)
@@ -166,6 +179,26 @@ int Drone_I2C_End(Drone_I2C** i2c)
     free(*i2c);
     *i2c = NULL;
     return 0;
+}
+
+static int GetData_ADXL345(Drone_I2C* i2c)
+{
+    return Drone_Device_GetRawData((Drone_Device*)(i2c->ADXL345))+Drone_Device_GetRealData((Drone_Device*)(i2c->ADXL345));
+}
+
+static int GetData_L3G4200D(Drone_I2C* i2c)
+{
+    return Drone_Device_GetRawData((Drone_Device*)(i2c->L3G4200D))+Drone_Device_GetRealData((Drone_Device*)(i2c->L3G4200D));
+}
+
+static int GetData_HMC5883L(Drone_I2C* i2c)
+{
+    return Drone_Device_GetRawData((Drone_Device*)(i2c->HMC5883L))+Drone_Device_GetRealData((Drone_Device*)(i2c->HMC5883L));
+}
+
+static int GetData_BMP085(Drone_I2C* i2c)
+{
+    return Drone_Device_GetRawData((Drone_Device*)(i2c->BMP085))+Drone_Device_GetRealData((Drone_Device*)(i2c->BMP085));
 }
 
 static int Calibration_Single_ADXL345(Drone_I2C* i2c)
@@ -220,6 +253,7 @@ static void* Calibration_Single_Thread(void* temp)
 {
     Drone_I2C* i2c = ((tempCali*)temp)->i2c;
     Drone_I2C_CaliInfo* cali = ((tempCali*)temp)->i2c_cali;
+    struct timespec tp1, tp2;
     int (*f)(Drone_I2C*) = ((tempCali*)temp)->func;
     int nSample = ((tempCali*)temp)->nSample;
     int nData = ((tempCali*)temp)->nData;

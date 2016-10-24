@@ -84,7 +84,7 @@ int Drone_Device_End(Drone_Device* dev)
     return dev->end_func(dev);
 }
 
-float* Drone_Device_GetData(Drone_Device* dev)
+void* Drone_Device_GetData(Drone_Device* dev)
 {
     return dev->getData;
 }

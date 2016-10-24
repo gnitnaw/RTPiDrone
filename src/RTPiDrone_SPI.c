@@ -32,7 +32,6 @@ typedef struct {
 } tempCali;
 
 static atomic_int spi_stat = 0;                   //!< \private \memberof Drone_SPI: Indicate if SPI is occupied
-static struct timespec tp1, tp2;                    //!< \private \memberof Drone_SPI: Internal Timer
 static int Calibration_Single_MCP3008(Drone_SPI*);  //!< \private \memberof Drone_SPI: Calibration step for MCP3008
 static int Calibration_Single_RF24(Drone_SPI*);     //!< \private \memberof Drone_SPI: Calibration step for RF24
 static void* Calibration_Single_Thread(void*);      //!< \private \memberof Drone_SPI: Calibration with single thread
@@ -127,6 +126,7 @@ static int Calibration_Single_RF24(Drone_SPI* spi)
 
 static void* Calibration_Single_Thread(void* temp)
 {
+    struct timespec tp1, tp2;
     Drone_SPI* spi = ((tempCali*)temp)->spi;
     int (*f)(Drone_SPI*) = ((tempCali*)temp)->func_cali;
     int nSample = ((tempCali*)temp)->nSample;
