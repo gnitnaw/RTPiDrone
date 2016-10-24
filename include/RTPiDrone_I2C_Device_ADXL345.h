@@ -1,6 +1,6 @@
 #ifndef H_RTPIDRONE_I2C_DEVICE_ADXL345
 #define H_RTPIDRONE_I2C_DEVICE_ADXL345
-
+#include "RTPiDrone_I2C_CaliInfo.h"
 /*!
  * Drone_I2C_Device_ADXL345 class.
  * \extends Drone_I2C_Device
@@ -19,4 +19,9 @@ int ADXL345_setup(Drone_I2C_Device_ADXL345**);
  */
 void ADXL345_delete(Drone_I2C_Device_ADXL345**);
 
+/*!
+ * Get calibration info.
+ * \public \memberof Drone_I2C_Device_ADXL345
+ */
+Drone_I2C_CaliInfo* ADXL345_getCaliInfo(Drone_I2C_Device_ADXL345*);
 #endif

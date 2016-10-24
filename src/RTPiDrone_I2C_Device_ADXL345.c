@@ -24,11 +24,17 @@ struct Drone_I2C_Device_ADXL345 {
     Drone_Device dev;           //!< \private I2C device prototype
     int16_t rawData[3];             //!< \private Raw data
     float   realData[3];            //!< \private Real data
+    Drone_I2C_CaliInfo* cali;       //!< \private Calibration information
 };
 
 static int ADXL345_init(void*);        //!< \private \memberof Drone_I2C_Device_ADXL345 function : Initialization of ADXL345
 static int ADXL345_getRawValue(void*); //!< \private \memberof Drone_I2C_Device_ADXL345 function : Get raw value from ADXL345
 static int ADXL345_convertRawToReal(void*); //!< \private \memberof Drone_I2C_Device_ADXL345 function : Convert to real value
+
+Drone_I2C_CaliInfo* ADXL345_getCaliInfo(Drone_I2C_Device_ADXL345* ADXL345)
+{
+    return ADXL345->cali;
+}
 
 int ADXL345_setup(Drone_I2C_Device_ADXL345** axdl345)
 {
@@ -39,6 +45,7 @@ int ADXL345_setup(Drone_I2C_Device_ADXL345** axdl345)
     Drone_Device_SetRawFunction(&(*axdl345)->dev, ADXL345_getRawValue);
     Drone_Device_SetRealFunction(&(*axdl345)->dev, ADXL345_convertRawToReal);
     Drone_Device_SetDataPointer(&(*axdl345)->dev, (void*)(*axdl345)->realData);
+    Drone_I2C_Cali_Init(&(*axdl345)->cali, 3);
     return Drone_Device_Init(&(*axdl345)->dev);
 }
 
@@ -143,6 +150,7 @@ static int ADXL345_convertRawToReal(void* i2c_dev)
 
 void ADXL345_delete(Drone_I2C_Device_ADXL345** axdl345)
 {
+    Drone_I2C_Cali_Delete(&(*axdl345)->cali);
     free(*axdl345);
     *axdl345 = NULL;
 }

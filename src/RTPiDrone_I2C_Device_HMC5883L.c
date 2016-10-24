@@ -1,5 +1,6 @@
 #include "RTPiDrone_I2C_Device_HMC5883L.h"
 #include "RTPiDrone_Device.h"
+#include "RTPiDrone_I2C_CaliInfo.h"
 #include "Common.h"
 #include <bcm2835.h>
 #include <stdio.h>
@@ -22,12 +23,18 @@ struct Drone_I2C_Device_HMC5883L {
     float   realData[3];            //!< \private Real data
     float   mag_offset[3];          //!< \private The offset due to the structure of drone
     float   mag_gain[3];            //!< \private The gain in three axis
+    Drone_I2C_CaliInfo* cali;       //!< \private Calibration information
 };
 
 static int HMC5883L_init(void*);        //!< \private \memberof Drone_I2C_Device_HMC5883L function : Initialization of HMC5883L
 static int HMC5883L_getRawValue(void*); //!< \private \memberof Drone_I2C_Device_HMC5883L function : Get raw value from HMC5883L
 static int HMC5883L_convertRawToReal(void*); //!< \private \memberof Drone_I2C_Device_HMC5883L function : Convert to real value
 static int HMC5883L_singleMeasurement(void);//!< \private \memberof Drone_I2C_Device_HMC5883L function:Trigger single measurement
+
+Drone_I2C_CaliInfo* HMC5883L_getCaliInfo(Drone_I2C_Device_HMC5883L* HMC5883L)
+{
+    return HMC5883L->cali;
+}
 
 int HMC5883L_setup(Drone_I2C_Device_HMC5883L** HMC5883L)
 {
@@ -38,6 +45,7 @@ int HMC5883L_setup(Drone_I2C_Device_HMC5883L** HMC5883L)
     Drone_Device_SetRawFunction(&(*HMC5883L)->dev, HMC5883L_getRawValue);
     Drone_Device_SetRealFunction(&(*HMC5883L)->dev, HMC5883L_convertRawToReal);
     Drone_Device_SetDataPointer(&(*HMC5883L)->dev, (void*)(*HMC5883L)->realData);
+    Drone_I2C_Cali_Init(&(*HMC5883L)->cali, 3);
     (*HMC5883L)->mag_offset[0] = -276.919983;
     (*HMC5883L)->mag_offset[1] = -137.080002;
     (*HMC5883L)->mag_offset[2] = -82.799988;
@@ -137,6 +145,7 @@ static int HMC5883L_convertRawToReal(void* i2c_dev)
 
 void HMC5883L_delete(Drone_I2C_Device_HMC5883L** HMC5883L)
 {
+    Drone_I2C_Cali_Delete(&(*HMC5883L)->cali);
     free(*HMC5883L);
     *HMC5883L = NULL;
 }

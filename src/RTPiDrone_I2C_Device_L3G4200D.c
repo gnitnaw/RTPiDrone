@@ -1,5 +1,6 @@
 #include "RTPiDrone_I2C_Device_L3G4200D.h"
 #include "RTPiDrone_Device.h"
+#include "RTPiDrone_I2C_CaliInfo.h"
 #include <bcm2835.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,11 +28,17 @@ struct Drone_I2C_Device_L3G4200D {
     Drone_Device dev;           //!< \private I2C device prototype
     int16_t rawData[3];             //!< \private Raw data
     float   realData[3];            //!< \private Real data
+    Drone_I2C_CaliInfo* cali;       //!< \private Calibration information
 };
 
 static int L3G4200D_init(void*);        //!< \private \memberof Drone_I2C_Device_L3G4200D function : Initialization of L3G4200D
 static int L3G4200D_getRawValue(void*); //!< \private \memberof Drone_I2C_Device_L3G4200D function : Get raw value from L3G4200D
 static int L3G4200D_convertRawToReal(void*); //!< \private \memberof Drone_I2C_Device_L3G4200D function : Convert to real value
+
+Drone_I2C_CaliInfo* L3G4200D_getCaliInfo(Drone_I2C_Device_L3G4200D* L3G4200D)
+{
+    return L3G4200D->cali;
+}
 
 int L3G4200D_setup(Drone_I2C_Device_L3G4200D** L3G4200D)
 {
@@ -42,6 +49,7 @@ int L3G4200D_setup(Drone_I2C_Device_L3G4200D** L3G4200D)
     Drone_Device_SetRawFunction(&(*L3G4200D)->dev, L3G4200D_getRawValue);
     Drone_Device_SetRealFunction(&(*L3G4200D)->dev, L3G4200D_convertRawToReal);
     Drone_Device_SetDataPointer(&(*L3G4200D)->dev, (void*)(*L3G4200D)->realData);
+    Drone_I2C_Cali_Init(&(*L3G4200D)->cali, 3);
     return Drone_Device_Init(&(*L3G4200D)->dev);
 }
 
@@ -145,6 +153,7 @@ static int L3G4200D_convertRawToReal(void* i2c_dev)
 
 void L3G4200D_delete(Drone_I2C_Device_L3G4200D** L3G4200D)
 {
+    Drone_I2C_Cali_Delete(&(*L3G4200D)->cali);
     free(*L3G4200D);
     *L3G4200D = NULL;
 }

@@ -1,5 +1,6 @@
 #include "RTPiDrone_I2C_Device_BMP085.h"
 #include "RTPiDrone_Device.h"
+#include "RTPiDrone_I2C_CaliInfo.h"
 #include "Common.h"
 #include <bcm2835.h>
 #include <stdio.h>
@@ -39,6 +40,7 @@ struct Drone_I2C_Device_BMP085 {
     long   RP;                      //!< \private Real Pressure
     float   altitude;               //!< \private Altitude
     BMP085_Parameters Para_BMP085;  //!< \private Parameter of BMP085
+    Drone_I2C_CaliInfo* cali;       //!< \private Calibration information
 };
 
 static int BMP085_init(void*);        //!< \private \memberof Drone_I2C_Device_BMP085 function : Initialization of BMP085
@@ -49,6 +51,11 @@ static int BMP085_getRawPressure(long*);
 static int BMP085_getRawValue(void*);
 static int BMP085_convertRawToReal(void*);
 
+Drone_I2C_CaliInfo* BMP085_getCaliInfo(Drone_I2C_Device_BMP085* BMP085)
+{
+    return BMP085->cali;
+}
+
 int BMP085_setup(Drone_I2C_Device_BMP085** BMP085)
 {
     *BMP085 = (Drone_I2C_Device_BMP085*) malloc(sizeof(Drone_I2C_Device_BMP085));
@@ -58,6 +65,7 @@ int BMP085_setup(Drone_I2C_Device_BMP085** BMP085)
     Drone_Device_SetRawFunction(&(*BMP085)->dev, BMP085_getRawValue);
     Drone_Device_SetRealFunction(&(*BMP085)->dev, BMP085_convertRawToReal);
     Drone_Device_SetDataPointer(&(*BMP085)->dev, (void*)&(*BMP085)->altitude);
+    Drone_I2C_Cali_Init(&(*BMP085)->cali, 1);
     return Drone_Device_Init(&(*BMP085)->dev);
 }
 
@@ -193,6 +201,7 @@ static int BMP085_convertRawToReal(void* i2c_dev)
 
 void BMP085_delete(Drone_I2C_Device_BMP085** BMP085)
 {
+    Drone_I2C_Cali_Delete(&(*BMP085)->cali);
     free(*BMP085);
     *BMP085 = NULL;
 }
