@@ -1,8 +1,13 @@
+/*! \file RTPiDrone_SPI.c
+    \brief Manage all of the SPI devices
+ */
+
 #include "Common.h"
 #include "RTPiDrone_SPI.h"
 #include "RTPiDrone_Device.h"
 #include "RTPiDrone_SPI_Device_MCP3008.h"
 #include "RTPiDrone_SPI_Device_RF24.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,10 +15,15 @@
 #include <time.h>
 #include <sched.h>
 #include <pthread.h>
-#define FILENAMESIZE            64
-#define N_SAMPLE_CALIBRATION    2000
-#define NUM_CALI_THREADS        2
 
+#define FILENAMESIZE            64                      //!< Length of file name
+#define N_SAMPLE_CALIBRATION    2000                    //!< Max number of sample taken during the calibration
+#define NUM_CALI_THREADS        2                       //!< Number of threads created in the calibration
+
+/*!
+ * \brief \private tempCali type
+ * This structure allow to generate a single thread for calibration of a single device.
+ */
 typedef struct {
     Drone_SPI*      spi;
     int (*func_cali)(Drone_SPI*);
@@ -21,20 +31,18 @@ typedef struct {
     char* name;
 } tempCali;
 
-
-static _Atomic(int) spi_stat = 0;           //!< Indicate if SPI is occupied
-static struct timespec tp1, tp2;
-
-static int Calibration_Single_MCP3008(Drone_SPI*); //!< \private \memberof Drone_SPI: Calibration step for MCP3008
-static int Calibration_Single_RF24(Drone_SPI*); //!< \private \memberof Drone_SPI: Calibration step for RF24
-static void* Calibration_Single_Thread(void*);
+static atomic_int spi_stat = 0;                   //!< \private \memberof Drone_SPI: Indicate if SPI is occupied
+static struct timespec tp1, tp2;                    //!< \private \memberof Drone_SPI: Internal Timer
+static int Calibration_Single_MCP3008(Drone_SPI*);  //!< \private \memberof Drone_SPI: Calibration step for MCP3008
+static int Calibration_Single_RF24(Drone_SPI*);     //!< \private \memberof Drone_SPI: Calibration step for RF24
+static void* Calibration_Single_Thread(void*);      //!< \private \memberof Drone_SPI: Calibration with single thread
 
 /*!
  * Drone_SPI object class.
  */
 struct Drone_SPI {
-    Drone_SPI_Device_RF24*     RF24;
-    Drone_SPI_Device_MCP3008*  MCP3008;
+    Drone_SPI_Device_RF24*     RF24;                //!< \private RF24
+    Drone_SPI_Device_MCP3008*  MCP3008;             //!< \private MCP3008
 };
 
 int Drone_SPI_Init(Drone_SPI** spi)

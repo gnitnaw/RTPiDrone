@@ -8,30 +8,30 @@
 typedef struct Drone_I2C    Drone_I2C;
 
 /*!
- * Initialize all I2C devices
+ * \brief Initialize all I2C devices
  * \public \memberof Drone_I2C
  */
 int Drone_I2C_Init(Drone_I2C**);
 
 
 /*!
- * Calibrate all I2C devices
+ * \brief Calibrate all I2C devices
  * \public \memberof Drone_I2C
  */
 int Drone_I2C_Calibration(Drone_I2C*);
 
 
 /*!
- * Start all I2C devices
+ * \brief Start all I2C devices
  * \public \memberof Drone_I2C
  */
 void Drone_I2C_Start(Drone_I2C*);
 
 
 /*!
- * Switch off all I2C devices
+ * \brief Switch off all I2C devices
  * \public \memberof Drone_I2C
  */
 int Drone_I2C_End(Drone_I2C**);
 
-#endif
+#endif /* DRONE_I2C */

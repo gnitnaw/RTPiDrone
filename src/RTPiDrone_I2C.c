@@ -1,3 +1,15 @@
+/*! \file RTPiDrone_I2C.c
+    \brief Manage all of the I2C devices
+ */
+
+#include "RTPiDrone_I2C.h"
+#include "RTPiDrone_Device.h"
+#include "RTPiDrone_I2C_Device_ADXL345.h"
+#include "RTPiDrone_I2C_Device_L3G4200D.h"
+#include "RTPiDrone_I2C_Device_HMC5883L.h"
+#include "RTPiDrone_I2C_Device_BMP085.h"
+#include "RTPiDrone_I2C_Device_PCA9685PW.h"
+#include "Common.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,14 +19,7 @@
 #include <pthread.h>
 #include <bcm2835.h>
 #include <gsl/gsl_statistics.h>
-#include "RTPiDrone_I2C.h"
-#include "RTPiDrone_Device.h"
-#include "RTPiDrone_I2C_Device_ADXL345.h"
-#include "RTPiDrone_I2C_Device_L3G4200D.h"
-#include "RTPiDrone_I2C_Device_HMC5883L.h"
-#include "RTPiDrone_I2C_Device_BMP085.h"
-#include "RTPiDrone_I2C_Device_PCA9685PW.h"
-#include "Common.h"
+
 #define FILENAMESIZE            64
 #define N_SAMPLE_CALIBRATION    2000
 #define NUM_CALI_THREADS        4
@@ -23,12 +28,20 @@
 #define NDATA_HMC5883L          3
 #define NDATA_BMP085            1
 
+/*!
+ * \brief Private I2CCaliThread type
+ * This structure allow to save the results of calibration.
+ */
 typedef struct {
     int   nItem;
     float *mean;
     float *sd;
 } I2CCaliThread;
 
+/*!
+ * \brief Private tempCali type
+ * This structure allow to generate a single thread for calibration of a single device.
+ */
 typedef struct {
     Drone_I2C*      i2c;
     I2CCaliThread*  cali;
@@ -39,8 +52,8 @@ typedef struct {
     char* name;
 } tempCali;
 
-static _Atomic(int) i2c_stat = 0;           //!< Indicate if I2C is occupied
-static struct timespec tp1, tp2;
+static atomic_int i2c_stat = 0;                   //!< \private Drone_I2C: Indicate if I2C is occupied
+static struct timespec tp1, tp2;                    //!< \private Drone_I2C: Internal Timer
 static int Calibration_Single_L3G4200D(Drone_I2C*); //!< \private \memberof Drone_I2C: Calibration step for L3G4200D
 static int Calibration_Single_ADXL345(Drone_I2C*);  //!< \private \memberof Drone_I2C: Calibration step for ADXL345
 static int Calibration_Single_HMC5883L(Drone_I2C*); //!< \private \memberof Drone_I2C: Calibration step for HMC5883L
@@ -50,7 +63,8 @@ static void I2CCaliThread_Init(I2CCaliThread*);     //!< \private \memberof I2CC
 static void I2CCaliThread_Delete(I2CCaliThread*);   //!< \private \memberof I2CCaliThread: Terminate I2CCaliThread
 
 /*!
- * Drone_I2C object class.
+ * \struct Drone_I2C
+ * \brief Drone_I2C structure
  */
 struct Drone_I2C {
     Drone_I2C_Device_ADXL345*       ADXL345;    //!< \private ADXL345 : 3-axis accelerometer
@@ -62,8 +76,6 @@ struct Drone_I2C {
     I2CCaliThread   gyrCali;                    //!< \private Parameters for the calibration of L3G4200D
     I2CCaliThread   magCali;                    //!< \private Parameters for the calibration of HMC5883L
     I2CCaliThread   barCali;                    //!< \private Parameters for the calibration of BMP085
-    //Drone_I2C_Device* HMC5883L;
-    //Drone_I2C_Device* BMP085;
 };
 
 int Drone_I2C_Init(Drone_I2C** i2c)
@@ -142,10 +154,7 @@ void Drone_I2C_Start(Drone_I2C* i2c)
 
 int Drone_I2C_End(Drone_I2C** i2c)
 {
-    I2CCaliThread_Delete(&(*i2c)->accCali);
-    I2CCaliThread_Delete(&(*i2c)->gyrCali);
-    I2CCaliThread_Delete(&(*i2c)->magCali);
-    I2CCaliThread_Delete(&(*i2c)->barCali);
+    // Shut down the device (if necessary).
 
     if (Drone_Device_End((Drone_Device*)(*i2c)->PCA9685PW)) {
         perror("End PCA9685PW Error");
@@ -168,6 +177,13 @@ int Drone_I2C_End(Drone_I2C** i2c)
         return -5;
     }
 
+    bcm2835_i2c_end();
+
+    // Clean the file structures
+    I2CCaliThread_Delete(&(*i2c)->accCali);
+    I2CCaliThread_Delete(&(*i2c)->gyrCali);
+    I2CCaliThread_Delete(&(*i2c)->magCali);
+    I2CCaliThread_Delete(&(*i2c)->barCali);
 
     ADXL345_delete(&(*i2c)->ADXL345);
     L3G4200D_delete(&(*i2c)->L3G4200D);
@@ -176,7 +192,6 @@ int Drone_I2C_End(Drone_I2C** i2c)
     PCA9685PW_delete(&(*i2c)->PCA9685PW);
     free(*i2c);
     *i2c = NULL;
-    bcm2835_i2c_end();
     return 0;
 }
 

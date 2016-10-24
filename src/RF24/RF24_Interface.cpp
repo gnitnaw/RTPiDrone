@@ -1,22 +1,3 @@
-/*
-    Quadcopter -- RF24_Interface.cpp
-    Copyright 2015 Wan-Ting CHEN (wanting@gmail.com)
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-
 #include <unistd.h>
 #include "RF24/RF24.h"
 #include "RF24_Interface.h"
@@ -54,7 +35,7 @@ void RF24WT_exchangeInfo(unsigned char *in, unsigned char *out)
     }
 }
 
-int RF24WT_receiveInfo(unsigned char *in, size_t ssize)
+int RF24WT_receiveInfo(unsigned char *in, int ssize)
 {
     int iReceive = 0;
     //if ( radio.available() ) {
@@ -68,7 +49,7 @@ int RF24WT_receiveInfo(unsigned char *in, size_t ssize)
     //}
 }
 
-void RF24WT_transmitInfo(unsigned char *out, size_t ssize)
+void RF24WT_transmitInfo(unsigned char *out, int ssize)
 {
     radio.stopListening();
     radio.write(out, sizeof(char)*ssize);

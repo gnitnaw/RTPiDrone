@@ -6,13 +6,11 @@ INPUT                  = @doxy_main_page@ \
                          @PROJECT_SOURCE_DIR@ \
                          @PROJECT_BINARY_DIR@
 FILE_PATTERNS          = *.h \
-                         *.cc \
-			             *.cpp \
-			             *.c
+                         *.c 
 RECURSIVE              = YES
 EXTRACT_ALL            = YES
 EXTRACT_PRIVATE        = YES
 EXTRACT_STATIC         = YES
 EXCLUDE_PATTERNS       = */src/RF24/* \
-			             */include/RF24/*
+			 */include/RF24/*
 USE_MDFILE_AS_MAINPAGE = @doxy_main_page@

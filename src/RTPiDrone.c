@@ -16,6 +16,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "RTPiDrone_I2C.h"
+#include "RTPiDrone_SPI.h"
+#include "RTPiDrone.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,11 +26,14 @@
 #include <time.h>
 #include <pthread.h>
 #include <bcm2835.h>
-#include "RTPiDrone_I2C.h"
-#include "RTPiDrone_SPI.h"
-#include "RTPiDrone.h"
+
 #define LENGTH 128
 #define NUM_CALI_THREADS        2
+
+/*!
+ * \brief \private enum kernelType
+ * Indicate kernel type : vanilla: normal(0), preempt RT(1), xenomai cobalt(2)
+ */
 
 typedef enum {
     vanilla,
@@ -45,12 +51,12 @@ struct Drone {
     Drone_SPI*  spi;                    //!< \private All SPI devices
 };
 
-static void getTimeString(char*);	//!< \private \memberof Drone function : get time string
-static int getKernelString(char*);	//!< \private \memberof Drone function : get kernel string
-static kernelType getKernelType(char*); //!< \private \memberof Drone function : get kernel type
-static int generateFileName(char*);     //!< \private \memberof Drone function : generate logfile name
-static void* Calibration_I2C_Thread(void*);
-static void* Calibration_SPI_Thread(void*);
+static void getTimeString(char*);	            //!< \private \memberof Drone function : get time string
+static int getKernelString(char*);	            //!< \private \memberof Drone function : get kernel string
+static kernelType getKernelType(char*);         //!< \private \memberof Drone function : get kernel type
+static int generateFileName(char*);             //!< \private \memberof Drone function : generate logfile name
+static void* Calibration_I2C_Thread(void*);     //!< \private \memberof Drone function : generate a thread for I2C calibration
+static void* Calibration_SPI_Thread(void*);     //!< \private \memberof Drone function : generate a thread for SPI calibration
 
 /* Initialize the Drone */
 int Drone_Init(Drone** rpiDrone)
