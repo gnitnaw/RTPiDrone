@@ -18,6 +18,8 @@
 
 #include "RTPiDrone_I2C.h"
 #include "RTPiDrone_SPI.h"
+#include "RTPiDrone_AHRS.h"
+#include "RTPiDrone_DataExchange.h"
 #include "RTPiDrone.h"
 #include <string.h>
 #include <stdio.h>
@@ -45,10 +47,12 @@ typedef enum {
  * Drone object class.
  */
 struct Drone {
-    char        logfileName[LENGTH];	//!< \private Name of log file.
-    FILE*       fLog;                   //!< \private File output
-    Drone_I2C*  i2c;                    //!< \private All I2C devices
-    Drone_SPI*  spi;                    //!< \private All SPI devices
+    char                    logfileName[LENGTH];	//!< \private Name of log file.
+    FILE*                   fLog;                   //!< \private File output
+    Drone_I2C*              i2c;                    //!< \private All I2C devices
+    Drone_SPI*              spi;                    //!< \private All SPI devices
+    Drone_AHRS*             ahrs;                   //!< \private attitude and heading reference system (AHRS)
+    Drone_DataExchange*     data;                   //!< \private I2C data needed to be exchanged;
 };
 
 static void getTimeString(char*);	            //!< \private \memberof Drone function : get time string
@@ -85,6 +89,16 @@ int Drone_Init(Drone** rpiDrone)
         return -4;
     }
 
+    if (Drone_DataExchange_Init(&(*rpiDrone)->data)) {
+        perror("Drone Data Init error");
+        return -5;
+    }
+
+    if (Drone_AHRS_Init(&(*rpiDrone)->ahrs)) {
+        perror("Drone AHRS Init error");
+        return -6;
+    }
+
     return 0;
 }
 
@@ -106,6 +120,8 @@ int Drone_Calibration(Drone* rpiDrone)
 int Drone_End(Drone** rpiDrone)
 {
     fclose((*rpiDrone)->fLog);
+    Drone_AHRS_End(&(*rpiDrone)->ahrs);
+    Drone_DataExchange_End(&(*rpiDrone)->data);
 
     if (Drone_I2C_End(&(*rpiDrone)->i2c)) {
         perror("Drone I2C End error");

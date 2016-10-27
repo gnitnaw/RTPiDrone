@@ -1,6 +1,7 @@
 #include "Common.h"
 #include <unistd.h>
 #include <time.h>
+#include <math.h>
 
 void exchange(char *buf, int len)
 {
@@ -22,3 +23,11 @@ void _usleep(int micro)
     nanosleep(&req, (struct timespec *)NULL);
 }
 
+float getSqrt(float* v, int N)
+{
+    float sum = 0.0f;
+    for (int i=0; i<N; ++i) {
+        sum += pow(v[i],2);
+    }
+    return sqrtf(sum);
+}

@@ -49,10 +49,6 @@ static int Calibration_Single_ADXL345(Drone_I2C*);  //!< \private \memberof Dron
 static int Calibration_Single_HMC5883L(Drone_I2C*); //!< \private \memberof Drone_I2C: Calibration step for HMC5883L
 static int Calibration_Single_BMP085(Drone_I2C*);   //!< \private \memberof Drone_I2C: Calibration step for BMP085
 static void* Calibration_Single_Thread(void*);      //!< \private \memberof tempCali: Template for calibration
-static int GetData_ADXL345(Drone_I2C*);             //!< \private \memberof Drone_I2C: take data from ADXL345
-static int GetData_L3G4200D(Drone_I2C*);            //!< \private \memberof Drone_I2C: take data from L3G4200D
-static int GetData_HMC5883L(Drone_I2C*);            //!< \private \memberof Drone_I2C: take data from HMC5883L
-static int GetData_BMP085(Drone_I2C*);              //!< \private \memberof Drone_I2C: take data from BMP085
 
 /*!
  * \struct Drone_I2C
@@ -181,26 +177,6 @@ int Drone_I2C_End(Drone_I2C** i2c)
     return 0;
 }
 
-static int GetData_ADXL345(Drone_I2C* i2c)
-{
-    return Drone_Device_GetRawData((Drone_Device*)(i2c->ADXL345))+Drone_Device_GetRealData((Drone_Device*)(i2c->ADXL345));
-}
-
-static int GetData_L3G4200D(Drone_I2C* i2c)
-{
-    return Drone_Device_GetRawData((Drone_Device*)(i2c->L3G4200D))+Drone_Device_GetRealData((Drone_Device*)(i2c->L3G4200D));
-}
-
-static int GetData_HMC5883L(Drone_I2C* i2c)
-{
-    return Drone_Device_GetRawData((Drone_Device*)(i2c->HMC5883L))+Drone_Device_GetRealData((Drone_Device*)(i2c->HMC5883L));
-}
-
-static int GetData_BMP085(Drone_I2C* i2c)
-{
-    return Drone_Device_GetRawData((Drone_Device*)(i2c->BMP085))+Drone_Device_GetRealData((Drone_Device*)(i2c->BMP085));
-}
-
 static int Calibration_Single_ADXL345(Drone_I2C* i2c)
 {
     while (i2c_stat) sched_yield() ;
@@ -277,12 +253,14 @@ static void* Calibration_Single_Thread(void* temp)
             clock_gettime(CLOCK_REALTIME, &tp2);
             procesTime = tp2.tv_sec*1000000000 + tp2.tv_nsec - startTime;
             deltaT = (float)procesTime/1000000000.0;
-            fprintf(fout, "%f\n", deltaT);
+            fprintf(fout, "%f\t", deltaT);
             //printf("%d th: ", i);
             for (int j=0; j<nData; ++j) {
                 vCali[j][i] = data[j];
+                fprintf(fout, "%f\t", data[j]);
                 //printf("%f, ", data[j]);
             }
+            fprintf(fout, "\n");
             //puts("");
         } else {
             fprintf(fout, "===========\n");

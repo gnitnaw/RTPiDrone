@@ -94,3 +94,9 @@ char* Drone_Device_GetName(Drone_Device* dev)
     return dev->name;
 }
 
+void* Drone_Device_GetRefreshedData(Drone_Device* dev)
+{
+    while (dev->rawdata_func(dev));
+    dev->data_func(dev);
+    return dev->getData;
+}

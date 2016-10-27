@@ -94,4 +94,10 @@ void* Drone_Device_GetData(Drone_Device*);
  */
 char* Drone_Device_GetName(Drone_Device*);
 
+/*!
+ * return the location of real data after refreshing.
+ * \public \memberof Drone_Device
+ */
+void* Drone_Device_GetRefreshedData(Drone_Device*);
+
 #endif
