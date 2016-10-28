@@ -32,15 +32,15 @@ BMP085_Parameters;
 
 static uint64_t BMP085_Trigger_Switch = 0;
 
-struct Drone_I2C_Device_BMP085 {
-    Drone_Device dev;           //!< \private I2C device prototype
-    long UT;                        //!< \private Raw Temperature
-    long UP;                        //!< \private Raw Pressure
-    long   RT;                      //!< \private Real Temperature
-    long   RP;                      //!< \private Real Pressure
-    float   altitude;               //!< \private Altitude
-    BMP085_Parameters Para_BMP085;  //!< \private Parameter of BMP085
-    Drone_I2C_CaliInfo* cali;       //!< \private Calibration information
+struct __attribute__((packed)) Drone_I2C_Device_BMP085 {
+    Drone_Device dev;                //!< \private I2C device prototype
+    long UT;                         //!< \private Raw Temperature
+    long UP;                         //!< \private Raw Pressure
+    float   altitude;                //!< \private Altitude
+    float   RT;                      //!< \private Real Temperature
+    float   RP;                      //!< \private Real Pressure
+    BMP085_Parameters Para_BMP085;   //!< \private Parameter of BMP085
+    Drone_I2C_CaliInfo* cali;        //!< \private Calibration information
 };
 
 static int BMP085_init(void*);        //!< \private \memberof Drone_I2C_Device_BMP085 function : Initialization of BMP085
@@ -65,7 +65,7 @@ int BMP085_setup(Drone_I2C_Device_BMP085** BMP085)
     Drone_Device_SetRawFunction(&(*BMP085)->dev, BMP085_getRawValue);
     Drone_Device_SetRealFunction(&(*BMP085)->dev, BMP085_convertRawToReal);
     Drone_Device_SetDataPointer(&(*BMP085)->dev, (void*)&(*BMP085)->altitude);
-    Drone_I2C_Cali_Init(&(*BMP085)->cali, 1);
+    Drone_I2C_Cali_Init(&(*BMP085)->cali, 3);
     return Drone_Device_Init(&(*BMP085)->dev);
 }
 
@@ -172,7 +172,7 @@ static int BMP085_convertRawToReal(void* i2c_dev)
         X1 = ((*UT - Para_BMP085->AC6) * Para_BMP085->AC5) >>15;
         X2 = (Para_BMP085->MC <<11) / (X1+Para_BMP085->MD);
         B5 = X1+X2;
-        dev->RT = ((B5+8)>>4)/10.;
+        dev->RT = ((float)((B5+8)>>4))/10.0;
     } else {
         long* UP = &dev->UP;
         long B6 = B5 - 4000;
@@ -186,15 +186,16 @@ static int BMP085_convertRawToReal(void* i2c_dev)
         long B4 = (Para_BMP085->AC4 * ((unsigned long)X3 + 32768)) >>15;
         unsigned long B7 = ((unsigned long)(*UP) - B3) * (50000 >> OSRS);
 
-        if (B7 < 0x80000000) dev->RP = (B7 * 2) / B4 ;
-        else dev->RP = (B7 / B4) * 2 ;
+        long RRP;
+        if (B7 < 0x80000000) RRP = (B7 * 2) / B4 ;
+        else RRP = (B7 / B4) * 2 ;
 
-        X1 = ((dev->RP)>>8)*((dev->RP)>>8);
+        X1 = (RRP>>8)*(RRP>>8);
         X1 = (X1 * 3038) >>16;
-        X2 = (-7357 * dev->RP) >> 16;
+        X2 = (-7357 * RRP) >> 16;
 
-        dev->RP += ((X1 + X2 + 3791)>>4);
-        dev->altitude = 44330 * (1 - pow(((float)dev->RP)/P0, 1/5.255) );
+        dev->RP = (float)(((X1 + X2 + 3791)>>4) + RRP);
+        dev->altitude = 44330 * (1 - pow(dev->RP/P0, 1/5.255) );
     }
     return 0;
 }

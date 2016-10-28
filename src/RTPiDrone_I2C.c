@@ -113,7 +113,7 @@ int Drone_I2C_Calibration(Drone_I2C* i2c)
     pthread_create(&thread_i2c[2], NULL, Calibration_Single_Thread, (void*) &magTemp);
 
     tempCali barTemp = {i2c, BMP085_getCaliInfo(i2c->BMP085), Calibration_Single_BMP085,
-                        Drone_Device_GetData((Drone_Device*)(i2c->BMP085)), N_SAMPLE_CALIBRATION/10, 1,
+                        Drone_Device_GetData((Drone_Device*)(i2c->BMP085)), N_SAMPLE_CALIBRATION/10, 3,
                         Drone_Device_GetName((Drone_Device*)(i2c->BMP085))
                        };
     pthread_create(&thread_i2c[3], NULL, Calibration_Single_Thread, (void*) &barTemp);
@@ -175,6 +175,31 @@ int Drone_I2C_End(Drone_I2C** i2c)
     free(*i2c);
     *i2c = NULL;
     return 0;
+}
+
+void Drone_I2C_ExchangeData(Drone_I2C* i2c, Drone_DataExchange* data)
+{
+    float* f = Drone_Device_GetRefreshedData((Drone_Device*)i2c->ADXL345);
+    for (int i=0; i<3; ++i) {
+        data->acc[i] = f[i];
+    }
+
+    f = Drone_Device_GetRefreshedData((Drone_Device*)i2c->L3G4200D);
+    Drone_I2C_CaliInfo* c = L3G4200D_getCaliInfo(i2c->L3G4200D);
+    for (int i=0; i<3; ++i) {
+        data->gyr[i] = f[i]-Drone_I2C_Cali_getMean(c)[i];
+    }
+
+    f = Drone_Device_GetRefreshedData((Drone_Device*)i2c->HMC5883L);
+    for (int i=0; i<3; ++i) {
+        data->mag[i] = f[i];
+    }
+
+    f = Drone_Device_GetRefreshedData((Drone_Device*)i2c->BMP085);
+    c = BMP085_getCaliInfo(i2c->BMP085);
+    data->attitude = f[0] - Drone_I2C_Cali_getMean(c)[0];
+    data->temperature = f[1];
+    data->pressure = f[2];
 }
 
 static int Calibration_Single_ADXL345(Drone_I2C* i2c)

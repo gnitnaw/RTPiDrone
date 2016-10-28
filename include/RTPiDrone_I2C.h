@@ -39,6 +39,6 @@ int Drone_I2C_End(Drone_I2C**);
  * \brief Transfer calibrated data to specified pointer
  * \public \memberof Drone_I2C
  */
-int Drone_I2C_ExchangeData(Drone_I2C*, Drone_DataExchange*);
+void Drone_I2C_ExchangeData(Drone_I2C*, Drone_DataExchange*);
 
 #endif /* DRONE_I2C */
