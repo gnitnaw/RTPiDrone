@@ -1,20 +1,7 @@
-/*
-    RTPiDrone -- RTPiDrone.c
-    Copyright 2016 Wan-Ting CHEN (wanting@gmail.com)
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+/*!
+ * \file    RTPiDrone.c
+ * \brief   Realize the struct/functions defined in RTPiDrone.h
+ */
 
 #include "RTPiDrone_I2C.h"
 #include "RTPiDrone_SPI.h"
@@ -33,8 +20,9 @@
 #define NUM_CALI_THREADS        2
 
 /*!
- * \brief \private enum kernelType
- * Indicate kernel type : vanilla: normal(0), preempt RT(1), xenomai cobalt(2)
+ * \enum kernelType
+ * \private enum kernelType
+ * \brief Indicate kernel type : vanilla: normal(0), preempt RT(1), xenomai cobalt(2)
  */
 
 typedef enum {
@@ -44,7 +32,7 @@ typedef enum {
 } kernelType;
 
 /*!
- * Drone object class.
+ * Drone type. To make the drone fly, you only need this type.
  */
 struct Drone {
     char                    logfileName[LENGTH];	//!< \private Name of log file.
