@@ -3,7 +3,14 @@
 #include <time.h>
 #include <math.h>
 
-void exchange(char *buf, int len)
+/*!
+ * \fn      void exchange(char*, int);
+ * \brief   Function to switch the endianness for 2-byte data (swap ith and (i+1)th, i = even)
+ * \param[char* buf] Pointer where the data is
+ * \param[int len] How many (int16_t) data which the buf contains.
+ */
+
+void exchange(char* buf, int len)
 {
     char tmp;
     int i;
