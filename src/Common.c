@@ -4,7 +4,7 @@
 #include <math.h>
 
 /*!
- * \fn      void exchange(char*, int);
+ * \fn      void exchange(char* buf, int len);
  * \brief   Function to switch the endianness for 2-byte data (swap ith and (i+1)th, i = even)
  * \param buf Pointer where the data is
  * \param len How many (int16_t) data which the buf contains.
