@@ -6,8 +6,8 @@
 /*!
  * \fn      void exchange(char*, int);
  * \brief   Function to switch the endianness for 2-byte data (swap ith and (i+1)th, i = even)
- * \param[buf] Pointer where the data is
- * \param[len] How many (int16_t) data which the buf contains.
+ * \param buf Pointer where the data is
+ * \param len How many (int16_t) data which the buf contains.
  */
 
 void exchange(char* buf, int len)
