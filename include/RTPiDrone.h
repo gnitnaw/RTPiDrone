@@ -1,10 +1,16 @@
+/*!
+ * \file    RTPiDrone.h
+ * \brief   This file contains the declaration of the functions used to make the drone fly.
+ */
+
 #ifndef H_RTPIDRONE
 #define H_RTPIDRONE
 
-typedef struct Drone Drone; //!< Drone type
+typedef struct Drone Drone; //!< Drone type. To make the drone fly, you only need this type.
 
 /*!
- * Initialize the Drone
+ * \fn      int Drone_Init(Drone** drone)
+ * \brief   Initialize the Drone
  * \public \memberof Drone
  */
 int Drone_Init(Drone**);
