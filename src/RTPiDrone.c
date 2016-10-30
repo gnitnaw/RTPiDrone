@@ -46,12 +46,12 @@ struct Drone {
     Drone_DataExchange*     data;                   //!< \private I2C data needed to be exchanged;
 };
 
-static void getTimeString(char*);	            //!< \private \memberof Drone function : get time string
-static int getKernelString(char*);	            //!< \private \memberof Drone function : get kernel string
-static kernelType getKernelType(char*);         //!< \private \memberof Drone function : get kernel type
-static int generateFileName(char*);             //!< \private \memberof Drone function : generate logfile name
-static void* Calibration_I2C_Thread(void*);     //!< \private \memberof Drone function : generate a thread for I2C calibration
-static void* Calibration_SPI_Thread(void*);     //!< \private \memberof Drone function : generate a thread for SPI calibration
+static void getTimeString(char*);	            //!< \private \memberof Drone \brief get time string
+static int getKernelString(char*);	            //!< \private \memberof Drone \brief get kernel string
+static kernelType getKernelType(char*);         //!< \private \memberof Drone \brief get kernel type
+static int generateFileName(char*);             //!< \private \memberof Drone \brief generate logfile name
+static void* Calibration_I2C_Thread(void*);     //!< \private \memberof Drone \brief generate a thread for I2C calibration
+static void* Calibration_SPI_Thread(void*);     //!< \private \memberof Drone \brief generate a thread for SPI calibration
 
 int Drone_Init(Drone** rpiDrone)
 {
