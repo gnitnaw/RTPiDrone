@@ -26,12 +26,9 @@
  */
 
 typedef enum {
-    /*! Normal kernel*/
-    vanilla,
-    /*! kernel with Preempt RT*/
-    preemptRT,
-    /*! kernel with xenomai*/
-    xenomai
+    vanilla,    /*!< Normal kernel */
+    preemptRT,  /*!< kernel with Preempt RT */
+    xenomai     /*!< kernel with xenomai */
 } kernelType;
 
 /*!

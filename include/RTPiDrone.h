@@ -12,6 +12,7 @@ typedef struct Drone Drone; //!< Drone type. To make the drone fly, you only nee
  * \fn      int Drone_Init(Drone** rpiDrone)
  * \brief   Initialize the Drone
  * \public \memberof Drone
+ * \return  0 if everything is fine
  */
 int Drone_Init(Drone**);
 
@@ -26,6 +27,7 @@ void Drone_Start(Drone*);
  * \fn      int Drone_Calibration(Drone* rpiDrone)
  * \brief   Calibration of I2C devices
  * \public \memberof Drone
+ * \return  0 if everything is fine
  */
 int Drone_Calibration(Drone*);
 
@@ -34,6 +36,7 @@ int Drone_Calibration(Drone*);
  * \fn      int Drone_End(Drone** rpiDrone)
  * \brief   If something abnormal happens or controller asks to stop, this step will terminate everything.
  * \public \memberof Drone
+ * \return  0 if everything is fine
  */
 int Drone_End(Drone**);
 

@@ -30,6 +30,7 @@
 #define NDATA_BMP085            1
 
 /*!
+ * \struct tempCali
  * \brief Private tempCali type
  * This structure allow to generate a single thread for calibration of a single device.
  */

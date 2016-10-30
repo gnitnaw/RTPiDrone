@@ -1,11 +1,12 @@
+/*!
+ * \file    RTPiDrone_I2C.h
+ * \brief   This file contains the declaration of the functions used for I2C devices
+ */
+
 #ifndef  H_DRONE_I2C
 #define  H_DRONE_I2C
 #include "RTPiDrone_DataExchange.h"
 
-/*!
- * \brief Drone_I2C type
- * This is the structure which control all of the I2C devices
- */
 typedef struct Drone_I2C    Drone_I2C;
 
 /*!
