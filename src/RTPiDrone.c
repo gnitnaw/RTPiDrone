@@ -26,9 +26,9 @@
  */
 
 typedef enum {
-    vanilla,
-    preemptRT,
-    xenomai
+    vanilla,   /*! Normal kernel*/
+    preemptRT, /*! kernel with Preempt RT*/
+    xenomai    /*! kernel with xenomai*/
 } kernelType;
 
 /*!
@@ -50,7 +50,11 @@ static int generateFileName(char*);             //!< \private \memberof Drone fu
 static void* Calibration_I2C_Thread(void*);     //!< \private \memberof Drone function : generate a thread for I2C calibration
 static void* Calibration_SPI_Thread(void*);     //!< \private \memberof Drone function : generate a thread for SPI calibration
 
-/* Initialize the Drone */
+/*!
+ * \fn      int Drone_Init(Drone** rpiDrone)
+ * \brief   Initialize the Drone
+ * \public \memberof Drone
+ */
 int Drone_Init(Drone** rpiDrone)
 {
     *rpiDrone = (Drone*) malloc(sizeof(Drone));

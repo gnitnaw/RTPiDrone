@@ -8,11 +8,6 @@
 
 typedef struct Drone Drone; //!< Drone type. To make the drone fly, you only need this type.
 
-/*!
- * \fn      int Drone_Init(Drone** drone)
- * \brief   Initialize the Drone
- * \public \memberof Drone
- */
 int Drone_Init(Drone**);
 
 /*!
