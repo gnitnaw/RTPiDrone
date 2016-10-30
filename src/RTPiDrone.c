@@ -35,7 +35,8 @@ typedef enum {
 } kernelType;
 
 /*!
- * Drone type. To make the drone fly, you only need this type.
+ * \struct Drone
+ * \brief Drone type. To make the drone fly, you only need this type.
  */
 struct Drone {
     char                    logfileName[LENGTH];	//!< \private Name of log file.
