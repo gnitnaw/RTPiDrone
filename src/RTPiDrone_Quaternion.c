@@ -5,10 +5,6 @@
 #define DEG_TO_RAD      (M_PI/180)
 #define RAD_TO_DEG      (180/M_PI)
 
-struct Drone_Quaternion {
-    float q[4];
-};
-
 int Drone_Quaternion_Init(Drone_Quaternion** Quaternion, float* angle)
 {
     *Quaternion = (Drone_Quaternion*) calloc(1, sizeof(Drone_Quaternion));

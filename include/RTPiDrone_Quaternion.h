@@ -1,7 +1,9 @@
 #ifndef  H_DRONE_QUATERNION
 #define  H_DRONE_QUATERNION
 
-typedef struct Drone_Quaternion    Drone_Quaternion;
+typedef struct Drone_Quaternion {
+    float q[4];
+} Drone_Quaternion;
 
 int Drone_Quaternion_Init(Drone_Quaternion**, float*);
 void Drone_Quaternion_Normalize(Drone_Quaternion*);

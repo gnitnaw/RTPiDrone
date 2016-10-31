@@ -9,6 +9,7 @@ typedef struct {
     float temperature;
     float pressure;
     float power[4];
+    float dt;
 } Drone_DataExchange;
 
 int Drone_DataExchange_Init(Drone_DataExchange**);
