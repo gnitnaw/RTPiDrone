@@ -99,6 +99,9 @@ struct Drone_EKF {
     float R[9];
 };
 
+static float Drone_EKF_getRoll(void);
+static float Drone_EKF_getPitch(void);
+static float Drone_EKF_getYaw(void);
 static void Calcultate_RotationMatrix(float *accel, float *mag, float *R)
 {
     // local variables
@@ -124,18 +127,11 @@ static void Calcultate_RotationMatrix(float *accel, float *mag, float *R)
     fmodx = sqrtf(R[0] * R[0] + R[3] * R[3] + R[6] * R[6]);
     fmody = sqrtf(R[1] * R[1] + R[4] * R[4] + R[7] * R[7]);
     // normalize the rotation matrix
-    // normalize x axis
-    R[0] *= fmodx;
-    R[3] *= fmodx;
-    R[6] *= fmodx;
-    // normalize y axis
-    R[1] *= fmody;
-    R[4] *= fmody;
-    R[7] *= fmody;
-    // normalize z axis
-    R[2] *= norm;
-    R[5] *= norm;
-    R[8] *= norm;
+    for (int i=0; i<3; ++i) {
+        R[0+i*3] /= fmodx;      // normalize x axis
+        R[1+i*3] /= fmody;      // normalize y axis
+        R[2+i*3] /= norm;       // normalize z axis
+    }
 }
 
 static void EKF_AHRSUpdate(float *gyro, float *accel, float *mag, float dt)
@@ -178,10 +174,7 @@ static void EKF_AHRSUpdate(float *gyro, float *accel, float *mag, float dt)
 
     //normalize quaternion
     norm = getSqrt(X,4);
-    X[0] *= norm;
-    X[1] *= norm;
-    X[2] *= norm;
-    X[3] *= norm;
+    for (int i=0; i<4; ++i) X[i] /= norm;
 
     //populate F jacobian
     halfdtq0 = halfdt * q0;
@@ -230,13 +223,9 @@ static void EKF_AHRSUpdate(float *gyro, float *accel, float *mag, float dt)
     //measurement update
     //normalize accel and magnetic
     norm = getSqrt(accel,3);
-    accel[0] *= norm;
-    accel[1] *= norm;
-    accel[2] *= norm;
+    for (int i=0; i<3; ++i) accel[i] /= norm;
     norm = getSqrt(mag,3);
-    mag[0] *= norm;
-    mag[1] *= norm;
-    mag[2] *= norm;
+    for (int i=0; i<3; ++i) mag[i] /= norm;
 
     //Reference field calculation
     //auxiliary variables to avoid repeated arithmetic
@@ -323,10 +312,7 @@ static void EKF_AHRSUpdate(float *gyro, float *accel, float *mag, float dt)
 
     //normalize quaternion
     norm = getSqrt(X,4);
-    X[0] *= norm;
-    X[1] *= norm;
-    X[2] *= norm;
-    X[3] *= norm;
+    for (int i=0; i<4; ++i) X[i] /= norm;
 
     //covariance estimate update
     //P = (I - K * H) * P
@@ -347,6 +333,90 @@ static void EKF_AHRSUpdate(float *gyro, float *accel, float *mag, float dt)
     Maxtrix_Add(P, EKF_STATE_DIM, EKF_STATE_DIM, PX, P);
 #endif
 }
+
+static void Quaternion_FromRotationMatrix(float *R, float *Q)
+{
+#if 0
+    // calculate the trace of the matrix
+    float trace = R[0] + R[4] + R[8];
+    float s;
+    if(trace > 0) {
+        s = 0.5f * sqrtf(trace + 1.0f);
+        Q[0] = 0.25f / s;
+        Q[1] = (R[7] - R[5]) * s;
+        Q[2] = (R[2] - R[6]) * s;
+        Q[3] = (R[3] - R[1]) * s;
+    } else {
+        if(R[0] > R[4] && R[0] > R[8] ) {
+            s = 0.5f / sqrtf(1.0f + R[0] - R[4] - R[8]);
+            Q[0] = (R[7] - R[5]) * s;
+            Q[1] = 0.25f / s;
+            Q[2] = (R[1] + R[3]) * s;
+            Q[3] = (R[2] + R[6]) * s;
+        } else if(R[4] > R[8]) {
+            s = 0.5f / sqrtf(1.0f + R[4] - R[0] - R[8]);
+            Q[0] = (R[2] - R[6]) * s;
+            Q[1] = (R[1] + R[3]) * s;
+            Q[2] = 0.25f / s;
+            Q[3] = (R[5] + R[7]) * s;
+        } else {
+            s = 0.5f / sqrtf(1.0f + R[8] - R[0] - R[4]);
+            Q[0] = (R[3] - R[1]) * s;
+            Q[1] = (R[2] + R[6]) * s;
+            Q[2] = (R[5] + R[7]) * s;
+            Q[3] = 0.25f / s;
+        }
+    }
+#else
+    // get the instantaneous orientation quaternion
+    float fq0sq; // q0^2
+    float recip4q0; // 1/4q0
+    float fmag; // quaternion magnitude
+#define SMALLQ0 0.01F // limit where rounding errors may appear
+    // get q0^2 and q0
+    fq0sq = 0.25f * (1.0f + R[0] + R[4] + R[8]);
+    Q[0] = sqrtf(fabs(fq0sq));
+    // normal case when q0 is not small meaning rotation angle not near 180 deg
+    if (Q[0] > SMALLQ0) {
+        // calculate q1 to q3
+        recip4q0 = 0.25F / Q[0];
+        Q[1] = recip4q0 * (R[5] - R[7]);
+        Q[2] = recip4q0 * (R[6] - R[2]);
+        Q[3] = recip4q0 * (R[1] - R[3]);
+    } else {
+        // special case of near 180 deg corresponds to nearly symmetric matrix
+        // which is not numerically well conditioned for division by small q0
+        // instead get absolute values of q1 to q3 from leading diagonal
+        Q[1] = sqrtf(fabs(0.5f * (1.0f + R[0]) - fq0sq));
+        Q[2] = sqrtf(fabs(0.5f * (1.0f + R[4]) - fq0sq));
+        Q[3] = sqrtf(fabs(0.5f * (1.0f + R[8]) - fq0sq));
+        // first assume q1 is positive and ensure q2 and q3 are consistent with q1
+        if ((R[1] + R[3]) < 0.0f) {
+            // q1*q2 < 0 so q2 is negative
+            Q[2] = -Q[2];
+            if ((R[5] + R[7]) > 0.0f) {
+                // q1*q2 < 0 and q2*q3 > 0 so q3 is also both negative
+                Q[3] = -Q[3];
+            }
+        } else if ((R[1] + R[3]) > 0.0f) {
+            if ((R[5] + R[7]) < 0.0f) {
+                // q1*q2 > 0 and q2*q3 < 0 so q3 is negative
+                Q[3] = -Q[3];
+            }
+        }
+        // negate the vector components if q1 should be negative
+        if ((R[5] - R[7]) < 0.0f) {
+            Q[1] = -Q[1];
+            Q[2] = -Q[2];
+            Q[3] = -Q[3];
+        }
+    }
+    // finally re-normalize
+    fmag = getSqrt(Q,4);
+    for (int i=0; i<4; ++i) Q[i] /= fmag;
+#endif
+}
+
 
 void EKF_AHRSGetAngle(float* rpy)
 {
@@ -399,4 +469,32 @@ void Drone_EKF_Delete(Drone_EKF** EKF)
 void Drone_EKF_Update(Drone_EKF* ekf, Drone_DataExchange* data)
 {
     EKF_AHRSUpdate(data->gyr, data->acc, data->mag, data->dt);
+}
+
+void Drone_EKF_DataInit(Drone_EKF* ekf, Drone_DataExchange* data)
+{
+    Calcultate_RotationMatrix(data->acc, data->mag, ekf->R);
+    Quaternion_FromRotationMatrix(ekf->R, X);
+}
+
+static float Drone_EKF_getRoll(void)
+{
+    return atan2(2 * Q[2] * Q[3] + 2 * Q[0] * Q[1], -2 * Q[1] * Q[1] - 2 * Q[2]* Q[2] + 1) * RAD_TO_DEG; // roll
+}
+
+static float Drone_EKF_getPitch(void)
+{
+    return asin(-2 * Q[1] * Q[3] + 2 * Q[0]* Q[2]) * RAD_TO_DEG; // pitch
+}
+
+static float Drone_EKF_getYaw(void)
+{
+    return atan2(2 * Q[1] * Q[2] + 2 * Q[0] * Q[3], -2 * Q[2]*Q[2] - 2 * Q[3]*Q[3] + 1) * RAD_TO_DEG; // yaw
+}
+
+void Drone_EKF_RefreshAngle(float* angle)
+{
+    angle[0] = Drone_EKF_getRoll();
+    angle[1] = Drone_EKF_getPitch();
+    angle[2] = Drone_EKF_getYaw();
 }

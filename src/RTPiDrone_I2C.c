@@ -178,31 +178,6 @@ int Drone_I2C_End(Drone_I2C** i2c)
     return 0;
 }
 
-void Drone_I2C_ExchangeData(Drone_I2C* i2c, Drone_DataExchange* data)
-{
-    float* f = Drone_Device_GetRefreshedData((Drone_Device*)i2c->ADXL345);
-    for (int i=0; i<3; ++i) {
-        data->acc[i] = f[i];
-    }
-
-    f = Drone_Device_GetRefreshedData((Drone_Device*)i2c->L3G4200D);
-    Drone_I2C_CaliInfo* c = L3G4200D_getCaliInfo(i2c->L3G4200D);
-    for (int i=0; i<3; ++i) {
-        data->gyr[i] = f[i]-Drone_I2C_Cali_getMean(c)[i];
-    }
-
-    f = Drone_Device_GetRefreshedData((Drone_Device*)i2c->HMC5883L);
-    for (int i=0; i<3; ++i) {
-        data->mag[i] = f[i];
-    }
-
-    f = Drone_Device_GetRefreshedData((Drone_Device*)i2c->BMP085);
-    c = BMP085_getCaliInfo(i2c->BMP085);
-    data->attitude = f[0] - Drone_I2C_Cali_getMean(c)[0];
-    data->temperature = f[1];
-    data->pressure = f[2];
-}
-
 static int Calibration_Single_ADXL345(Drone_I2C* i2c)
 {
     while (i2c_stat) sched_yield() ;
@@ -317,5 +292,47 @@ static void* Calibration_Single_Thread(void* temp)
 
     free(vCali);
     pthread_exit(NULL);
+}
+
+void Drone_I2C_DataInit(Drone_DataExchange* data, Drone_I2C* i2c)
+{
+    Drone_I2C_CaliInfo* c = ADXL345_getCaliInfo(i2c->ADXL345);
+    for (int i=0; i<3; ++i) {
+        data->acc[i] = Drone_I2C_Cali_getMean(c)[i];
+        data->gyr[i] = 0.0f;
+    }
+    c = HMC5883L_getCaliInfo(i2c->HMC5883L);
+    for (int i=0; i<3; ++i) {
+        data->mag[i] = Drone_I2C_Cali_getMean(c)[i];
+    }
+    c = BMP085_getCaliInfo(i2c->BMP085);
+    data->attitude = 0.0f;
+    data->temperature = Drone_I2C_Cali_getMean(c)[1];
+    data->pressure = Drone_I2C_Cali_getMean(c)[2];
+}
+
+void Drone_I2C_ExchangeData(Drone_DataExchange* data, Drone_I2C* i2c)
+{
+    float* f = Drone_Device_GetRefreshedData((Drone_Device*)i2c->ADXL345);
+    for (int i=0; i<3; ++i) {
+        data->acc[i] = f[i];
+    }
+
+    f = Drone_Device_GetRefreshedData((Drone_Device*)i2c->L3G4200D);
+    Drone_I2C_CaliInfo* c = L3G4200D_getCaliInfo(i2c->L3G4200D);
+    for (int i=0; i<3; ++i) {
+        data->gyr[i] = f[i]-Drone_I2C_Cali_getMean(c)[i];
+    }
+
+    f = Drone_Device_GetRefreshedData((Drone_Device*)i2c->HMC5883L);
+    for (int i=0; i<3; ++i) {
+        data->mag[i] = f[i];
+    }
+
+    f = Drone_Device_GetRefreshedData((Drone_Device*)i2c->BMP085);
+    c = BMP085_getCaliInfo(i2c->BMP085);
+    data->attitude = f[0] - Drone_I2C_Cali_getMean(c)[0];
+    data->temperature = f[1];
+    data->pressure = f[2];
 }
 

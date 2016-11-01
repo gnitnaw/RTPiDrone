@@ -12,3 +12,6 @@ void Drone_DataExchange_End(Drone_DataExchange** data)
     free(*data);
     data = NULL;
 }
+
+
+

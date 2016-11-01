@@ -102,6 +102,8 @@ int Drone_Calibration(Drone* rpiDrone)
     pthread_create(&thread_cali[0], NULL, Calibration_I2C_Thread, (void*) rpiDrone);
     pthread_create(&thread_cali[1], NULL, Calibration_SPI_Thread, (void*) rpiDrone);
     for (int i=0; i<NUM_CALI_THREADS; ++i) pthread_join(thread_cali[i],NULL);
+    Drone_I2C_DataInit(rpiDrone->data, rpiDrone->i2c);
+    Drone_AHRS_DataInit(rpiDrone->data, rpiDrone->ahrs);
     return 0;
 }
 

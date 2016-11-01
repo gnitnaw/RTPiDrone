@@ -29,7 +29,7 @@ set(RF24_ELEMENT
 )
 set(AHRS_ELEMENT
     RTPiDrone_AHRS.c
-    RTPiDrone_Quaternion.c
+    RTPiDrone_Angle.c
     RTPiDrone_EKF.c
     RTPiDrone_DataExchange.c
 )
