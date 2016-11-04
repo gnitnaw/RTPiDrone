@@ -4,8 +4,9 @@
  */
 #ifndef H_COMMON
 #define H_COMMON
-
+#include <stdint.h>
 void exchange(char*, int);
 void _usleep(int);
 float getSqrt(float*, int);
+uint64_t get_usec(void);
 #endif

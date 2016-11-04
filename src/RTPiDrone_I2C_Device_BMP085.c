@@ -50,6 +50,7 @@ static int BMP085_getRawTemp(long*);
 static int BMP085_getRawPressure(long*);
 static int BMP085_getRawValue(void*);
 static int BMP085_convertRawToReal(void*);
+const static uint64_t BMP085_Period[] = {25500, 4500};
 
 Drone_I2C_CaliInfo* BMP085_getCaliInfo(Drone_I2C_Device_BMP085* BMP085)
 {
@@ -65,6 +66,7 @@ int BMP085_setup(Drone_I2C_Device_BMP085** BMP085)
     Drone_Device_SetRawFunction(&(*BMP085)->dev, BMP085_getRawValue);
     Drone_Device_SetRealFunction(&(*BMP085)->dev, BMP085_convertRawToReal);
     Drone_Device_SetDataPointer(&(*BMP085)->dev, (void*)&(*BMP085)->altitude);
+    Drone_Device_SetPeriod(&(*BMP085)->dev, BMP085_Period[0]);
     Drone_I2C_Cali_Init(&(*BMP085)->cali, 3);
     return Drone_Device_Init(&(*BMP085)->dev);
 }
@@ -147,6 +149,7 @@ static int BMP085_getRawValue(void* i2c_dev)
     if ( !((BMP085_Trigger_Switch++)& 0x1) ) {
         long* UT = &((Drone_I2C_Device_BMP085*)i2c_dev)->UT;
         if (!BMP085_getRawTemp(UT) && !BMP085_Trigger_UPressure()) {
+            Drone_Device_SetPeriod((Drone_Device*)i2c_dev, BMP085_Period[0]);
             return 0;
         } else {
             return -1;
@@ -154,6 +157,7 @@ static int BMP085_getRawValue(void* i2c_dev)
     } else {
         long* UP = &((Drone_I2C_Device_BMP085*)i2c_dev)->UP;
         if (!BMP085_getRawPressure(UP) && !BMP085_Trigger_UTemp()) {
+            Drone_Device_SetPeriod((Drone_Device*)i2c_dev, BMP085_Period[1]);
             return 1;
         } else {
             return -2;

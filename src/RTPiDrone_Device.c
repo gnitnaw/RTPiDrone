@@ -1,4 +1,5 @@
 #include "RTPiDrone_Device.h"
+#include "Common.h"
 #include <bcm2835.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -66,6 +67,7 @@ void Drone_Device_Create(Drone_Device* dev)
 
 int Drone_Device_Init(Drone_Device* dev)
 {
+    dev->lastUpdate = get_usec();
     return dev->init_func(dev);
 }
 
@@ -94,9 +96,18 @@ char* Drone_Device_GetName(Drone_Device* dev)
     return dev->name;
 }
 
-void* Drone_Device_GetRefreshedData(Drone_Device* dev)
+void* Drone_Device_GetRefreshedData(Drone_Device* dev, uint64_t* time)
 {
-    while (dev->rawdata_func(dev));
-    dev->data_func(dev);
-    return dev->getData;
+    if (*time-dev->lastUpdate > dev->period) {
+        dev->lastUpdate = *time;
+        while (dev->rawdata_func(dev));
+        dev->data_func(dev);
+        return dev->getData;
+    }
+    return NULL;
+}
+
+void Drone_Device_SetPeriod(Drone_Device* dev, uint64_t time)
+{
+    dev->period = time;
 }

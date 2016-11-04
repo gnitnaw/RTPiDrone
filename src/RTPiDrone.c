@@ -8,6 +8,7 @@
 #include "RTPiDrone_AHRS.h"
 #include "RTPiDrone_DataExchange.h"
 #include "RTPiDrone.h"
+#include "Common.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,6 +43,7 @@ struct Drone {
     Drone_SPI*              spi;                    //!< \private All SPI devices
     Drone_AHRS*             ahrs;                   //!< \private attitude and heading reference system (AHRS)
     Drone_DataExchange*     data;                   //!< \private I2C data needed to be exchanged;
+    uint64_t                lastUpdate;             //!< \private Last time of data update
 };
 
 static void getTimeString(char*);	            //!< \private \memberof Drone \brief get time string
@@ -50,6 +52,7 @@ static kernelType getKernelType(char*);         //!< \private \memberof Drone \b
 static int generateFileName(char*);             //!< \private \memberof Drone \brief generate logfile name
 static void* Calibration_I2C_Thread(void*);     //!< \private \memberof Drone \brief generate a thread for I2C calibration
 static void* Calibration_SPI_Thread(void*);     //!< \private \memberof Drone \brief generate a thread for SPI calibration
+static uint64_t currentTime;
 
 int Drone_Init(Drone** rpiDrone)
 {
@@ -93,7 +96,16 @@ int Drone_Init(Drone** rpiDrone)
 void Drone_Start(Drone* rpiDrone)
 {
     puts("Start Test");
+    rpiDrone->lastUpdate = get_usec();
     Drone_I2C_Start(rpiDrone->i2c);
+    for (int i=0; i<100; ++i) {
+        currentTime = get_usec();
+        rpiDrone->data->dt = (float)(currentTime - rpiDrone->lastUpdate)/1000.0;
+        int t = 4000-(int)((Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime)-currentTime));
+        rpiDrone->lastUpdate = currentTime;
+        _usleep(t);
+        if (!(i%10))Drone_DataExchange_Print(rpiDrone->data);
+    }
 }
 
 int Drone_Calibration(Drone* rpiDrone)
@@ -104,6 +116,7 @@ int Drone_Calibration(Drone* rpiDrone)
     for (int i=0; i<NUM_CALI_THREADS; ++i) pthread_join(thread_cali[i],NULL);
     Drone_I2C_DataInit(rpiDrone->data, rpiDrone->i2c);
     Drone_AHRS_DataInit(rpiDrone->data, rpiDrone->ahrs);
+    rpiDrone->lastUpdate = get_usec();
     return 0;
 }
 

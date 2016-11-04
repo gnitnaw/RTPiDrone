@@ -14,4 +14,5 @@ typedef struct {
 
 int Drone_DataExchange_Init(Drone_DataExchange**);
 void Drone_DataExchange_End(Drone_DataExchange**);
+void Drone_DataExchange_Print(Drone_DataExchange*);
 #endif

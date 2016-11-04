@@ -14,6 +14,8 @@ typedef struct {
     int (*data_func)(void*);        //!< \private Function to convert raw data to real data
     int (*end_func)(void*);         //!< \private Termination of device
     void*	getData;	            //!< \private Pointer of real data
+    uint64_t    lastUpdate;         //!< \private Last update time
+    uint64_t    period;             //!< \private Period for sensor refresh
 } Drone_Device;
 
 /*!
@@ -98,6 +100,7 @@ char* Drone_Device_GetName(Drone_Device*);
  * return the location of real data after refreshing.
  * \public \memberof Drone_Device
  */
-void* Drone_Device_GetRefreshedData(Drone_Device*);
+void* Drone_Device_GetRefreshedData(Drone_Device*, uint64_t*);
 
+void Drone_Device_SetPeriod(Drone_Device* dev, uint64_t);
 #endif

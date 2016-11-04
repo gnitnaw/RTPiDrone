@@ -32,9 +32,10 @@ void exchange(char* buf, int len)
  */
 void _usleep(int micro)
 {
-    struct timespec req = {0};
-    req.tv_sec = 0;
-    req.tv_nsec = micro * 1000L;
+    if (micro<0) return;
+    struct timespec req = {0, micro * 1000L};
+    //req.tv_sec = 0;
+    //req.tv_nsec = micro * 1000L;
     nanosleep(&req, (struct timespec *)NULL);
 }
 
@@ -43,6 +44,7 @@ void _usleep(int micro)
  * \brief   Get the square-root of the square-sum : sqrt(v0*v0 + v1*v1 + ... + vN-1*vN-1)
  * \param v Pointer of the data
  * \param N How many elements which the data has.
+ * \return  Square-root of the square-sum.
  */
 float getSqrt(float* v, int N)
 {
@@ -51,4 +53,16 @@ float getSqrt(float* v, int N)
         sum += pow(v[i],2);
     }
     return sqrtf(sum);
+}
+
+/*!
+ * \fn      get_usec(void)
+ * \brief   Get the time stamp (in microsecond)
+ * \return  Time stamp (in microsecond)
+ */
+uint64_t get_usec(void)
+{
+    struct timespec tv;
+    clock_gettime(CLOCK_REALTIME, &tv);
+    return (1000000000 * tv.tv_sec + tv.tv_nsec)/1000;
 }
