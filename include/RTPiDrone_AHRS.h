@@ -8,4 +8,5 @@ int Drone_AHRS_Init(Drone_AHRS**);
 void Drone_AHRS_End(Drone_AHRS**);
 void Drone_AHRS_DataInit(Drone_DataExchange*, Drone_AHRS*);
 void Drone_AHRS_Refresh(Drone_DataExchange*, Drone_AHRS*);
+void Drone_AHRS_Print(Drone_AHRS*);
 #endif

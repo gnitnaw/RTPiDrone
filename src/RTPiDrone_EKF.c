@@ -99,9 +99,6 @@ struct Drone_EKF {
     float R[9];
 };
 
-static float Drone_EKF_getRoll(void);
-static float Drone_EKF_getPitch(void);
-static float Drone_EKF_getYaw(void);
 static void Calcultate_RotationMatrix(float *accel, float *mag, float *R)
 {
     // local variables
@@ -134,8 +131,13 @@ static void Calcultate_RotationMatrix(float *accel, float *mag, float *R)
     }
 }
 
-static void EKF_AHRSUpdate(float *gyro, float *accel, float *mag, float dt)
+static void EKF_AHRSUpdate(float *gyro, float *acc, float *magn, float dt)
 {
+    float accel[3], mag[3];
+    for (int i=0; i<3; ++i) {
+        accel[i] = acc[i];
+        mag[i] = magn[i];
+    }
     float norm;
     float halfdx, halfdy, halfdz;
     float neghalfdx, neghalfdy, neghalfdz;
@@ -418,7 +420,7 @@ static void Quaternion_FromRotationMatrix(float *R, float *Q)
 }
 
 
-void EKF_AHRSGetAngle(float* rpy)
+static void EKF_AHRSGetAngle(float* rpy)
 {
     float q0q0 = X[0] * X[0];
 
@@ -477,24 +479,8 @@ void Drone_EKF_DataInit(Drone_EKF* ekf, Drone_DataExchange* data)
     Quaternion_FromRotationMatrix(ekf->R, X);
 }
 
-static float Drone_EKF_getRoll(void)
-{
-    return atan2(2 * Q[2] * Q[3] + 2 * Q[0] * Q[1], -2 * Q[1] * Q[1] - 2 * Q[2]* Q[2] + 1) * RAD_TO_DEG; // roll
-}
-
-static float Drone_EKF_getPitch(void)
-{
-    return asin(-2 * Q[1] * Q[3] + 2 * Q[0]* Q[2]) * RAD_TO_DEG; // pitch
-}
-
-static float Drone_EKF_getYaw(void)
-{
-    return atan2(2 * Q[1] * Q[2] + 2 * Q[0] * Q[3], -2 * Q[2]*Q[2] - 2 * Q[3]*Q[3] + 1) * RAD_TO_DEG; // yaw
-}
 
 void Drone_EKF_RefreshAngle(float* angle)
 {
-    angle[0] = Drone_EKF_getRoll();
-    angle[1] = Drone_EKF_getPitch();
-    angle[2] = Drone_EKF_getYaw();
+    EKF_AHRSGetAngle(angle);
 }

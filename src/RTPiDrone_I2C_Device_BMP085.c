@@ -14,8 +14,9 @@
 
 // Need to read them at the beginning of measurement (or simply save them, then user can load them to estimate temperature
 // and pressure
-typedef struct __attribute__((packed))
-{
+#pragma pack( push, 1 )
+
+typedef struct {
     int16_t AC1;
     int16_t AC2;
     int16_t AC3;
@@ -32,7 +33,8 @@ BMP085_Parameters;
 
 static uint64_t BMP085_Trigger_Switch = 0;
 
-struct __attribute__((packed)) Drone_I2C_Device_BMP085 {
+#pragma pack( push, 1 )
+struct Drone_I2C_Device_BMP085 {
     Drone_Device dev;                //!< \private I2C device prototype
     long UT;                         //!< \private Raw Temperature
     long UP;                         //!< \private Raw Pressure
@@ -42,6 +44,7 @@ struct __attribute__((packed)) Drone_I2C_Device_BMP085 {
     BMP085_Parameters Para_BMP085;   //!< \private Parameter of BMP085
     Drone_I2C_CaliInfo* cali;        //!< \private Calibration information
 };
+#pragma pack( pop )
 
 static int BMP085_init(void*);        //!< \private \memberof Drone_I2C_Device_BMP085 function : Initialization of BMP085
 static int BMP085_Trigger_UTemp(void); //!< \private \memberof Drone_I2C_Device_BMP085 function : Trigger temp. measurement
@@ -50,7 +53,7 @@ static int BMP085_getRawTemp(long*);
 static int BMP085_getRawPressure(long*);
 static int BMP085_getRawValue(void*);
 static int BMP085_convertRawToReal(void*);
-const static uint64_t BMP085_Period[] = {25500, 4500};
+const static uint64_t BMP085_Period[] = {25500L, 4500L};
 
 Drone_I2C_CaliInfo* BMP085_getCaliInfo(Drone_I2C_Device_BMP085* BMP085)
 {
@@ -149,7 +152,7 @@ static int BMP085_getRawValue(void* i2c_dev)
     if ( !((BMP085_Trigger_Switch++)& 0x1) ) {
         long* UT = &((Drone_I2C_Device_BMP085*)i2c_dev)->UT;
         if (!BMP085_getRawTemp(UT) && !BMP085_Trigger_UPressure()) {
-            Drone_Device_SetPeriod((Drone_Device*)i2c_dev, BMP085_Period[0]);
+            Drone_Device_SetPeriod(&((Drone_I2C_Device_BMP085*)i2c_dev)->dev, BMP085_Period[0]);
             return 0;
         } else {
             return -1;
@@ -157,7 +160,7 @@ static int BMP085_getRawValue(void* i2c_dev)
     } else {
         long* UP = &((Drone_I2C_Device_BMP085*)i2c_dev)->UP;
         if (!BMP085_getRawPressure(UP) && !BMP085_Trigger_UTemp()) {
-            Drone_Device_SetPeriod((Drone_Device*)i2c_dev, BMP085_Period[1]);
+            Drone_Device_SetPeriod(&((Drone_I2C_Device_BMP085*)i2c_dev)->dev, BMP085_Period[1]);
             return 1;
         } else {
             return -2;

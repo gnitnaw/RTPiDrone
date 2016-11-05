@@ -100,7 +100,7 @@ void* Drone_Device_GetRefreshedData(Drone_Device* dev, uint64_t* time)
 {
     if (*time-dev->lastUpdate > dev->period) {
         dev->lastUpdate = *time;
-        while (dev->rawdata_func(dev));
+        while (dev->rawdata_func(dev)<0);
         dev->data_func(dev);
         return dev->getData;
     }

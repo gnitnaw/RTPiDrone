@@ -35,3 +35,8 @@ void Drone_AHRS_Refresh(Drone_DataExchange* data, Drone_AHRS* ahrs)
     Drone_EKF_Update(ahrs->EKF, data);
     Drone_EKF_RefreshAngle(Drone_Angle_getAngle(ahrs->Angle));
 }
+
+void Drone_AHRS_Print(Drone_AHRS* ahrs)
+{
+    Drone_Angle_Print(ahrs->Angle);
+}

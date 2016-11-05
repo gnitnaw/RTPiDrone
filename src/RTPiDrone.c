@@ -96,15 +96,22 @@ int Drone_Init(Drone** rpiDrone)
 void Drone_Start(Drone* rpiDrone)
 {
     puts("Start Test");
+    //Drone_I2C_Start(rpiDrone->i2c);
     rpiDrone->lastUpdate = get_usec();
-    Drone_I2C_Start(rpiDrone->i2c);
-    for (int i=0; i<100; ++i) {
+    //Drone_I2C_Start(rpiDrone->i2c);
+    _usleep(4000);
+    for (int i=0; i<10; ++i) {
         currentTime = get_usec();
-        rpiDrone->data->dt = (float)(currentTime - rpiDrone->lastUpdate)/1000.0;
-        int t = 4000-(int)((Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime)-currentTime));
+        rpiDrone->data->dt = (float)(currentTime - rpiDrone->lastUpdate)/1000000.0;
+        Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime);
+        Drone_AHRS_Refresh(rpiDrone->data, rpiDrone->ahrs);
+        int t = 4000-(int)(get_usec()-currentTime);
         rpiDrone->lastUpdate = currentTime;
         _usleep(t);
-        if (!(i%10))Drone_DataExchange_Print(rpiDrone->data);
+        //if (!(i%100)) {
+        //Drone_DataExchange_Print(rpiDrone->data);
+        Drone_AHRS_Print(rpiDrone->ahrs);
+        //}
     }
 }
 
@@ -116,6 +123,7 @@ int Drone_Calibration(Drone* rpiDrone)
     for (int i=0; i<NUM_CALI_THREADS; ++i) pthread_join(thread_cali[i],NULL);
     Drone_I2C_DataInit(rpiDrone->data, rpiDrone->i2c);
     Drone_AHRS_DataInit(rpiDrone->data, rpiDrone->ahrs);
+    Drone_AHRS_Print(rpiDrone->ahrs);
     rpiDrone->lastUpdate = get_usec();
     return 0;
 }
