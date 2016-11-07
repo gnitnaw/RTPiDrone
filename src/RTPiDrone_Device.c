@@ -67,7 +67,7 @@ void Drone_Device_Create(Drone_Device* dev)
 
 int Drone_Device_Init(Drone_Device* dev)
 {
-    dev->lastUpdate = get_usec();
+    dev->lastUpdate = get_nsec();
     return dev->init_func(dev);
 }
 

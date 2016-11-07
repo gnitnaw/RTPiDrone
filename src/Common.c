@@ -56,13 +56,13 @@ float getSqrt(float* v, int N)
 }
 
 /*!
- * \fn      get_usec(void)
- * \brief   Get the time stamp (in microsecond)
- * \return  Time stamp (in microsecond)
+ * \fn      get_nsec(void)
+ * \brief   Get the time stamp (in nanosecond)
+ * \return  Time stamp (in nanosecond)
  */
-uint64_t get_usec(void)
+uint64_t get_nsec(void)
 {
     struct timespec tv;
-    clock_gettime(CLOCK_REALTIME, &tv);
-    return (1000000000 * tv.tv_sec + tv.tv_nsec)/1000;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &tv);
+    return (1000000000 * tv.tv_sec + tv.tv_nsec);
 }

@@ -32,6 +32,7 @@ int main(void)
 {
     struct sched_param sp = {0};
     sp.sched_priority = 49;
+    //sp.sched_priority = sched_get_priority_max(SCHED_FIFO);
     sched_setscheduler(0, SCHED_FIFO, &sp);
     mlockall(MCL_CURRENT | MCL_FUTURE);
 

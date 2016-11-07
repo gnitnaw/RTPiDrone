@@ -53,7 +53,7 @@ static int BMP085_getRawTemp(long*);
 static int BMP085_getRawPressure(long*);
 static int BMP085_getRawValue(void*);
 static int BMP085_convertRawToReal(void*);
-const static uint64_t BMP085_Period[] = {25500L, 4500L};
+const static uint64_t BMP085_Period[] = {25500000L, 4500000L};
 
 Drone_I2C_CaliInfo* BMP085_getCaliInfo(Drone_I2C_Device_BMP085* BMP085)
 {

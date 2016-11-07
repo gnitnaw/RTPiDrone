@@ -8,5 +8,5 @@
 void exchange(char*, int);
 void _usleep(int);
 float getSqrt(float*, int);
-uint64_t get_usec(void);
+uint64_t get_nsec(void);
 #endif
