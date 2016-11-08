@@ -20,6 +20,7 @@
 #define LENGTH 128
 #define NUM_CALI_THREADS        2
 #define NUM_THREADS             2
+#define PERIOD                  4000000
 /*!
  * \enum kernelType
  * \private enum kernelType
@@ -44,6 +45,7 @@ struct Drone {
     Drone_AHRS*             ahrs;                   //!< \private attitude and heading reference system (AHRS)
     Drone_DataExchange*     data;                   //!< \private I2C data needed to be exchanged;
     uint64_t                lastUpdate;             //!< \private Last time of data update
+    struct timespec         pause;
 };
 
 static void getTimeString(char*);	            //!< \private \memberof Drone \brief get time string
@@ -52,12 +54,7 @@ static kernelType getKernelType(char*);         //!< \private \memberof Drone \b
 static int generateFileName(char*);             //!< \private \memberof Drone \brief generate logfile name
 static void* Calibration_I2C_Thread(void*);     //!< \private \memberof Drone \brief generate a thread for I2C calibration
 static void* Calibration_SPI_Thread(void*);     //!< \private \memberof Drone \brief generate a thread for SPI calibration
-static void* Renew_Data_Thread(void*);          //!< \private \memberof Drone \brief generate a thread for Data renew
 static uint64_t currentTime;
-static pthread_t thread_drone;
-static pthread_cond_t cond[NUM_THREADS];
-static pthread_mutex_t global_mutex;
-static uint32_t iThread = 1;
 
 int Drone_Init(Drone** rpiDrone)
 {
@@ -95,11 +92,6 @@ int Drone_Init(Drone** rpiDrone)
         return -6;
     }
 
-    pthread_mutex_init(&global_mutex,NULL);
-
-    for (int i=0; i<NUM_THREADS; ++i) {
-        pthread_cond_init(&cond[i],NULL);
-    }
     return 0;
 }
 
@@ -107,16 +99,31 @@ void Drone_Start(Drone* rpiDrone)
 {
     puts("Start Test");
     rpiDrone->lastUpdate = get_nsec();
+    float dt;
     //Drone_I2C_Start(rpiDrone->i2c);
     _usleep(4000);
-    pthread_create(&thread_drone, NULL, Renew_Data_Thread, (void*) rpiDrone);
+    clock_gettime(CLOCK_MONOTONIC, &rpiDrone->pause);
     for (int i=0; i<1000; ++i) {
-        pthread_cond_signal(&cond[0]);
-        _usleep(4000);
+        //pthread_cond_signal(&cond[0]);
+        //_usleep(4000);
+        // Add the time you want to sleep
+        currentTime = get_nsec();
+        rpiDrone->pause.tv_nsec += PERIOD;
+
+        // Normalize the time to account for the second boundary
+        if(rpiDrone->pause.tv_nsec >= 1000000000) {
+            rpiDrone->pause.tv_nsec -= 1000000000;
+            rpiDrone->pause.tv_sec++;
+        }
+        dt = (float)(currentTime - rpiDrone->lastUpdate)/1000000000.0;
+        if (dt<1) rpiDrone->data->dt = dt;
+        Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime);
+        Drone_AHRS_Refresh(rpiDrone->data, rpiDrone->ahrs);
+        if (!(i%10)) Drone_AHRS_Print(rpiDrone->ahrs);
+        Drone_DataExchange_PrintFile(rpiDrone->data, rpiDrone->fLog);
+        rpiDrone->lastUpdate = currentTime;
+        clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &rpiDrone->pause, NULL);
     }
-    iThread = 0;
-    pthread_cond_signal(&cond[0]);
-    pthread_join(thread_drone,NULL);
 }
 
 int Drone_Calibration(Drone* rpiDrone)
@@ -137,11 +144,6 @@ int Drone_End(Drone** rpiDrone)
     fclose((*rpiDrone)->fLog);
     Drone_AHRS_End(&(*rpiDrone)->ahrs);
     Drone_DataExchange_End(&(*rpiDrone)->data);
-
-    pthread_mutex_destroy(&global_mutex);
-    for (int i=0; i<NUM_THREADS; ++i) {
-        pthread_cond_destroy(&cond[i]);
-    }
 
     if (Drone_I2C_End(&(*rpiDrone)->i2c)) {
         perror("Drone I2C End error");
@@ -206,24 +208,6 @@ static int generateFileName(char* fileName)
     return 0;
 }
 
-static void* Renew_Data_Thread(void* temp)
-{
-    Drone* rpiDrone = (Drone*) temp;
-    while (iThread) {
-        pthread_mutex_lock(&global_mutex);
-        //puts("Enter!");
-        currentTime = get_nsec();
-        rpiDrone->data->dt = (float)(currentTime - rpiDrone->lastUpdate)/1000000000.0;
-        Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime);
-        Drone_AHRS_Refresh(rpiDrone->data, rpiDrone->ahrs);
-        //Drone_AHRS_Print(rpiDrone->ahrs);
-        Drone_DataExchange_PrintFile(rpiDrone->data, rpiDrone->fLog);
-        rpiDrone->lastUpdate = currentTime;
-        pthread_cond_wait(&cond[0], &global_mutex);
-        pthread_mutex_unlock(&global_mutex);
-    }
-    pthread_exit(NULL);
-}
 
 static void* Calibration_I2C_Thread(void* temp)
 {

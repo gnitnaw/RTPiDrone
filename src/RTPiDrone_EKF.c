@@ -135,8 +135,8 @@ static void EKF_AHRSUpdate(float *gyro, float *acc, float *magn, float dt)
 {
     float accel[3], mag[3];
     for (int i=0; i<3; ++i) {
-        accel[i] = acc[i];
-        mag[i] = magn[i];
+        accel[i] = -acc[i];
+        mag[i] = -magn[i];
     }
     float norm;
     float halfdx, halfdy, halfdz;
@@ -436,19 +436,20 @@ static void EKF_AHRSGetAngle(float* rpy)
     CBn[8] = 2.0f * (q0q0 + X[3] * X[3]) - 1.0f;
     //roll
     rpy[0] = atan2(CBn[5], CBn[8]);
-    if (rpy[0] == M_PI) rpy[0] = -M_PI;
+    //if (rpy[0] == M_PI) rpy[0] = -M_PI;
     //pitch
     if (CBn[2] >= 1.0f) rpy[1] = -M_PI/2;
     else if (CBn[2] <= -1.0f) rpy[1] = M_PI/2;
     else rpy[1] = asin(-CBn[2]);
     //yaw
     rpy[2] = atan2(CBn[1], CBn[0]);
+    /*
     if (rpy[2] < 0.0f) {
         rpy[2] += 2*M_PI;
     }
     if (rpy[2] >= 2*M_PI) {
         rpy[2] = 0.0f;
-    }
+    }*/
 
     rpy[0] = RAD_TO_DEG*(rpy[0]);
     rpy[1] = RAD_TO_DEG*(rpy[1]);
