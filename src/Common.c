@@ -64,5 +64,5 @@ uint64_t get_nsec(void)
 {
     struct timespec tv;
     clock_gettime(CLOCK_MONOTONIC_RAW, &tv);
-    return (tv.tv_sec * 1000000000 + tv.tv_nsec);
+    return ((uint64_t)tv.tv_sec * 1000000000 + tv.tv_nsec);
 }
