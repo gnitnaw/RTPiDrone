@@ -32,6 +32,8 @@ set(AHRS_ELEMENT
     RTPiDrone_Angle.c
     RTPiDrone_EKF.c
     RTPiDrone_DataExchange.c
+    EKF.c
+    Qu.c
 )
 include_directories(${RTPiDrone_SOURCE_DIR}/include)
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic -O3 -std=gnu11")
