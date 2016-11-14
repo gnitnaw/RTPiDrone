@@ -30,14 +30,12 @@ set(RF24_ELEMENT
 set(AHRS_ELEMENT
     RTPiDrone_AHRS.c
     RTPiDrone_Angle.c
-    RTPiDrone_EKF.c
+    RTPiDrone_Quaternion.c
     RTPiDrone_DataExchange.c
-    EKF.c
-    Qu.c
 )
 include_directories(${RTPiDrone_SOURCE_DIR}/include)
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic -O3 -std=gnu11")
 link_directories(${RTPiDrone_SOURCE_DIR}/src)
 add_library(RF24WT SHARED ${RF24_ELEMENT})
-add_executable(RTPiDrone ${MAIN_ELEMENT} ${I2C_ELEMENT} ${SPI_ELEMENT} ${AHRS_ELEMENT} Common.c miniMatrix.c main.c)
+add_executable(RTPiDrone ${MAIN_ELEMENT} ${I2C_ELEMENT} ${SPI_ELEMENT} ${AHRS_ELEMENT} Common.c main.c)
 target_link_libraries(RTPiDrone RF24WT -lbcm2835 -lgsl -lgslcblas -lpthread -lm -lrt)

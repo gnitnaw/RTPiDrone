@@ -9,5 +9,5 @@ int Drone_EKF_Init(Drone_EKF**);
 void Drone_EKF_Delete(Drone_EKF**);
 void Drone_EKF_DataInit(Drone_EKF*, Drone_DataExchange*);
 void Drone_EKF_Update(Drone_EKF*, Drone_DataExchange*);
-void Drone_EKF_RefreshAngle(float*);
+void Drone_EKF_RefreshAngle(Drone_EKF*, float*);
 #endif

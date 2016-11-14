@@ -6,9 +6,13 @@
 #define DEG_TO_RAD      (M_PI/180)
 #define RAD_TO_DEG      (180/M_PI)
 
-int Drone_Angle_Init(Drone_Angle** Angle)
+int Drone_Angle_Init(Drone_Angle** Angle, float* acc, float* mag)
 {
     *Angle = (Drone_Angle*) calloc(1, sizeof(Drone_Angle));
+    (*Angle)->angle[0] = atan2(acc[1], acc[2]) * RAD_TO_DEG;      // roll
+    (*Angle)->angle[1]  = atan2(acc[0], getSqrt(acc, 3)) * RAD_TO_DEG;
+    (*Angle)->angle[2] = acos(mag[1]/getSqrt(mag, 2)) * RAD_TO_DEG;    // yaw
+
     return 0;
 }
 
@@ -16,11 +20,6 @@ void Drone_Angle_Delete(Drone_Angle** Angle)
 {
     free(*Angle);
     *Angle = NULL;
-}
-
-float* Drone_Angle_getAngle(Drone_Angle* angle)
-{
-    return angle->angle;
 }
 
 void Drone_Angle_Print(Drone_Angle* angle)

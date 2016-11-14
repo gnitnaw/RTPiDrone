@@ -5,8 +5,7 @@ typedef struct Drone_Angle {
     float angle[3];
 } Drone_Angle;
 
-int Drone_Angle_Init(Drone_Angle**);
-float* Drone_Angle_getAngle(Drone_Angle*);
+int Drone_Angle_Init(Drone_Angle**, float*, float*);
 void Drone_Angle_Delete(Drone_Angle**);
 void Drone_Angle_Print(Drone_Angle*);
 

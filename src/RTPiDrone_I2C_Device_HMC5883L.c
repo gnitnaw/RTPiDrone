@@ -128,9 +128,6 @@ static int HMC5883L_getRawValue(void* i2c_dev)
     }
 
     exchange((char*) mag, 6);
-    int16_t tmpMag = mag[2];
-    mag[2] = mag[1];
-    mag[1] = tmpMag;
 
     return 0;
 }

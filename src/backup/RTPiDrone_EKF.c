@@ -20,7 +20,7 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-
+#include "RTPiDrone_EKF.h"
 #include "EKF.h"
 //#include "FastMath.h"
 #include "Quaternion.h"
@@ -28,23 +28,74 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <math.h>
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_linalg.h>
-
-#define USE_4TH_RUNGE_KUTTA
+#define RAD_TO_DEG              (180/M_PI)  // Convert rad to degree
+//#define USE_4TH_RUNGE_KUTTA
 //////////////////////////////////////////////////////////////////////////
 //all parameters below need to be tune
-#define EKF_PQ_INITIAL 0.000001f
-#define EKF_PW_INITIAL 0.000010f
+#define EKF_PQ_INITIAL 0.001f
+#define EKF_PW_INITIAL 0.010f
 
-#define EKF_QQ_INITIAL 0.000045f
-#define EKF_QW_INITIAL 0.00025f
+#define EKF_QQ_INITIAL 0.045f
+#define EKF_QW_INITIAL 0.025f
 
-#define EKF_RQ_INITIAL 0.000001f
+#define EKF_RQ_INITIAL 0.1f
 #define EKF_RA_INITIAL 0.07f
 #define EKF_RW_INITIAL 0.525f
-#define EKF_RM_INITIAL 0.105f
+#define EKF_RM_INITIAL 0.505f
 //////////////////////////////////////////////////////////////////////////
 
+struct Drone_EKF {
+    EKF_Filter*     ekf_filter;
+    float           Q[4];
+};
+
 static void getInverse(gsl_matrix_float*, gsl_matrix_float*);
+static void EKF_Free(EKF_Filter*);
+//static void EFK_Update(EKF_Filter*, float*, float*, float*, float*, float);
+//static void EKF_New(EKF_Filter*);
+//static void EKF_Init(EKF_Filter*, float*, float*);
+
+int Drone_EKF_Init(Drone_EKF** EKF)
+{
+    *EKF = (Drone_EKF*)calloc(1,sizeof(Drone_EKF));
+    (*EKF)->ekf_filter = calloc(1, sizeof(EKF_Filter));
+    EKF_New((*EKF)->ekf_filter);
+    return 0;
+}
+
+void Drone_EKF_Delete(Drone_EKF** EKF)
+{
+    EKF_Free((*EKF)->ekf_filter);
+    free((*EKF)->ekf_filter);
+    free(*EKF);
+    *EKF = NULL;
+}
+
+void Drone_EKF_DataInit(Drone_EKF* ekf, Drone_DataExchange* data)
+{
+    //Calcultate_RotationMatrix(data->acc, data->mag, ekf->R);
+    //Quaternion_FromRotationMatrix(ekf->R, X);
+    ekf->Q[0] = 1.0f;
+    EKF_Init(ekf->ekf_filter, ekf->Q, data->gyr);
+    for (int i=0; i<10000; ++i) {
+        EKF_Update(ekf->ekf_filter, ekf->Q, data->gyr, data->acc, data->mag, 10.0f);
+    }
+}
+
+void Drone_EKF_Update(Drone_EKF* ekf, Drone_DataExchange* data)
+{
+    EKF_Update(ekf->ekf_filter, ekf->Q, data->gyr, data->acc, data->mag, data->dt);
+}
+
+void Drone_EKF_RefreshAngle(Drone_EKF* ekf, float* angle)
+{
+    /*
+        angle[0] = atan2( 2*ekf->Q[2]*ekf->Q[3] + 2*ekf->Q[0]*ekf->Q[1], -2*ekf->Q[1]*ekf->Q[1] - 2*ekf->Q[2]*ekf->Q[2] + 1) * RAD_TO_DEG; // roll
+        angle[1] = asin(-2*ekf->Q[1]*ekf->Q[3] + 2*ekf->Q[0]*ekf->Q[2]) * RAD_TO_DEG; // pitch
+        angle[2] = atan2( 2*ekf->Q[1]*ekf->Q[2] + 2*ekf->Q[0]*ekf->Q[3], -2*ekf->Q[2]*ekf->Q[2] - 2*ekf->Q[3]*ekf->Q[3] + 1) * RAD_TO_DEG; // yaw
+        */
+    EKF_GetAngle(ekf->ekf_filter, angle);
+}
 
 static void getInverse(gsl_matrix_float* in, gsl_matrix_float* out)
 {
@@ -66,7 +117,7 @@ static void getInverse(gsl_matrix_float* in, gsl_matrix_float* out)
     gsl_matrix_free(tmp);
     gsl_permutation_free(p);
 }
-void EKF_Free(EKF_Filter* ekf)
+static void EKF_Free(EKF_Filter* ekf)
 {
     gsl_matrix_float_free(ekf->P);
     gsl_matrix_float_free(ekf->Q);
@@ -89,6 +140,7 @@ void EKF_Free(EKF_Filter* ekf)
     gsl_matrix_float_free(ekf->tmpXXT);
     gsl_matrix_float_free(ekf->tmpS);
 }
+
 void EKF_New(EKF_Filter* ekf)
 {
     //////////////////////////////////////////////////////////////////////////
@@ -208,7 +260,7 @@ void EKF_Init(EKF_Filter* ekf, float *q, float *gyro)
     X[6] = gyro[2];
 }
 
-void EFK_Update(EKF_Filter* ekf, float *q, float *gyro, float *accel, float *mag, float dt)
+void EKF_Update(EKF_Filter* ekf, float *q, float *gyro, float *accel, float *mag, float dt)
 {
     float norm;
     float h[EKF_MEASUREMENT_DIM];
@@ -463,7 +515,7 @@ void EFK_Update(EKF_Filter* ekf, float *q, float *gyro, float *accel, float *mag
 
     //Update state covariance with new knowledge
     //option: P = P - K*H*P or P = (I - K*H)*P*(I - K*H)' + K*R*K'
-#if 0
+#if 1
     //P = P - K*H*P
     //simple but it can't ensure the matrix will be a positive definite matrix
     //arm_mat_mult_f32(&ekf->K, &ekf->H, &ekf->tmpXX);

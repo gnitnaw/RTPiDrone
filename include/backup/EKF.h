@@ -120,7 +120,7 @@ typedef struct EKF_FILTER_T {
 
 void EKF_New(EKF_Filter* ekf);
 void EKF_Init(EKF_Filter* ekf, float *q, float *gyro);
-void EFK_Update(EKF_Filter* ekf, float *q, float *gyro, float *accel, float *mag, float dt);
+void EKF_Update(EKF_Filter* ekf, float *q, float *gyro, float *accel, float *mag, float dt);
 void EKF_GetAngle(EKF_Filter* ekf, float* rpy);
 
 inline void EKF_GetQ(EKF_Filter* ekf, float* Q)

@@ -103,7 +103,7 @@ void Drone_Start(Drone* rpiDrone)
     //Drone_I2C_Start(rpiDrone->i2c);
     _usleep(PERIOD/1000);
     clock_gettime(CLOCK_MONOTONIC, &rpiDrone->pause);
-
+    
     for (int i=0; i<10000; ++i) {
         //pthread_cond_signal(&cond[0]);
         //_usleep(4000);
