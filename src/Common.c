@@ -48,9 +48,9 @@ void _usleep(int micro)
  */
 float getSqrt(float* v, int N)
 {
-    float sum = 0.0f;
+    float sum = 0.;
     for (int i=0; i<N; ++i) {
-        sum += pow(v[i],2);
+        sum += pow(v[i],2.0f);
     }
     return sqrtf(sum);
 }

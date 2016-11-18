@@ -25,6 +25,7 @@ int RF24_setup(Drone_SPI_Device_RF24** RF24)
     Drone_Device_SetRawFunction(&(*RF24)->dev, RF24_getRawValue);
     Drone_Device_SetRealFunction(&(*RF24)->dev, RF24_convertRawToReal);
     Drone_Device_SetDataPointer(&(*RF24)->dev, (void*)&(*RF24)->receive_buf);
+    Drone_Device_SetPeriod(&(*RF24)->dev, 50000000L);
     return RF24_init(&(*RF24)->dev);
 }
 

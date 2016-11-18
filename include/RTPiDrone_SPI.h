@@ -1,6 +1,6 @@
 #ifndef  H_DRONE_SPI
 #define  H_DRONE_SPI
-
+#include "RTPiDrone_DataExchange.h"
 typedef struct Drone_SPI    Drone_SPI;   //!< Drone_SPI type
 
 /*!
@@ -27,4 +27,5 @@ void Drone_SPI_Start(Drone_SPI*);
  */
 int Drone_SPI_End(Drone_SPI**);
 
+void Drone_SPI_ExchangeData(Drone_DataExchange*, Drone_SPI*, uint64_t*);
 #endif

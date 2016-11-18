@@ -2,6 +2,7 @@
 #define H_DRONE_DATAEXCHANGE
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 typedef struct {
     float acc[3];
@@ -12,6 +13,8 @@ typedef struct {
     float pressure;
     float power[4];
     float dt;
+    uint32_t controller;
+    float volt;
 } Drone_DataExchange;
 
 int Drone_DataExchange_Init(Drone_DataExchange**);

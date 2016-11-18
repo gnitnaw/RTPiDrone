@@ -12,8 +12,6 @@ struct Drone_SPI_Device_MCP3008 {
 };
 
 static char send_buf[3] = {0x01, 0x80, 0x00};
-static uint8_t msb, lsb;
-static int msbRead, adcRead0;
 static int MCP3008_init(void*);
 static int MCP3008_getRawValue(void*);
 static int MCP3008_convertRawToReal(void*);
@@ -27,7 +25,7 @@ int MCP3008_setup(Drone_SPI_Device_MCP3008** MCP3008)
     Drone_Device_SetRawFunction(&(*MCP3008)->dev, MCP3008_getRawValue);
     Drone_Device_SetRealFunction(&(*MCP3008)->dev, MCP3008_convertRawToReal);
     Drone_Device_SetDataPointer(&(*MCP3008)->dev, (void*)&(*MCP3008)->volt);
-    Drone_Device_SetPeriod(&(*MCP3008)->dev, 500000000L);
+    Drone_Device_SetPeriod(&(*RF24)->dev, 10000000000L);
     return MCP3008_init(&(*MCP3008)->dev);
 }
 
@@ -47,19 +45,17 @@ static int MCP3008_init(void* spi_dev)
 
 static int MCP3008_getRawValue(void* spi_dev)
 {
-    bcm2835_spi_chipSelect(BCM2835_SPI_CS1); //Slave Select on CS1
     bcm2835_spi_transfernb(send_buf, ((Drone_SPI_Device_MCP3008*)spi_dev)->receive_buf, 3);
-    bcm2835_spi_chipSelect(BCM2835_SPI_CS0); //Slave Select on CS0
     return 0;
 }
 
 static int MCP3008_convertRawToReal(void* spi_dev)
 {
-    char* receive_buf = (char*)((Drone_SPI_Device_MCP3008*)spi_dev)->receive_buf;
-    msb = (uint8_t)receive_buf[1];
-    lsb = (uint8_t)receive_buf[2];
-    msbRead = msb & 0x03;
-    adcRead0 = (msbRead << 8) | lsb;
+    uint8_t* receive_buf = (uint8_t*)((Drone_SPI_Device_MCP3008*)spi_dev)->receive_buf;
+    uint8_t msb = (uint8_t)receive_buf[1];
+    uint8_t lsb = (uint8_t)receive_buf[2];
+    int msbRead = msb & 0x03;
+    int adcRead0 = (msbRead << 8) | lsb;
     ((Drone_SPI_Device_MCP3008*)spi_dev)->volt = V_INPUT * (float)adcRead0/ FULLVALUE;
     return 0;
 }

@@ -119,6 +119,7 @@ void Drone_Start(Drone* rpiDrone)
         dt = (float)(currentTime - rpiDrone->lastUpdate)/1000000000.0;
         rpiDrone->data->dt = dt;
         Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime);
+        Drone_SPI_ExchangeData(rpiDrone->data, rpiDrone->spi, &currentTime);
         Drone_AHRS_Refresh(rpiDrone->data, rpiDrone->ahrs);
         if (!(i%100)) Drone_AHRS_Print(rpiDrone->ahrs);
         Drone_DataExchange_PrintFile(rpiDrone->data, rpiDrone->fLog);
