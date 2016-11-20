@@ -18,15 +18,15 @@ static int RF24_convertRawToReal(void*);
 
 int RF24_setup(Drone_SPI_Device_RF24** RF24)
 {
-    *RF24 = (Drone_SPI_Device_RF24*) malloc(sizeof(Drone_SPI_Device_RF24));
+    *RF24 = (Drone_SPI_Device_RF24*) calloc(1, sizeof(Drone_SPI_Device_RF24));
     Drone_Device_Create(&(*RF24)->dev);
     Drone_Device_SetName(&(*RF24)->dev, "RF24");
-    Drone_Device_SetInitFunction(&(*RF24)->dev, RF24_init);
+    //Drone_Device_SetInitFunction(&(*RF24)->dev, RF24_init);
     Drone_Device_SetRawFunction(&(*RF24)->dev, RF24_getRawValue);
     Drone_Device_SetRealFunction(&(*RF24)->dev, RF24_convertRawToReal);
     Drone_Device_SetDataPointer(&(*RF24)->dev, (void*)&(*RF24)->receive_buf);
     Drone_Device_SetPeriod(&(*RF24)->dev, 50000000L);
-    return RF24_init(&(*RF24)->dev);
+    return RF24_init(&(*RF24)->dev)+Drone_Device_Init(&(*RF24)->dev) ;
 }
 
 void RF24_delete(Drone_SPI_Device_RF24** RF24)

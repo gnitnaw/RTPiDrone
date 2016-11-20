@@ -20,15 +20,15 @@ static int MCP3008_convertRawToReal(void*);
 
 int MCP3008_setup(Drone_SPI_Device_MCP3008** MCP3008)
 {
-    *MCP3008 = (Drone_SPI_Device_MCP3008*) malloc(sizeof(Drone_SPI_Device_MCP3008));
+    *MCP3008 = (Drone_SPI_Device_MCP3008*) calloc(1,sizeof(Drone_SPI_Device_MCP3008));
     Drone_Device_Create(&(*MCP3008)->dev);
     Drone_Device_SetName(&(*MCP3008)->dev, "MCP3008");
-    Drone_Device_SetInitFunction(&(*MCP3008)->dev, MCP3008_init);
+    //Drone_Device_SetInitFunction(&(*MCP3008)->dev, MCP3008_init);
     Drone_Device_SetRawFunction(&(*MCP3008)->dev, MCP3008_getRawValue);
     Drone_Device_SetRealFunction(&(*MCP3008)->dev, MCP3008_convertRawToReal);
     Drone_Device_SetDataPointer(&(*MCP3008)->dev, (void*)&(*MCP3008)->volt);
-    Drone_Device_SetPeriod(&(*MCP3008)->dev, 500000000L);
-    return MCP3008_init(&(*MCP3008)->dev);
+    Drone_Device_SetPeriod(&(*MCP3008)->dev, 5000000000L);
+    return MCP3008_init(&(*MCP3008)->dev) + Drone_Device_Init(&(*MCP3008)->dev);
 }
 
 void MCP3008_delete(Drone_SPI_Device_MCP3008** MCP3008)

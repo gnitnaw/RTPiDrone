@@ -10,7 +10,7 @@ int Drone_Angle_Init(Drone_Angle** Angle, float* acc, float* mag)
 {
     *Angle = (Drone_Angle*) calloc(1, sizeof(Drone_Angle));
     (*Angle)->angle[0] = atan2(acc[1], acc[2]) * RAD_TO_DEG;      // roll
-    (*Angle)->angle[1]  = atan2(acc[0], getSqrt(acc, 3)) * RAD_TO_DEG;
+    (*Angle)->angle[1]  = -atan2(acc[0], getSqrt(acc, 3)) * RAD_TO_DEG;
     (*Angle)->angle[2] = acos(mag[1]/getSqrt(mag, 2)) * RAD_TO_DEG;    // yaw
 
     return 0;

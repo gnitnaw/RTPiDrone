@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define NITEM                   3
 #define HMC5883L_ADDR           0x1E            // 3 Axis Magnetometer          Honeywell HMC5883L
 #define HMC5883L_MODE_REG       0x02
 #define HMC5883L_CONF_REG_A     0x00
@@ -19,10 +20,10 @@
 
 struct Drone_I2C_Device_HMC5883L {
     Drone_Device dev;           //!< \private I2C device prototype
-    int16_t rawData[3];             //!< \private Raw data
-    float   realData[3];            //!< \private Real data
-    float   mag_offset[3];          //!< \private The offset due to the structure of drone
-    float   mag_gain[3];            //!< \private The gain in three axis
+    int16_t rawData[NITEM];             //!< \private Raw data
+    float   realData[NITEM];            //!< \private Real data
+    float   mag_offset[NITEM];          //!< \private The offset due to the structure of drone
+    float   mag_gain[NITEM];            //!< \private The gain in three axis
     Drone_I2C_CaliInfo* cali;       //!< \private Calibration information
 };
 
@@ -41,19 +42,20 @@ int HMC5883L_setup(Drone_I2C_Device_HMC5883L** HMC5883L)
     *HMC5883L = (Drone_I2C_Device_HMC5883L*) malloc(sizeof(Drone_I2C_Device_HMC5883L));
     Drone_Device_Create(&(*HMC5883L)->dev);
     Drone_Device_SetName(&(*HMC5883L)->dev, "HMC5883L");
-    Drone_Device_SetInitFunction(&(*HMC5883L)->dev, HMC5883L_init);
+    //Drone_Device_SetInitFunction(&(*HMC5883L)->dev, HMC5883L_init);
     Drone_Device_SetRawFunction(&(*HMC5883L)->dev, HMC5883L_getRawValue);
     Drone_Device_SetRealFunction(&(*HMC5883L)->dev, HMC5883L_convertRawToReal);
     Drone_Device_SetDataPointer(&(*HMC5883L)->dev, (void*)(*HMC5883L)->realData);
     Drone_Device_SetPeriod(&(*HMC5883L)->dev, 6000000L);
-    Drone_I2C_Cali_Init(&(*HMC5883L)->cali, 3);
+    Drone_Device_SetNItem(&(*HMC5883L)->dev, NITEM);
+    Drone_I2C_Cali_Init(&(*HMC5883L)->cali, NITEM);
     (*HMC5883L)->mag_offset[0] = -276.919983;
     (*HMC5883L)->mag_offset[1] = -137.080002;
     (*HMC5883L)->mag_offset[2] = -82.799988;
     (*HMC5883L)->mag_gain[0] = 1.000000;
     (*HMC5883L)->mag_gain[1] = 0.992958;
     (*HMC5883L)->mag_gain[2] = 1.128000;
-    return Drone_Device_Init(&(*HMC5883L)->dev);
+    return HMC5883L_init(&(*HMC5883L)->dev) + Drone_Device_Init(&(*HMC5883L)->dev);
 }
 
 static int HMC5883L_init(void* i2c_dev)
@@ -135,7 +137,7 @@ static int HMC5883L_getRawValue(void* i2c_dev)
 static int HMC5883L_convertRawToReal(void* i2c_dev)
 {
     Drone_I2C_Device_HMC5883L* dev = (Drone_I2C_Device_HMC5883L*)i2c_dev;
-    for (int i=0; i<3; ++i) {
+    for (int i=0; i<NITEM; ++i) {
         dev->realData[i] = dev->mag_gain[i] *(dev->rawData[i] - dev->mag_offset[i]) * HMC5883L_RESOLUTION;
     }
     return HMC5883L_singleMeasurement();
@@ -144,6 +146,7 @@ static int HMC5883L_convertRawToReal(void* i2c_dev)
 void HMC5883L_delete(Drone_I2C_Device_HMC5883L** HMC5883L)
 {
     Drone_I2C_Cali_Delete(&(*HMC5883L)->cali);
+    Drone_Device_End(&(*HMC5883L)->dev);
     free(*HMC5883L);
     *HMC5883L = NULL;
 }

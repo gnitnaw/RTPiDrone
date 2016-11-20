@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 
+#define NITEM                   3
 #define L3G4200D_ADDR           0x69            // 3 Axis Gyro                  ST Microelectronics L3G4200D
 #define L3G4200D_CTRL_REG1      0x20
 #define L3G4200D_CTRL_REG2      0x21
@@ -26,8 +27,8 @@
 
 struct Drone_I2C_Device_L3G4200D {
     Drone_Device dev;           //!< \private I2C device prototype
-    int16_t rawData[3];             //!< \private Raw data
-    float   realData[3];            //!< \private Real data
+    int16_t rawData[NITEM];             //!< \private Raw data
+    float   realData[NITEM];            //!< \private Real data
     Drone_I2C_CaliInfo* cali;       //!< \private Calibration information
 };
 
@@ -45,13 +46,14 @@ int L3G4200D_setup(Drone_I2C_Device_L3G4200D** L3G4200D)
     *L3G4200D = (Drone_I2C_Device_L3G4200D*) malloc(sizeof(Drone_I2C_Device_L3G4200D));
     Drone_Device_Create(&(*L3G4200D)->dev);
     Drone_Device_SetName(&(*L3G4200D)->dev, "L3G4200D");
-    Drone_Device_SetInitFunction(&(*L3G4200D)->dev, L3G4200D_init);
+    //Drone_Device_SetInitFunction(&(*L3G4200D)->dev, L3G4200D_init);
     Drone_Device_SetRawFunction(&(*L3G4200D)->dev, L3G4200D_getRawValue);
     Drone_Device_SetRealFunction(&(*L3G4200D)->dev, L3G4200D_convertRawToReal);
     Drone_Device_SetDataPointer(&(*L3G4200D)->dev, (void*)(*L3G4200D)->realData);
     Drone_Device_SetPeriod(&(*L3G4200D)->dev, 1000000000L/L3G4200D_RATE);
-    Drone_I2C_Cali_Init(&(*L3G4200D)->cali, 3);
-    return Drone_Device_Init(&(*L3G4200D)->dev);
+    Drone_Device_SetNItem(&(*L3G4200D)->dev, NITEM);
+    Drone_I2C_Cali_Init(&(*L3G4200D)->cali, NITEM);
+    return L3G4200D_init(&(*L3G4200D)->dev) + Drone_Device_Init(&(*L3G4200D)->dev);
 }
 
 static int L3G4200D_init(void* i2c_dev)
@@ -144,7 +146,7 @@ static int L3G4200D_getRawValue(void* i2c_dev)
 static int L3G4200D_convertRawToReal(void* i2c_dev)
 {
     Drone_I2C_Device_L3G4200D* dev = (Drone_I2C_Device_L3G4200D*)i2c_dev;
-    for (int i=0; i<3; ++i) {
+    for (int i=0; i<NITEM; ++i) {
         dev->realData[i] = dev->rawData[i] * L3G4200D_UNIT * DEG_TO_RAD;
         if (L3G4200D_RANGE == 500) dev->realData[i] *= 2;
         else if (L3G4200D_RANGE == 2000) dev->realData[i] *= 8;
@@ -155,6 +157,7 @@ static int L3G4200D_convertRawToReal(void* i2c_dev)
 void L3G4200D_delete(Drone_I2C_Device_L3G4200D** L3G4200D)
 {
     Drone_I2C_Cali_Delete(&(*L3G4200D)->cali);
+    Drone_Device_End(&(*L3G4200D)->dev);
     free(*L3G4200D);
     *L3G4200D = NULL;
 }

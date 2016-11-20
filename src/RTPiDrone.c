@@ -104,7 +104,7 @@ void Drone_Start(Drone* rpiDrone)
     _usleep(PERIOD/1000);
     clock_gettime(CLOCK_MONOTONIC, &rpiDrone->pause);
 
-    for (int i=0; i<10000; ++i) {
+    for (int i=0; i<1000; ++i) {
         //pthread_cond_signal(&cond[0]);
         //_usleep(4000);
         // Add the time you want to sleep

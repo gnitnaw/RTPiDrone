@@ -65,13 +65,14 @@ int BMP085_setup(Drone_I2C_Device_BMP085** BMP085)
     *BMP085 = (Drone_I2C_Device_BMP085*) malloc(sizeof(Drone_I2C_Device_BMP085));
     Drone_Device_Create(&(*BMP085)->dev);
     Drone_Device_SetName(&(*BMP085)->dev, "BMP085");
-    Drone_Device_SetInitFunction(&(*BMP085)->dev, BMP085_init);
+    //Drone_Device_SetInitFunction(&(*BMP085)->dev, BMP085_init);
     Drone_Device_SetRawFunction(&(*BMP085)->dev, BMP085_getRawValue);
     Drone_Device_SetRealFunction(&(*BMP085)->dev, BMP085_convertRawToReal);
     Drone_Device_SetDataPointer(&(*BMP085)->dev, (void*)&(*BMP085)->altitude);
-    Drone_Device_SetPeriod(&(*BMP085)->dev, BMP085_Period[0]);
+    Drone_Device_SetPeriod(&(*BMP085)->dev, BMP085_Period[0]+BMP085_Period[1]);
+    Drone_Device_SetNItem(&(*BMP085)->dev, 3);
     Drone_I2C_Cali_Init(&(*BMP085)->cali, 3);
-    return Drone_Device_Init(&(*BMP085)->dev);
+    return BMP085_init(&(*BMP085)->dev)+Drone_Device_Init(&(*BMP085)->dev);
 }
 
 static int BMP085_init(void* i2c_dev)
@@ -210,6 +211,7 @@ static int BMP085_convertRawToReal(void* i2c_dev)
 void BMP085_delete(Drone_I2C_Device_BMP085** BMP085)
 {
     Drone_I2C_Cali_Delete(&(*BMP085)->cali);
+    Drone_Device_End(&(*BMP085)->dev);
     free(*BMP085);
     *BMP085 = NULL;
 }

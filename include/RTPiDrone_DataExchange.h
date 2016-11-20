@@ -3,11 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-
 typedef struct {
-    float acc[3];
-    float gyr[3];
-    float mag[3];
+    float acc[3], acc_est[3];
+    float gyr[3], gyr_est[3];
+    float mag[3], mag_est[3];
     float attitude;
     float temperature;
     float pressure;

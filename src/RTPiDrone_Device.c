@@ -20,13 +20,27 @@ static inline int dummyFunction(void* e)
  */
 static inline int dummyEndFunction(void* e)
 {
-    printf("%s END!\n", ((Drone_Device*)e)->name);
+    Drone_Device* dev = (Drone_Device*)e;
+    if (dev->filter) {
+        free(dev->filter);
+        dev->filter = NULL;
+    }
+    printf("%s END!\n", dev->name);
     return 0;
 }
 
 void Drone_Device_SetName(Drone_Device* dev, const char* str)
 {
     strcpy(dev->name, str);
+}
+
+void Drone_Device_SetNItem(Drone_Device* dev, uint8_t n)
+{
+    dev->nItem = n;
+    dev->filter = calloc(n, sizeof(Drone_Filter));
+    for (int i=0; i<n; ++i) {
+        Drone_Filter_init(&dev->filter[i], (float)dev->period/1000000000L);
+    }
 }
 
 void Drone_Device_SetInitFunction(Drone_Device* dev, int (*init)(void*))

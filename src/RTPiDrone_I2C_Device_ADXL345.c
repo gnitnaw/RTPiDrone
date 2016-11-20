@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define NITEM                   3
 #define ADXL345_ADDR            0x53            // 3 Axis Accelerometer         Analog Devices ADXL345 
 #define ADXL345_POWER_CTL       0x2D
 #define ADXL345_DATA_FORMAT     0x31
@@ -41,13 +42,14 @@ int ADXL345_setup(Drone_I2C_Device_ADXL345** axdl345)
     *axdl345 = (Drone_I2C_Device_ADXL345*) malloc(sizeof(Drone_I2C_Device_ADXL345));
     Drone_Device_Create(&(*axdl345)->dev);
     Drone_Device_SetName(&(*axdl345)->dev, "ADXL345");
-    Drone_Device_SetInitFunction(&(*axdl345)->dev, ADXL345_init);
+    //Drone_Device_SetInitFunction(&(*axdl345)->dev, ADXL345_init);
     Drone_Device_SetRawFunction(&(*axdl345)->dev, ADXL345_getRawValue);
     Drone_Device_SetRealFunction(&(*axdl345)->dev, ADXL345_convertRawToReal);
     Drone_Device_SetDataPointer(&(*axdl345)->dev, (void*)(*axdl345)->realData);
     Drone_Device_SetPeriod(&(*axdl345)->dev, 1000000000L/ADXL345_RATE);
-    Drone_I2C_Cali_Init(&(*axdl345)->cali, 3);
-    return Drone_Device_Init(&(*axdl345)->dev);
+    Drone_Device_SetNItem(&(*axdl345)->dev, NITEM);
+    Drone_I2C_Cali_Init(&(*axdl345)->cali, NITEM);
+    return ADXL345_init(&(*axdl345)->dev) + Drone_Device_Init(&(*axdl345)->dev);
 }
 
 static int ADXL345_init(void* i2c_dev)
@@ -152,6 +154,7 @@ static int ADXL345_convertRawToReal(void* i2c_dev)
 void ADXL345_delete(Drone_I2C_Device_ADXL345** axdl345)
 {
     Drone_I2C_Cali_Delete(&(*axdl345)->cali);
+    Drone_Device_End(&(*axdl345)->dev);
     free(*axdl345);
     *axdl345 = NULL;
 }
