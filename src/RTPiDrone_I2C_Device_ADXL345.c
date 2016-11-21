@@ -1,5 +1,6 @@
 #include "RTPiDrone_I2C_Device_ADXL345.h"
 #include "RTPiDrone_Device.h"
+#include "RTPiDrone_Filter.h"
 #include <bcm2835.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,9 +24,10 @@
 
 struct Drone_I2C_Device_ADXL345 {
     Drone_Device dev;           //!< \private I2C device prototype
-    int16_t rawData[3];             //!< \private Raw data
-    float   realData[3];            //!< \private Real data
+    int16_t rawData[NITEM];             //!< \private Raw data
+    float   realData[NITEM];            //!< \private Real data
     Drone_I2C_CaliInfo* cali;       //!< \private Calibration information
+    Drone_Filter    filter[NITEM];
 };
 
 static int ADXL345_init(void*);        //!< \private \memberof Drone_I2C_Device_ADXL345 function : Initialization of ADXL345
@@ -47,8 +49,10 @@ int ADXL345_setup(Drone_I2C_Device_ADXL345** axdl345)
     Drone_Device_SetRealFunction(&(*axdl345)->dev, ADXL345_convertRawToReal);
     Drone_Device_SetDataPointer(&(*axdl345)->dev, (void*)(*axdl345)->realData);
     Drone_Device_SetPeriod(&(*axdl345)->dev, 1000000000L/ADXL345_RATE);
-    Drone_Device_SetNItem(&(*axdl345)->dev, NITEM);
     Drone_I2C_Cali_Init(&(*axdl345)->cali, NITEM);
+    for (int i=0; i<NITEM; ++i) {
+        Drone_Filter_init(&(*axdl345)->filter[i], (1.0f/ADXL345_RATE) );
+    }
     return ADXL345_init(&(*axdl345)->dev) + Drone_Device_Init(&(*axdl345)->dev);
 }
 

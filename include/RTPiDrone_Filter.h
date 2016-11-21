@@ -6,11 +6,12 @@
 #define ZETA    0.5
 
 typedef struct {
+    uint64_t    N;
     float estimated_previous[2];
-    float A1, A2, B0, B1, B2;
+    float B0, B1, B2;
 } Drone_Filter;
 
 void Drone_Filter_init(Drone_Filter*, float) ;
-void Drone_Filter_renew(Drone_Filter*, float*, float*, uint64_t*) ;
+void Drone_Filter_renew(Drone_Filter*, float*, float*) ;
 
 #endif

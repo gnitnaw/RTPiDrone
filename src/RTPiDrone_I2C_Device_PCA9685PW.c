@@ -54,13 +54,14 @@ int PCA9685PW_setup(Drone_I2C_Device_PCA9685PW** PCA9685PW)
     Drone_Device_SetName(&(*PCA9685PW)->dev, "PCA9685PW");
     Drone_Device_SetInitFunction(&(*PCA9685PW)->dev, PCA9685PW_init);
     Drone_Device_SetRealFunction(&(*PCA9685PW)->dev, PCA9685PW_Read);
-    Drone_Device_SetEndFunction(&(*PCA9685PW)->dev, PCA9685PW_PWMReset);
+    //Drone_Device_SetEndFunction(&(*PCA9685PW)->dev, PCA9685PW_PWMReset);
     Drone_Device_SetDataPointer(&(*PCA9685PW)->dev, (void*)(*PCA9685PW)->PWM_CHANNEL);
     return Drone_Device_Init(&(*PCA9685PW)->dev);
 }
 
 void PCA9685PW_delete(Drone_I2C_Device_PCA9685PW** PCA9685PW)
 {
+    PCA9685PW_PWMReset(NULL);
     Drone_Device_End(&(*PCA9685PW)->dev);
     free(*PCA9685PW);
     *PCA9685PW = NULL;

@@ -24,4 +24,6 @@ void ADXL345_delete(Drone_I2C_Device_ADXL345**);
  * \public \memberof Drone_I2C_Device_ADXL345
  */
 Drone_I2C_CaliInfo* ADXL345_getCaliInfo(Drone_I2C_Device_ADXL345*);
+
+void ADXL345_getFilteredValue(Drone_I2C_Device_ADXL345*);
 #endif

@@ -22,7 +22,7 @@
 #include <gsl/gsl_statistics.h>
 
 #define FILENAMESIZE            64
-#define N_SAMPLE_CALIBRATION    1000
+#define N_SAMPLE_CALIBRATION    10
 #define NUM_CALI_THREADS        4
 #define NDATA_ADXL345           3
 #define NDATA_L3G4200D          3
@@ -140,39 +140,14 @@ void Drone_I2C_Start(Drone_I2C* i2c)
 
 int Drone_I2C_End(Drone_I2C** i2c)
 {
-    // Shut down the device (if necessary).
-    /*
-        if (Drone_Device_End((Drone_Device*)(*i2c)->PCA9685PW)) {
-            perror("End PCA9685PW Error");
-            return -1;
-        }
-
-        if (Drone_Device_End((Drone_Device*)(*i2c)->ADXL345)) {
-            perror("End ADXL345 Error");
-            return -2;
-        }
-        if (Drone_Device_End((Drone_Device*)(*i2c)->L3G4200D)) {
-            perror("End L3G4200D Error");
-            return -3;
-        }
-        if (Drone_Device_End((Drone_Device*)(*i2c)->HMC5883L)) {
-            perror("End HMC5883L Error");
-            return -4;
-        }
-        if (Drone_Device_End((Drone_Device*)(*i2c)->BMP085)) {
-            perror("End BMP085 Error");
-            return -5;
-        }
-    */
-    bcm2835_i2c_end();
-
     // Clean the file structures
+    PCA9685PW_delete(&(*i2c)->PCA9685PW);
     ADXL345_delete(&(*i2c)->ADXL345);
     L3G4200D_delete(&(*i2c)->L3G4200D);
     HMC5883L_delete(&(*i2c)->HMC5883L);
     BMP085_delete(&(*i2c)->BMP085);
-    PCA9685PW_delete(&(*i2c)->PCA9685PW);
 
+    bcm2835_i2c_end();
     free(*i2c);
     *i2c = NULL;
     return 0;
@@ -313,14 +288,16 @@ void Drone_I2C_DataInit(Drone_DataExchange* data, Drone_I2C* i2c)
 
 void Drone_I2C_ExchangeData(Drone_DataExchange* data, Drone_I2C* i2c, uint64_t* lastUpdate)
 {
-    float* f = (float*) Drone_Device_GetRefreshedData((Drone_Device*)i2c->ADXL345, lastUpdate);
+    float* f = (float*)Drone_Device_GetRefreshedData((Drone_Device*)i2c->ADXL345, lastUpdate);
+
     if (f!=NULL) {
         for (int i=0; i<3; ++i) {
+            //printf("%f, %f\n", f[i], g[i]);
             data->acc[i] = f[i];
         }
     }
 
-    f = (float*) Drone_Device_GetRefreshedData((Drone_Device*)i2c->L3G4200D, lastUpdate);
+    f = (float*)Drone_Device_GetRefreshedData((Drone_Device*)i2c->L3G4200D, lastUpdate);
     if (f!=NULL) {
         Drone_I2C_CaliInfo* c = L3G4200D_getCaliInfo(i2c->L3G4200D);
         for (int i=0; i<3; ++i) {
@@ -328,7 +305,7 @@ void Drone_I2C_ExchangeData(Drone_DataExchange* data, Drone_I2C* i2c, uint64_t* 
         }
     }
 
-    f = (float*) Drone_Device_GetRefreshedData((Drone_Device*)i2c->HMC5883L, lastUpdate);
+    f = (float*)Drone_Device_GetRefreshedData((Drone_Device*)i2c->HMC5883L, lastUpdate);
     if (f!=NULL) {
         for (int i=0; i<3; ++i) {
             data->mag[i] = f[i];

@@ -1,6 +1,5 @@
 #ifndef  H_DRONE_DEVICE
 #define  H_DRONE_DEVICE
-#include "RTPiDrone_Filter.h"
 #include <stdint.h>
 
 /*!
@@ -9,7 +8,6 @@
  */
 typedef struct {
     char name[16];                  //!< \private Name of device.
-    uint8_t nItem;                  //!< \private No. of data
     int (*init_func)(void*);        //!< \private Initialization function
     int (*rawdata_func)(void*);     //!< \private Function to get raw data from device
     int (*data_func)(void*);        //!< \private Function to convert raw data to real data
@@ -17,7 +15,6 @@ typedef struct {
     void*	getData;	            //!< \private Pointer of real data
     uint64_t    lastUpdate;         //!< \private Last update time
     uint64_t    period;             //!< \private Period for sensor refresh
-    Drone_Filter*   filter;         //!< \private Filter
 } Drone_Device;
 
 /*!
@@ -25,12 +22,6 @@ typedef struct {
  * \public \memberof Drone_Device
  */
 void Drone_Device_SetName(Drone_Device*, const char*);
-
-/*!
- * Set no. of data of device.
- * \public \memberof Drone_Device
- */
-void Drone_Device_SetNItem(Drone_Device*, uint8_t);
 
 /*!
  * Set initialization function.
