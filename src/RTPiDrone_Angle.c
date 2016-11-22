@@ -1,6 +1,5 @@
 #include "RTPiDrone_Angle.h"
 #include "Common.h"
-#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #define DEG_TO_RAD      (M_PI/180)
@@ -25,4 +24,10 @@ void Drone_Angle_Delete(Drone_Angle** Angle)
 void Drone_Angle_Print(Drone_Angle* angle)
 {
     printf("Roll = %f, Pitch = %f, Yaw = %f\n", angle->angle[0], angle->angle[1], angle->angle[2]);
+}
+
+void Drone_Angle_PrintFile(Drone_Angle* angle, FILE* f)
+{
+    float* Angle = angle->angle;
+    fprintf(f, "%f\t%f\t%f\t", Angle[0], Angle[1], Angle[2]);
 }

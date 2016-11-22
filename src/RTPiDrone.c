@@ -104,7 +104,7 @@ void Drone_Start(Drone* rpiDrone)
     _usleep(PERIOD/1000);
     clock_gettime(CLOCK_MONOTONIC, &rpiDrone->pause);
 
-    for (int i=0; i<10; ++i) {
+    for (int i=0; i<1000; ++i) {
         //pthread_cond_signal(&cond[0]);
         //_usleep(4000);
         // Add the time you want to sleep
@@ -121,7 +121,7 @@ void Drone_Start(Drone* rpiDrone)
         Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime);
         Drone_SPI_ExchangeData(rpiDrone->data, rpiDrone->spi, &currentTime);
         Drone_AHRS_Refresh(rpiDrone->data, rpiDrone->ahrs);
-        //if (!(i%100)) Drone_AHRS_Print(rpiDrone->ahrs);
+        if (!(i%100)) Drone_AHRS_Print(rpiDrone->ahrs);
         Drone_DataExchange_PrintFile(rpiDrone->data, rpiDrone->fLog);
         rpiDrone->lastUpdate = currentTime;
         clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &rpiDrone->pause, NULL);

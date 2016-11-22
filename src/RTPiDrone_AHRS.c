@@ -28,13 +28,13 @@ void Drone_AHRS_DataInit(Drone_DataExchange* data, Drone_AHRS* ahrs)
     Drone_Angle_Init(&ahrs->Angle, data->acc, data->mag);
     Drone_Quaternion_Init(&ahrs->Quaternion, ahrs->Angle->angle, pi);
     for (int i=0; i<1000; ++i) {
-        Drone_Quaternion_renew(ahrs->Quaternion, 0.001, data->acc, data->gyr, data->mag);
+        Drone_Quaternion_renew(ahrs->Quaternion, 0.1, data->acc, data->gyr, data->mag);
     }
 }
 
 void Drone_AHRS_Refresh(Drone_DataExchange* data, Drone_AHRS* ahrs)
 {
-    Drone_Quaternion_renew(ahrs->Quaternion, data->dt, data->acc, data->gyr, data->mag);
+    Drone_Quaternion_renew(ahrs->Quaternion, data->dt, data->acc_est, data->gyr_est, data->mag_est);
     Drone_Quaternion_getAngle(ahrs->Quaternion, ahrs->Angle->angle);
 }
 

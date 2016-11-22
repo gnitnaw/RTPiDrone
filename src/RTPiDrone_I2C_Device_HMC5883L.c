@@ -1,6 +1,6 @@
 #include "RTPiDrone_I2C_Device_HMC5883L.h"
 #include "RTPiDrone_Device.h"
-#include "RTPiDrone_I2C_CaliInfo.h"
+#include "RTPiDrone_Filter.h"
 #include "Common.h"
 #include <bcm2835.h>
 #include <stdio.h>
@@ -25,6 +25,7 @@ struct Drone_I2C_Device_HMC5883L {
     float   mag_offset[NITEM];          //!< \private The offset due to the structure of drone
     float   mag_gain[NITEM];            //!< \private The gain in three axis
     Drone_I2C_CaliInfo* cali;       //!< \private Calibration information
+    Drone_Filter    filter[NITEM];
 };
 
 static int HMC5883L_init(void*);        //!< \private \memberof Drone_I2C_Device_HMC5883L function : Initialization of HMC5883L
@@ -39,7 +40,7 @@ Drone_I2C_CaliInfo* HMC5883L_getCaliInfo(Drone_I2C_Device_HMC5883L* HMC5883L)
 
 int HMC5883L_setup(Drone_I2C_Device_HMC5883L** HMC5883L)
 {
-    *HMC5883L = (Drone_I2C_Device_HMC5883L*) malloc(sizeof(Drone_I2C_Device_HMC5883L));
+    *HMC5883L = (Drone_I2C_Device_HMC5883L*) calloc(1, sizeof(Drone_I2C_Device_HMC5883L));
     Drone_Device_Create(&(*HMC5883L)->dev);
     Drone_Device_SetName(&(*HMC5883L)->dev, "HMC5883L");
     //Drone_Device_SetInitFunction(&(*HMC5883L)->dev, HMC5883L_init);
@@ -54,6 +55,9 @@ int HMC5883L_setup(Drone_I2C_Device_HMC5883L** HMC5883L)
     (*HMC5883L)->mag_gain[0] = 1.000000;
     (*HMC5883L)->mag_gain[1] = 0.992958;
     (*HMC5883L)->mag_gain[2] = 1.128000;
+    for (int i=0; i<NITEM; ++i) {
+        Drone_Filter_init(&(*HMC5883L)->filter[i], 0.006 );
+    }
     return HMC5883L_init(&(*HMC5883L)->dev) + Drone_Device_Init(&(*HMC5883L)->dev);
 }
 
@@ -148,6 +152,17 @@ void HMC5883L_delete(Drone_I2C_Device_HMC5883L** HMC5883L)
     Drone_Device_End(&(*HMC5883L)->dev);
     free(*HMC5883L);
     *HMC5883L = NULL;
+}
+
+void HMC5883L_getFilteredValue(Drone_I2C_Device_HMC5883L* HMC5883L, uint64_t* lastUpdate, float* data, float* data_filter)
+{
+    float* f = (float*)Drone_Device_GetRefreshedData((Drone_Device*)HMC5883L, lastUpdate);
+    if (f) {
+        for (int i=0; i<NITEM; ++i) {
+            data[i] = f[i];
+            Drone_Filter_renew(&HMC5883L->filter[i], f[i], &data_filter[i]);
+        }
+    }
 }
 
 static int HMC5883L_singleMeasurement(void)

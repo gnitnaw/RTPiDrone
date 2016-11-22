@@ -27,6 +27,10 @@ void Drone_DataExchange_PrintFile(Drone_DataExchange* data, FILE *fp)
     fprintf(fp, "%f\t%f\t%f\t", data->gyr[0], data->gyr[1], data->gyr[2]);
     fprintf(fp, "%f\t%f\t%f\t", data->mag[0], data->mag[1], data->mag[2]);
     fprintf(fp, "%f\t", data->attitude);
-    fprintf(fp, "%f\n", data->volt);
+    fprintf(fp, "%f\t%f\t%f\t", data->acc_est[0], data->acc_est[1], data->acc_est[2]);
+    fprintf(fp, "%f\t%f\t%f\t", data->gyr_est[0], data->gyr_est[1], data->gyr_est[2]);
+    fprintf(fp, "%f\t%f\t%f\t", data->mag_est[0], data->mag_est[1], data->mag_est[2]);
+    fprintf(fp, "%f\t", data->att_est);
+    fprintf(fp, "%f\t", data->volt);
     fflush(fp);
 }

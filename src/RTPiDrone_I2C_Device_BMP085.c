@@ -14,7 +14,7 @@
 
 // Need to read them at the beginning of measurement (or simply save them, then user can load them to estimate temperature
 // and pressure
-#pragma pack( push, 1 )
+//#pragma pack( push, 1 )
 
 typedef struct {
     int16_t AC1;
@@ -33,7 +33,7 @@ BMP085_Parameters;
 
 static uint64_t BMP085_Trigger_Switch = 0;
 
-#pragma pack( push, 1 )
+//#pragma pack( push, 1 )
 struct Drone_I2C_Device_BMP085 {
     Drone_Device dev;                //!< \private I2C device prototype
     long UT;                         //!< \private Raw Temperature
@@ -43,8 +43,9 @@ struct Drone_I2C_Device_BMP085 {
     float   RP;                      //!< \private Real Pressure
     BMP085_Parameters Para_BMP085;   //!< \private Parameter of BMP085
     Drone_I2C_CaliInfo* cali;        //!< \private Calibration information
+    Drone_Filter    filter;
 };
-#pragma pack( pop )
+//#pragma pack( pop )
 
 static int BMP085_init(void*);        //!< \private \memberof Drone_I2C_Device_BMP085 function : Initialization of BMP085
 static int BMP085_Trigger_UTemp(void); //!< \private \memberof Drone_I2C_Device_BMP085 function : Trigger temp. measurement
@@ -62,7 +63,7 @@ Drone_I2C_CaliInfo* BMP085_getCaliInfo(Drone_I2C_Device_BMP085* BMP085)
 
 int BMP085_setup(Drone_I2C_Device_BMP085** BMP085)
 {
-    *BMP085 = (Drone_I2C_Device_BMP085*) malloc(sizeof(Drone_I2C_Device_BMP085));
+    *BMP085 = (Drone_I2C_Device_BMP085*) calloc(1, sizeof(Drone_I2C_Device_BMP085));
     Drone_Device_Create(&(*BMP085)->dev);
     Drone_Device_SetName(&(*BMP085)->dev, "BMP085");
     //Drone_Device_SetInitFunction(&(*BMP085)->dev, BMP085_init);
@@ -71,6 +72,9 @@ int BMP085_setup(Drone_I2C_Device_BMP085** BMP085)
     Drone_Device_SetDataPointer(&(*BMP085)->dev, (void*)&(*BMP085)->altitude);
     Drone_Device_SetPeriod(&(*BMP085)->dev, BMP085_Period[0]+BMP085_Period[1]);
     Drone_I2C_Cali_Init(&(*BMP085)->cali, 3);
+    Drone_Filter* filter = &(*BMP085)->filter;
+    Drone_Filter_init(filter, 0.03);
+
     return BMP085_init(&(*BMP085)->dev)+Drone_Device_Init(&(*BMP085)->dev);
 }
 
@@ -215,3 +219,14 @@ void BMP085_delete(Drone_I2C_Device_BMP085** BMP085)
     *BMP085 = NULL;
 }
 
+void BMP085_getFilteredValue(Drone_I2C_Device_BMP085* BMP085, uint64_t* lastUpdate, float* data, float* data_filter)
+{
+    float* f = (float*) Drone_Device_GetRefreshedData((Drone_Device*)BMP085, lastUpdate);
+    if (f) {
+        Drone_I2C_CaliInfo* c = BMP085_getCaliInfo(BMP085);
+        *data = *f-Drone_I2C_Cali_getMean(c)[0];
+        float filtered;
+        Drone_Filter_renew(&BMP085->filter, *f, &filtered);
+        *data_filter = filtered - Drone_I2C_Cali_getMean(c)[0];
+    }
+}

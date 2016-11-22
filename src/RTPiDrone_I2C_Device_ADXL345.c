@@ -41,7 +41,7 @@ Drone_I2C_CaliInfo* ADXL345_getCaliInfo(Drone_I2C_Device_ADXL345* ADXL345)
 
 int ADXL345_setup(Drone_I2C_Device_ADXL345** axdl345)
 {
-    *axdl345 = (Drone_I2C_Device_ADXL345*) malloc(sizeof(Drone_I2C_Device_ADXL345));
+    *axdl345 = (Drone_I2C_Device_ADXL345*) calloc(1, sizeof(Drone_I2C_Device_ADXL345));
     Drone_Device_Create(&(*axdl345)->dev);
     Drone_Device_SetName(&(*axdl345)->dev, "ADXL345");
     //Drone_Device_SetInitFunction(&(*axdl345)->dev, ADXL345_init);
@@ -149,7 +149,7 @@ static int ADXL345_getRawValue(void* i2c_dev)
 static int ADXL345_convertRawToReal(void* i2c_dev)
 {
     Drone_I2C_Device_ADXL345* dev = (Drone_I2C_Device_ADXL345*)i2c_dev;
-    for (int i=0; i<3; ++i) {
+    for (int i=0; i<NITEM; ++i) {
         dev->realData[i] = dev->rawData[i] * ADXL345_UNIT;
     }
     return 0;
@@ -161,4 +161,15 @@ void ADXL345_delete(Drone_I2C_Device_ADXL345** axdl345)
     Drone_Device_End(&(*axdl345)->dev);
     free(*axdl345);
     *axdl345 = NULL;
+}
+
+void ADXL345_getFilteredValue(Drone_I2C_Device_ADXL345* ADXL345, uint64_t* lastUpdate, float* data, float* data_filter)
+{
+    float* f = (float*)Drone_Device_GetRefreshedData((Drone_Device*)ADXL345, lastUpdate);
+    if (f) {
+        for (int i=0; i<NITEM; ++i) {
+            data[i] = f[i];
+            Drone_Filter_renew(&ADXL345->filter[i], f[i], &data_filter[i]);
+        }
+    }
 }

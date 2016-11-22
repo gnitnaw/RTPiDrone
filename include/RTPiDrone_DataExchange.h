@@ -7,9 +7,8 @@ typedef struct {
     float acc[3], acc_est[3];
     float gyr[3], gyr_est[3];
     float mag[3], mag_est[3];
-    float attitude;
-    float temperature;
-    float pressure;
+    float attitude, att_est;
+    float temperature, pressure;
     float power[4];
     float dt;
     uint32_t controller;

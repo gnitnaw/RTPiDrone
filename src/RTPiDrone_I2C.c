@@ -22,7 +22,7 @@
 #include <gsl/gsl_statistics.h>
 
 #define FILENAMESIZE            64
-#define N_SAMPLE_CALIBRATION    10
+#define N_SAMPLE_CALIBRATION    2000
 #define NUM_CALI_THREADS        4
 #define NDATA_ADXL345           3
 #define NDATA_L3G4200D          3
@@ -288,36 +288,24 @@ void Drone_I2C_DataInit(Drone_DataExchange* data, Drone_I2C* i2c)
 
 void Drone_I2C_ExchangeData(Drone_DataExchange* data, Drone_I2C* i2c, uint64_t* lastUpdate)
 {
-    float* f = (float*)Drone_Device_GetRefreshedData((Drone_Device*)i2c->ADXL345, lastUpdate);
-
-    if (f!=NULL) {
-        for (int i=0; i<3; ++i) {
-            //printf("%f, %f\n", f[i], g[i]);
-            data->acc[i] = f[i];
-        }
-    }
-
-    f = (float*)Drone_Device_GetRefreshedData((Drone_Device*)i2c->L3G4200D, lastUpdate);
-    if (f!=NULL) {
-        Drone_I2C_CaliInfo* c = L3G4200D_getCaliInfo(i2c->L3G4200D);
-        for (int i=0; i<3; ++i) {
-            data->gyr[i] = f[i]-Drone_I2C_Cali_getMean(c)[i];
-        }
-    }
-
-    f = (float*)Drone_Device_GetRefreshedData((Drone_Device*)i2c->HMC5883L, lastUpdate);
+    ADXL345_getFilteredValue(i2c->ADXL345, lastUpdate, data->acc, data->acc_est);
+    L3G4200D_getFilteredValue(i2c->L3G4200D, lastUpdate, data->gyr, data->gyr_est);
+    HMC5883L_getFilteredValue(i2c->HMC5883L, lastUpdate, data->mag, data->mag_est);
+    BMP085_getFilteredValue(i2c->BMP085, lastUpdate, &data->attitude, &data->att_est);
+    /*
+    float* f = (float*)Drone_Device_GetRefreshedData((Drone_Device*)i2c->HMC5883L, lastUpdate);
     if (f!=NULL) {
         for (int i=0; i<3; ++i) {
             data->mag[i] = f[i];
         }
-    }
-
-    f = (float*) Drone_Device_GetRefreshedData((Drone_Device*)i2c->BMP085, lastUpdate);
+    }*/
+    /*
+    float* f = (float*) Drone_Device_GetRefreshedData((Drone_Device*)i2c->BMP085, lastUpdate);
     if (f!=NULL) {
         Drone_I2C_CaliInfo* c = BMP085_getCaliInfo(i2c->BMP085);
         data->attitude = f[0] - Drone_I2C_Cali_getMean(c)[0];
         data->temperature = f[1];
         data->pressure = f[2];
-    }
+    }*/
 }
 

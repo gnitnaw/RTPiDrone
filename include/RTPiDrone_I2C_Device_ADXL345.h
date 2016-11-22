@@ -1,5 +1,6 @@
 #ifndef H_RTPIDRONE_I2C_DEVICE_ADXL345
 #define H_RTPIDRONE_I2C_DEVICE_ADXL345
+#include <stdint.h>
 #include "RTPiDrone_I2C_CaliInfo.h"
 /*!
  * Drone_I2C_Device_ADXL345 class.
@@ -25,5 +26,5 @@ void ADXL345_delete(Drone_I2C_Device_ADXL345**);
  */
 Drone_I2C_CaliInfo* ADXL345_getCaliInfo(Drone_I2C_Device_ADXL345*);
 
-void ADXL345_getFilteredValue(Drone_I2C_Device_ADXL345*);
+void ADXL345_getFilteredValue(Drone_I2C_Device_ADXL345*, uint64_t*, float*, float*);
 #endif

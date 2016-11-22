@@ -1,6 +1,7 @@
 #include "RTPiDrone_I2C_Device_L3G4200D.h"
 #include "RTPiDrone_Device.h"
 #include "RTPiDrone_I2C_CaliInfo.h"
+#include "RTPiDrone_Filter.h"
 #include <bcm2835.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,6 +31,7 @@ struct Drone_I2C_Device_L3G4200D {
     int16_t rawData[NITEM];             //!< \private Raw data
     float   realData[NITEM];            //!< \private Real data
     Drone_I2C_CaliInfo* cali;       //!< \private Calibration information
+    Drone_Filter    filter[NITEM];
 };
 
 static int L3G4200D_init(void*);        //!< \private \memberof Drone_I2C_Device_L3G4200D function : Initialization of L3G4200D
@@ -43,7 +45,7 @@ Drone_I2C_CaliInfo* L3G4200D_getCaliInfo(Drone_I2C_Device_L3G4200D* L3G4200D)
 
 int L3G4200D_setup(Drone_I2C_Device_L3G4200D** L3G4200D)
 {
-    *L3G4200D = (Drone_I2C_Device_L3G4200D*) malloc(sizeof(Drone_I2C_Device_L3G4200D));
+    *L3G4200D = (Drone_I2C_Device_L3G4200D*) calloc(1,sizeof(Drone_I2C_Device_L3G4200D));
     Drone_Device_Create(&(*L3G4200D)->dev);
     Drone_Device_SetName(&(*L3G4200D)->dev, "L3G4200D");
     //Drone_Device_SetInitFunction(&(*L3G4200D)->dev, L3G4200D_init);
@@ -52,6 +54,9 @@ int L3G4200D_setup(Drone_I2C_Device_L3G4200D** L3G4200D)
     Drone_Device_SetDataPointer(&(*L3G4200D)->dev, (void*)(*L3G4200D)->realData);
     Drone_Device_SetPeriod(&(*L3G4200D)->dev, 1000000000L/L3G4200D_RATE);
     Drone_I2C_Cali_Init(&(*L3G4200D)->cali, NITEM);
+    for (int i=0; i<NITEM; ++i) {
+        Drone_Filter_init(&(*L3G4200D)->filter[i], (1.0f/L3G4200D_RATE) );
+    }
     return L3G4200D_init(&(*L3G4200D)->dev) + Drone_Device_Init(&(*L3G4200D)->dev);
 }
 
@@ -161,3 +166,16 @@ void L3G4200D_delete(Drone_I2C_Device_L3G4200D** L3G4200D)
     *L3G4200D = NULL;
 }
 
+void L3G4200D_getFilteredValue(Drone_I2C_Device_L3G4200D* L3G4200D, uint64_t* lastUpdate, float* data, float* data_filter)
+{
+    float* f = (float*)Drone_Device_GetRefreshedData((Drone_Device*)L3G4200D, lastUpdate);
+    if (f) {
+        float filtered;
+        Drone_I2C_CaliInfo* c = L3G4200D_getCaliInfo(L3G4200D);
+        for (int i=0; i<NITEM; ++i) {
+            data[i] = f[i]-Drone_I2C_Cali_getMean(c)[i];
+            Drone_Filter_renew(&L3G4200D->filter[i], f[i], &filtered);
+            data_filter[i] = filtered - Drone_I2C_Cali_getMean(c)[i];
+        }
+    }
+}
