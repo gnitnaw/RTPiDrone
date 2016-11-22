@@ -20,9 +20,9 @@
 #include <pthread.h>
 #include <bcm2835.h>
 #include <gsl/gsl_statistics.h>
-
+#define RAD_TO_DEG      (180/M_PI)
 #define FILENAMESIZE            64
-#define N_SAMPLE_CALIBRATION    2000
+#define N_SAMPLE_CALIBRATION    3000
 #define NUM_CALI_THREADS        4
 #define NDATA_ADXL345           3
 #define NDATA_L3G4200D          3
@@ -64,7 +64,7 @@ struct Drone_I2C {
 
 int Drone_I2C_Init(Drone_I2C** i2c)
 {
-    *i2c = (Drone_I2C*)malloc(sizeof(Drone_I2C));
+    *i2c = (Drone_I2C*)calloc(1,sizeof(Drone_I2C));
     bcm2835_i2c_begin();
     bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_626);
     if (ADXL345_setup(&(*i2c)->ADXL345)) {
@@ -284,6 +284,9 @@ void Drone_I2C_DataInit(Drone_DataExchange* data, Drone_I2C* i2c)
     data->attitude = 0.0f;
     data->temperature = Drone_I2C_Cali_getMean(c)[1];
     data->pressure = Drone_I2C_Cali_getMean(c)[2];
+    data->angle[0] = atan2(data->acc[1], data->acc[2]) * RAD_TO_DEG;      // roll
+    data->angle[1] = -atan2(data->acc[0], getSqrt(data->acc, 3)) * RAD_TO_DEG; //pitch
+    data->angle[2] = acos(data->mag[1]/getSqrt(data->mag, 2)) * RAD_TO_DEG;    // yaw
 }
 
 void Drone_I2C_ExchangeData(Drone_DataExchange* data, Drone_I2C* i2c, uint64_t* lastUpdate)
@@ -292,20 +295,5 @@ void Drone_I2C_ExchangeData(Drone_DataExchange* data, Drone_I2C* i2c, uint64_t* 
     L3G4200D_getFilteredValue(i2c->L3G4200D, lastUpdate, data->gyr, data->gyr_est);
     HMC5883L_getFilteredValue(i2c->HMC5883L, lastUpdate, data->mag, data->mag_est);
     BMP085_getFilteredValue(i2c->BMP085, lastUpdate, &data->attitude, &data->att_est);
-    /*
-    float* f = (float*)Drone_Device_GetRefreshedData((Drone_Device*)i2c->HMC5883L, lastUpdate);
-    if (f!=NULL) {
-        for (int i=0; i<3; ++i) {
-            data->mag[i] = f[i];
-        }
-    }*/
-    /*
-    float* f = (float*) Drone_Device_GetRefreshedData((Drone_Device*)i2c->BMP085, lastUpdate);
-    if (f!=NULL) {
-        Drone_I2C_CaliInfo* c = BMP085_getCaliInfo(i2c->BMP085);
-        data->attitude = f[0] - Drone_I2C_Cali_getMean(c)[0];
-        data->temperature = f[1];
-        data->pressure = f[2];
-    }*/
 }
 

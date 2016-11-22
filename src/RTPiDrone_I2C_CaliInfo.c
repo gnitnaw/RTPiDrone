@@ -9,7 +9,7 @@ struct Drone_I2C_CaliInfo {
 
 void Drone_I2C_Cali_Init(Drone_I2C_CaliInfo** i2c_cal, int N)
 {
-    *i2c_cal = malloc(sizeof(Drone_I2C_CaliInfo));
+    *i2c_cal = calloc(1,sizeof(Drone_I2C_CaliInfo));
     (*i2c_cal)->nItem = N;
     (*i2c_cal)->mean = calloc(N, sizeof(float));
     (*i2c_cal)->sd = calloc(N, sizeof(float));

@@ -58,7 +58,7 @@ static uint64_t currentTime;
 
 int Drone_Init(Drone** rpiDrone)
 {
-    *rpiDrone = (Drone*) malloc(sizeof(Drone));
+    *rpiDrone = (Drone*) calloc(1,sizeof(Drone));
     if (generateFileName((*rpiDrone)->logfileName)) {
         perror("Cannot decide log file Name");
         return -1;
@@ -121,7 +121,8 @@ void Drone_Start(Drone* rpiDrone)
         Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime);
         Drone_SPI_ExchangeData(rpiDrone->data, rpiDrone->spi, &currentTime);
         Drone_AHRS_Refresh(rpiDrone->data, rpiDrone->ahrs);
-        if (!(i%100)) Drone_AHRS_Print(rpiDrone->ahrs);
+        if (!(i%100)) Drone_DataExchange_PrintAngle(rpiDrone->data);
+        fprintf(rpiDrone->fLog, "%d\t", i);
         Drone_DataExchange_PrintFile(rpiDrone->data, rpiDrone->fLog);
         rpiDrone->lastUpdate = currentTime;
         clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &rpiDrone->pause, NULL);
@@ -136,7 +137,6 @@ int Drone_Calibration(Drone* rpiDrone)
     for (int i=0; i<NUM_CALI_THREADS; ++i) pthread_join(thread_cali[i],NULL);
     Drone_I2C_DataInit(rpiDrone->data, rpiDrone->i2c);
     Drone_AHRS_DataInit(rpiDrone->data, rpiDrone->ahrs);
-    Drone_AHRS_Print(rpiDrone->ahrs);
     rpiDrone->lastUpdate = get_nsec();
     return 0;
 }

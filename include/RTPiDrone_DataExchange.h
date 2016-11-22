@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 typedef struct {
+    float angle[3];
     float acc[3], acc_est[3];
     float gyr[3], gyr_est[3];
     float mag[3], mag_est[3];
@@ -18,5 +19,6 @@ typedef struct {
 int Drone_DataExchange_Init(Drone_DataExchange**);
 void Drone_DataExchange_End(Drone_DataExchange**);
 void Drone_DataExchange_Print(Drone_DataExchange*);
+void Drone_DataExchange_PrintAngle(Drone_DataExchange*);
 void Drone_DataExchange_PrintFile(Drone_DataExchange*, FILE*);
 #endif
