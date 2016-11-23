@@ -10,6 +10,7 @@
 #include "RTPiDrone_I2C_Device_HMC5883L.h"
 #include "RTPiDrone_I2C_Device_BMP085.h"
 #include "RTPiDrone_I2C_Device_PCA9685PW.h"
+#include "RTPiDrone_Filter.h"
 #include "Common.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -160,6 +161,7 @@ static int Calibration_Single_ADXL345(Drone_I2C* i2c)
     int ret = Drone_Device_GetRawData((Drone_Device*)(i2c->ADXL345));
     atomic_fetch_sub(&i2c_stat, 1);
     ret += Drone_Device_GetRealData((Drone_Device*)(i2c->ADXL345));
+    ADXL345_inputFilter(i2c->ADXL345);
     _usleep(3000);
     return ret;
 }
@@ -171,6 +173,7 @@ static int Calibration_Single_L3G4200D(Drone_I2C* i2c)
     int ret = Drone_Device_GetRawData((Drone_Device*)(i2c->L3G4200D));
     atomic_fetch_sub(&i2c_stat, 1);
     ret += Drone_Device_GetRealData((Drone_Device*)(i2c->L3G4200D));
+    L3G4200D_inputFilter(i2c->L3G4200D);
     _usleep(3000);
     return ret;
 }
@@ -182,6 +185,7 @@ static int Calibration_Single_HMC5883L(Drone_I2C* i2c)
     int ret = Drone_Device_GetRawData((Drone_Device*)(i2c->HMC5883L));
     atomic_fetch_sub(&i2c_stat, 1);
     ret += Drone_Device_GetRealData((Drone_Device*)(i2c->HMC5883L));
+    HMC5883L_inputFilter(i2c->HMC5883L);
     _usleep(6000);
     return ret;
 }
@@ -198,6 +202,7 @@ static int Calibration_Single_BMP085(Drone_I2C* i2c)
         ret2 = Drone_Device_GetRealData((Drone_Device*)(i2c->BMP085));
         _usleep(sleepTime[ret]);
     }
+    BMP085_inputFilter(i2c->BMP085);
     return ret2;
 }
 

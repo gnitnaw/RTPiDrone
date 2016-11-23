@@ -230,3 +230,9 @@ void BMP085_getFilteredValue(Drone_I2C_Device_BMP085* BMP085, uint64_t* lastUpda
         *data_filter = filtered - Drone_I2C_Cali_getMean(c)[0];
     }
 }
+
+void BMP085_inputFilter(Drone_I2C_Device_BMP085* BMP085)
+{
+    Drone_Filter_Pure(&BMP085->filter, BMP085->altitude);
+}
+

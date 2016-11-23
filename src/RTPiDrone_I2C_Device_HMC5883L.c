@@ -178,3 +178,10 @@ static int HMC5883L_singleMeasurement(void)
     return 0;
 }
 
+void HMC5883L_inputFilter(Drone_I2C_Device_HMC5883L* HMC5883L)
+{
+    for (int i=0; i<NITEM; ++i) {
+        Drone_Filter_Pure(&HMC5883L->filter[i], HMC5883L->realData[i]);
+    }
+}
+

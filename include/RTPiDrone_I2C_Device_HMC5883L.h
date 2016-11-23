@@ -26,4 +26,5 @@ void HMC5883L_delete(Drone_I2C_Device_HMC5883L**);
  */
 Drone_I2C_CaliInfo* HMC5883L_getCaliInfo(Drone_I2C_Device_HMC5883L*);
 void HMC5883L_getFilteredValue(Drone_I2C_Device_HMC5883L*, uint64_t*, float*, float*);
+void HMC5883L_inputFilter(Drone_I2C_Device_HMC5883L* HMC5883L);
 #endif

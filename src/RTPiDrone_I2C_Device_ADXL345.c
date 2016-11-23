@@ -173,3 +173,10 @@ void ADXL345_getFilteredValue(Drone_I2C_Device_ADXL345* ADXL345, uint64_t* lastU
         }
     }
 }
+
+void ADXL345_inputFilter(Drone_I2C_Device_ADXL345* ADXL345)
+{
+    for (int i=0; i<NITEM; ++i) {
+        Drone_Filter_Pure(&ADXL345->filter[i], ADXL345->realData[i]);
+    }
+}

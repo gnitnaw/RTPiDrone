@@ -179,3 +179,11 @@ void L3G4200D_getFilteredValue(Drone_I2C_Device_L3G4200D* L3G4200D, uint64_t* la
         }
     }
 }
+
+void L3G4200D_inputFilter(Drone_I2C_Device_L3G4200D* L3G4200D)
+{
+    for (int i=0; i<NITEM; ++i) {
+        Drone_Filter_Pure(&L3G4200D->filter[i], L3G4200D->realData[i]);
+    }
+}
+

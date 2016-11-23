@@ -27,4 +27,5 @@ void L3G4200D_delete(Drone_I2C_Device_L3G4200D**);
 Drone_I2C_CaliInfo* L3G4200D_getCaliInfo(Drone_I2C_Device_L3G4200D* L3G4200D);
 
 void L3G4200D_getFilteredValue(Drone_I2C_Device_L3G4200D*, uint64_t*, float*, float*);
+void L3G4200D_inputFilter(Drone_I2C_Device_L3G4200D* L3G4200D);
 #endif

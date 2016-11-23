@@ -8,6 +8,12 @@ void Drone_Filter_init(Drone_Filter* f, float dt)
     f->B2 = A2/dt/dt;
 }
 
+void Drone_Filter_Pure(Drone_Filter* f, float rawdata)
+{
+    float estimated;
+    Drone_Filter_renew(f, rawdata, &estimated);
+}
+
 void Drone_Filter_renew(Drone_Filter* f, float rawdata, float *estimated)
 {
     if (f->N<500) {
