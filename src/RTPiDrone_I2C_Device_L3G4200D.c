@@ -171,11 +171,10 @@ void L3G4200D_getFilteredValue(Drone_I2C_Device_L3G4200D* L3G4200D, uint64_t* la
     float* f = (float*)Drone_Device_GetRefreshedData((Drone_Device*)L3G4200D, lastUpdate);
     if (f) {
         float filtered;
-        Drone_I2C_CaliInfo* c = L3G4200D_getCaliInfo(L3G4200D);
         for (int i=0; i<NITEM; ++i) {
-            data[i] = f[i]-Drone_I2C_Cali_getMean(c)[i];
+            data[i] = f[i]-Drone_I2C_Cali_getMean(L3G4200D->cali)[i];
             Drone_Filter_renew(&L3G4200D->filter[i], f[i], &filtered);
-            data_filter[i] = filtered - Drone_I2C_Cali_getMean(c)[i];
+            data_filter[i] = filtered - Drone_I2C_Cali_getMean(L3G4200D->cali)[i];
         }
     }
 }

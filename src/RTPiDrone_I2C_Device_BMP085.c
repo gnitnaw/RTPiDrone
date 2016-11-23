@@ -223,11 +223,10 @@ void BMP085_getFilteredValue(Drone_I2C_Device_BMP085* BMP085, uint64_t* lastUpda
 {
     float* f = (float*) Drone_Device_GetRefreshedData((Drone_Device*)BMP085, lastUpdate);
     if (f) {
-        Drone_I2C_CaliInfo* c = BMP085_getCaliInfo(BMP085);
-        *data = *f-Drone_I2C_Cali_getMean(c)[0];
+        *data = *f-Drone_I2C_Cali_getMean(BMP085->cali)[0];
         float filtered;
         Drone_Filter_renew(&BMP085->filter, *f, &filtered);
-        *data_filter = filtered - Drone_I2C_Cali_getMean(c)[0];
+        *data_filter = filtered - Drone_I2C_Cali_getMean(BMP085->cali)[0];
     }
 }
 
