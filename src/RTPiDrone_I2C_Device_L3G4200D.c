@@ -1,3 +1,4 @@
+#include "RTPiDrone_header.h"
 #include "RTPiDrone_I2C_Device_L3G4200D.h"
 #include "RTPiDrone_Device.h"
 #include "RTPiDrone_I2C_CaliInfo.h"
@@ -54,9 +55,12 @@ int L3G4200D_setup(Drone_I2C_Device_L3G4200D** L3G4200D)
     Drone_Device_SetDataPointer(&(*L3G4200D)->dev, (void*)(*L3G4200D)->realData);
     Drone_Device_SetPeriod(&(*L3G4200D)->dev, 1000000000L/L3G4200D_RATE);
     Drone_I2C_Cali_Init(&(*L3G4200D)->cali, NITEM);
+    float period = CONTROL_PERIOD > (1000000000L/L3G4200D_RATE) ? (float)CONTROL_PERIOD : (float)(1000000000L/L3G4200D_RATE);
+    period /= 1000000000.0f;
     for (int i=0; i<NITEM; ++i) {
-        Drone_Filter_init(&(*L3G4200D)->filter[i], (1.0f/L3G4200D_RATE) );
+        Drone_Filter_init(&(*L3G4200D)->filter[i], period );
     }
+
     return L3G4200D_init(&(*L3G4200D)->dev) + Drone_Device_Init(&(*L3G4200D)->dev);
 }
 

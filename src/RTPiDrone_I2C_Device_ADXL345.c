@@ -1,3 +1,4 @@
+#include "RTPiDrone_header.h"
 #include "RTPiDrone_I2C_Device_ADXL345.h"
 #include "RTPiDrone_Device.h"
 #include "RTPiDrone_Filter.h"
@@ -50,8 +51,11 @@ int ADXL345_setup(Drone_I2C_Device_ADXL345** axdl345)
     Drone_Device_SetDataPointer(&(*axdl345)->dev, (void*)(*axdl345)->realData);
     Drone_Device_SetPeriod(&(*axdl345)->dev, 1000000000L/ADXL345_RATE);
     Drone_I2C_Cali_Init(&(*axdl345)->cali, NITEM);
+    float period = CONTROL_PERIOD > (1000000000L/ADXL345_RATE) ? (float)CONTROL_PERIOD : (float)(1000000000L/ADXL345_RATE);
+    period /= 1000000000.0f;
+    //printf("period = %f\n", period);
     for (int i=0; i<NITEM; ++i) {
-        Drone_Filter_init(&(*axdl345)->filter[i], (1.0f/ADXL345_RATE) );
+        Drone_Filter_init(&(*axdl345)->filter[i], period );
     }
     return ADXL345_init(&(*axdl345)->dev) + Drone_Device_Init(&(*axdl345)->dev);
 }

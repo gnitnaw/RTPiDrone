@@ -2,7 +2,7 @@
  * \file    RTPiDrone.c
  * \brief   Realize the struct/functions defined in RTPiDrone.h
  */
-
+#include "RTPiDrone_header.h"
 #include "RTPiDrone_I2C.h"
 #include "RTPiDrone_SPI.h"
 #include "RTPiDrone_AHRS.h"
@@ -20,7 +20,7 @@
 #define LENGTH 128
 #define NUM_CALI_THREADS        2
 #define NUM_THREADS             2
-#define PERIOD                  4000000
+#define PERIOD                  CONTROL_PERIOD
 /*!
  * \enum kernelType
  * \private enum kernelType

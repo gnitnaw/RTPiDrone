@@ -17,6 +17,7 @@ set(SPI_ELEMENT
 set(MAIN_ELEMENT
     RTPiDrone_I2C_CaliInfo.c
     RTPiDrone_I2C.c
+    RTPiDrone_Filter.c
     RTPiDrone_Device.c
     RTPiDrone_SPI.c
     RTPiDrone.c
@@ -31,7 +32,7 @@ set(AHRS_ELEMENT
     RTPiDrone_AHRS.c
     RTPiDrone_Quaternion.c
     RTPiDrone_DataExchange.c
-    RTPiDrone_Filter.c
+    RTPiDrone_PID.c
 )
 include_directories(${RTPiDrone_SOURCE_DIR}/include)
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic -Werror -Wshadow -Wpointer-arith -O3 -std=gnu11")
