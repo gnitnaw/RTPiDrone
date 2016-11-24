@@ -3,10 +3,9 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define POWER_MIN   1640
-#define POWER_MAX   3280
-#define POWER_LIMIT 3280
-#define INTEG_LIMIT 40
+#define POWER_MIN       PWM_MIN
+#define POWER_MAX       PWM_MAX
+#define INTEG_LIMIT     40
 
 struct Drone_PID {
     float Kp_out, Ki_out, Kd_out;

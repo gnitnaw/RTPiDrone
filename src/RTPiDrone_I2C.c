@@ -126,17 +126,7 @@ int Drone_I2C_Calibration(Drone_I2C* i2c)
 
 void Drone_I2C_Start(Drone_I2C* i2c)
 {
-    puts("I2C Start");
-    float testPWM[] = {0.1f, 0.2f, 0.3f, 0.4f};
-    uint32_t* data = (uint32_t*) Drone_Device_GetData((Drone_Device*)(i2c->PCA9685PW));
-    for (int i=0; i<10; ++i) {
-        for (int j=0; j<4; ++j) testPWM[j] += 0.05;
-        PCA9685PW_write(i2c->PCA9685PW, testPWM);
-        Drone_Device_GetRealData((Drone_Device*)(i2c->PCA9685PW));
-        printf("%d th : ", i);
-        for (int j=0; j<4; ++j) printf("%u, ", data[j]);
-        puts("");
-    }
+    return;
 }
 
 int Drone_I2C_End(Drone_I2C** i2c)

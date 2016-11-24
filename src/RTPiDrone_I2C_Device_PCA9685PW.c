@@ -1,3 +1,4 @@
+#include "RTPiDrone_header.h"
 #include "RTPiDrone_I2C_Device_PCA9685PW.h"
 #include "RTPiDrone_Device.h"
 #include "Common.h"
@@ -20,8 +21,7 @@
 #define PCA9685PW_LED0_ON_L             0x06
 
 #define PCA9685PW_NMOTOR                4
-#define PCA9685PW_POWER_ZERO            1640
-#define PCA9685PW_POWER_FULL            3280
+#define PCA9685PW_POWER_ZERO            PWM_MIN
 #ifndef PCA9685PW_FREQ
 #define PCA9685PW_FREQ                  400
 #endif
@@ -66,14 +66,14 @@ void PCA9685PW_delete(Drone_I2C_Device_PCA9685PW** PCA9685PW)
     free(*PCA9685PW);
     *PCA9685PW = NULL;
 }
-
+/*
 int PCA9685PW_write(Drone_I2C_Device_PCA9685PW* PCA9685PW, const float* power)
 {
     for (int i=0; i<PCA9685PW_NMOTOR; ++i) {
         if (power[i]<1.0f) PCA9685PW->PWM_CHANNEL[i] = floor(PCA9685PW_POWER_ZERO * (1.0f + power[i]));
     }
     return pca9685PWMWriteMultiOff(nChannel, PCA9685PW->PWM_CHANNEL);
-}
+}*/
 
 static int PCA9685PW_Read(void* i2c_dev)
 {

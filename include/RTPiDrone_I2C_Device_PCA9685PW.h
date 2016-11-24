@@ -22,6 +22,6 @@ void PCA9685PW_delete(Drone_I2C_Device_PCA9685PW**);
  * Modify the PWM value in  PCA9685PW.
  * \public \memberof Drone_I2C_Device_PCA9685PW
  */
-int PCA9685PW_write(Drone_I2C_Device_PCA9685PW*, const float*);
+//int PCA9685PW_write(Drone_I2C_Device_PCA9685PW*, const float*);
 
 #endif

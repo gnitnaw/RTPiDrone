@@ -5,5 +5,7 @@
 #define KP                  (7.0f)
 #define KI                  (0.2f)
 #define KD                  (105.0f)
+#define PWM_MAX             (3280)
+#define PWM_MIN             (1640)
 
 #endif

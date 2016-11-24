@@ -1,5 +1,6 @@
 #ifndef H_DRONE_DATAEXCHANGE
 #define H_DRONE_DATAEXCHANGE
+#include "RTPiDrone_Command.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -14,6 +15,7 @@ typedef struct {
     float dt;
     uint32_t controller;
     float volt;
+    Drone_Command comm;
 } Drone_DataExchange;
 
 int Drone_DataExchange_Init(Drone_DataExchange**);
