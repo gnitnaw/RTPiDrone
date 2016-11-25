@@ -1,6 +1,7 @@
 #include "RTPiDrone_AHRS.h"
 #include "RTPiDrone_Quaternion.h"
 #include "RTPiDrone_PID.h"
+#include "Common.h"
 #include <stdlib.h>
 
 static float pi[] = {2.5,0.005};
@@ -27,15 +28,15 @@ void Drone_AHRS_DataInit(Drone_DataExchange* data, Drone_AHRS* ahrs)
 {
     Drone_Quaternion_Init(&ahrs->Quaternion, data->angle, pi);
     Drone_PID_Init(&ahrs->PID);
-
     for (int i=0; i<1000; ++i) {
         Drone_Quaternion_renew(ahrs->Quaternion, 0.1, data->acc, data->gyr, data->mag);
     }
 }
 
-void Drone_AHRS_Refresh(Drone_DataExchange* data, Drone_AHRS* ahrs)
+void Drone_AHRS_ExchangeData(Drone_DataExchange* data, Drone_AHRS* ahrs)
 {
     Drone_Quaternion_renew(ahrs->Quaternion, data->dt, data->acc_est, data->gyr_est, data->mag_est);
     Drone_Quaternion_getAngle(ahrs->Quaternion, data->angle);
+    Drone_PID_update(ahrs->PID, data->comm.angle_expect, data->angle, data->gyr_est, data->power, data->dt, data->comm.power);
 }
 

@@ -45,18 +45,19 @@ static int pca9685PWMReadSingleOff(const int, uint32_t*);
 static int pca9685PWMReadMultiOff(const int*, uint32_t*);
 static int baseReg(const int);
 
-static int nChannel[] = {PCA9685PW_CHANNEL, PCA9685PW_CHANNEL+1, PCA9685PW_CHANNEL+2, PCA9685PW_CHANNEL+3};
+static const int nChannel[] = {PCA9685PW_CHANNEL, PCA9685PW_CHANNEL+1, PCA9685PW_CHANNEL+2, PCA9685PW_CHANNEL+3};
 
 int PCA9685PW_setup(Drone_I2C_Device_PCA9685PW** PCA9685PW)
 {
     *PCA9685PW = (Drone_I2C_Device_PCA9685PW*) calloc(1, sizeof(Drone_I2C_Device_PCA9685PW));
     Drone_Device_Create(&(*PCA9685PW)->dev);
     Drone_Device_SetName(&(*PCA9685PW)->dev, "PCA9685PW");
-    Drone_Device_SetInitFunction(&(*PCA9685PW)->dev, PCA9685PW_init);
+    //Drone_Device_SetInitFunction(&(*PCA9685PW)->dev, PCA9685PW_init);
     Drone_Device_SetRealFunction(&(*PCA9685PW)->dev, PCA9685PW_Read);
     //Drone_Device_SetEndFunction(&(*PCA9685PW)->dev, PCA9685PW_PWMReset);
     Drone_Device_SetDataPointer(&(*PCA9685PW)->dev, (void*)(*PCA9685PW)->PWM_CHANNEL);
-    return Drone_Device_Init(&(*PCA9685PW)->dev);
+    Drone_Device_SetPeriod(&(*PCA9685PW)->dev, 1000000000L/PCA9685PW_FREQ);
+    return PCA9685PW_init(&(*PCA9685PW)->dev) + Drone_Device_Init(&(*PCA9685PW)->dev);
 }
 
 void PCA9685PW_delete(Drone_I2C_Device_PCA9685PW** PCA9685PW)
@@ -231,3 +232,12 @@ static int pca9685PWMReadMultiOff(const int* pin, uint32_t* data)
     return 0;
 }
 
+int PCA9685PW_write(Drone_I2C_Device_PCA9685PW* PCA9685PW, const uint32_t* data, uint64_t* time)
+{
+    Drone_Device* dev = &PCA9685PW->dev;
+    if (*time-dev->lastUpdate > dev->period) {
+        dev->lastUpdate = *time;
+        return pca9685PWMWriteMultiOff(nChannel, data);
+    }
+    return 0;
+}

@@ -63,3 +63,11 @@ static int MCP3008_convertRawToReal(void* spi_dev)
     ((Drone_SPI_Device_MCP3008*)spi_dev)->volt = V_INPUT * (float)adcRead0/ FULLVALUE;
     return 0;
 }
+
+void MCP3008_getDecodeValue(Drone_SPI_Device_MCP3008* MCP3008, uint64_t* lastUpdate, float* data)
+{
+    float* f = (float*)Drone_Device_GetRefreshedData((Drone_Device*)MCP3008, lastUpdate);
+    if (f) *data = *f;
+}
+
+

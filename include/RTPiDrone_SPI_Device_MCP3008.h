@@ -1,6 +1,6 @@
 #ifndef H_RTPIDRONE_SPI_DEVICE_MCP3008
 #define H_RTPIDRONE_SPI_DEVICE_MCP3008
-
+#include <stdint.h>
 /*!
  * Drone_SPI_Device_MCP3008 class.
  * \extends Drone_SPI_Device
@@ -18,5 +18,6 @@ int MCP3008_setup(Drone_SPI_Device_MCP3008**);
  */
 void MCP3008_delete(Drone_SPI_Device_MCP3008**);
 
+void MCP3008_getDecodeValue(Drone_SPI_Device_MCP3008*, uint64_t*, float*);
 #endif
 

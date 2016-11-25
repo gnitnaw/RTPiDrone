@@ -105,9 +105,6 @@ void Drone_Start(Drone* rpiDrone)
     clock_gettime(CLOCK_MONOTONIC, &rpiDrone->pause);
 
     for (int i=0; i<1000; ++i) {
-        //pthread_cond_signal(&cond[0]);
-        //_usleep(4000);
-        // Add the time you want to sleep
         currentTime = get_nsec();
         rpiDrone->pause.tv_nsec += PERIOD;
 
@@ -120,7 +117,8 @@ void Drone_Start(Drone* rpiDrone)
         rpiDrone->data->dt = dt;
         Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime);
         Drone_SPI_ExchangeData(rpiDrone->data, rpiDrone->spi, &currentTime);
-        Drone_AHRS_Refresh(rpiDrone->data, rpiDrone->ahrs);
+        Drone_AHRS_ExchangeData(rpiDrone->data, rpiDrone->ahrs);
+        Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime);
         if (!(i%100)) Drone_DataExchange_PrintAngle(rpiDrone->data);
         fprintf(rpiDrone->fLog, "%d\t", i);
         Drone_DataExchange_PrintFile(rpiDrone->data, rpiDrone->fLog);

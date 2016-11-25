@@ -1,3 +1,4 @@
+#include "RTPiDrone_header.h"
 #include "RTPiDrone_SPI_Device_RF24.h"
 #include "RTPiDrone_Device.h"
 #include "RF24_Interface.h"
@@ -50,3 +51,10 @@ static int RF24_convertRawToReal(void* spi_dev)
 {
     return 0;
 }
+
+void RF24_getDecodeValue(Drone_SPI_Device_RF24* RF24, uint64_t* lastUpdate, Drone_Command* comm)
+{
+    unsigned char* f = (unsigned char*) Drone_Device_GetRefreshedData((Drone_Device*)RF24, lastUpdate);
+    if (f) Drone_Command_Decode(comm, f);
+}
+

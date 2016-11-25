@@ -6,6 +6,7 @@ using namespace std;
 static RF24 radio(RPI_BPLUS_GPIO_J8_15,RPI_BPLUS_GPIO_J8_24, BCM2835_SPI_SPEED_8MHZ);
 // Radio pipe addresses for the 2 nodes to communicate.
 static const uint8_t pipes[][6] = {"1Node","2Node"};
+
 void RF24WT_init(void)
 {
     radio.begin();

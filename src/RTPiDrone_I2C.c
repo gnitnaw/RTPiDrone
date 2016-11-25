@@ -19,6 +19,7 @@
 #include <stdatomic.h>
 #include <sched.h>
 #include <pthread.h>
+#include <stdbool.h>
 #include <bcm2835.h>
 #include <gsl/gsl_statistics.h>
 #define RAD_TO_DEG      (180/M_PI)
@@ -61,6 +62,7 @@ struct Drone_I2C {
     Drone_I2C_Device_HMC5883L*      HMC5883L;   //!< \private HMC5883L : 3-axis digital compass
     Drone_I2C_Device_BMP085*        BMP085;     //!< \private BMP085 : Barometric Pressure/Temperature/Altitude
     Drone_I2C_Device_PCA9685PW*     PCA9685PW;  //!< \private PCA9685PW : Pulse Width Modulator
+    bool                            isWrite;    //!< \private : Indicate next time to read (0) or write (1)
 };
 
 int Drone_I2C_Init(Drone_I2C** i2c)
@@ -286,9 +288,15 @@ void Drone_I2C_DataInit(Drone_DataExchange* data, Drone_I2C* i2c)
 
 void Drone_I2C_ExchangeData(Drone_DataExchange* data, Drone_I2C* i2c, uint64_t* lastUpdate)
 {
-    ADXL345_getFilteredValue(i2c->ADXL345, lastUpdate, data->acc, data->acc_est);
-    L3G4200D_getFilteredValue(i2c->L3G4200D, lastUpdate, data->gyr, data->gyr_est);
-    HMC5883L_getFilteredValue(i2c->HMC5883L, lastUpdate, data->mag, data->mag_est);
-    BMP085_getFilteredValue(i2c->BMP085, lastUpdate, &data->attitude, &data->att_est);
+    if (!i2c->isWrite) {
+        ADXL345_getFilteredValue(i2c->ADXL345, lastUpdate, data->acc, data->acc_est);
+        L3G4200D_getFilteredValue(i2c->L3G4200D, lastUpdate, data->gyr, data->gyr_est);
+        HMC5883L_getFilteredValue(i2c->HMC5883L, lastUpdate, data->mag, data->mag_est);
+        BMP085_getFilteredValue(i2c->BMP085, lastUpdate, &data->attitude, &data->att_est);
+        i2c->isWrite = true;
+    } else {
+        PCA9685PW_write(i2c->PCA9685PW, data->power, lastUpdate);
+        i2c->isWrite = false;
+    }
 }
 
