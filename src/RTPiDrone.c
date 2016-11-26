@@ -97,14 +97,19 @@ int Drone_Init(Drone** rpiDrone)
 
 void Drone_Start(Drone* rpiDrone)
 {
+    float latency = (float)PERIOD/1000000000.0;
+
     puts("Start Test");
+    Drone_SPI_Start(rpiDrone->spi, rpiDrone->data);
+
     rpiDrone->lastUpdate = get_nsec();
     float dt;
     //Drone_I2C_Start(rpiDrone->i2c);
     _usleep(PERIOD/1000);
     clock_gettime(CLOCK_MONOTONIC, &rpiDrone->pause);
 
-    for (int i=0; i<1000; ++i) {
+    uint32_t iStep = 0;
+    while (rpiDrone->data->comm.switchValue && rpiDrone->data->comm.zeroCount < 100 ) {
         currentTime = get_nsec();
         rpiDrone->pause.tv_nsec += PERIOD;
 
@@ -119,11 +124,17 @@ void Drone_Start(Drone* rpiDrone)
         Drone_SPI_ExchangeData(rpiDrone->data, rpiDrone->spi, &currentTime);
         Drone_AHRS_ExchangeData(rpiDrone->data, rpiDrone->ahrs);
         Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime);
-        if (!(i%100)) Drone_DataExchange_PrintAngle(rpiDrone->data);
-        fprintf(rpiDrone->fLog, "%d\t", i);
+        if (!(iStep%100)) Drone_DataExchange_PrintAngle(rpiDrone->data);
+        fprintf(rpiDrone->fLog, "%d\t", iStep);
         Drone_DataExchange_PrintFile(rpiDrone->data, rpiDrone->fLog);
         rpiDrone->lastUpdate = currentTime;
-        clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &rpiDrone->pause, NULL);
+        if (dt-latency < 0.002) {
+            clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &rpiDrone->pause, NULL);
+        } else {
+            puts("You get problem for the timing!");
+            break;
+        }
+        ++iStep;
     }
 }
 

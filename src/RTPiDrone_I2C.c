@@ -1,7 +1,7 @@
 /*! \file RTPiDrone_I2C.c
     \brief Manage all of the I2C devices
  */
-
+#include "RTPiDrone_header.h"
 #include "RTPiDrone_I2C.h"
 #include "RTPiDrone_Device.h"
 #include "RTPiDrone_I2C_CaliInfo.h"
@@ -52,6 +52,7 @@ static int Calibration_Single_ADXL345(Drone_I2C*);  //!< \private \memberof Dron
 static int Calibration_Single_HMC5883L(Drone_I2C*); //!< \private \memberof Drone_I2C: Calibration step for HMC5883L
 static int Calibration_Single_BMP085(Drone_I2C*);   //!< \private \memberof Drone_I2C: Calibration step for BMP085
 static void* Calibration_Single_Thread(void*);      //!< \private \memberof tempCali: Template for calibration
+static int PCA9685PW_ESC_Init(Drone_I2C*);          //!< \private \memberof Drone_I2C: Initialization of ESC
 /*!
  * \struct Drone_I2C
  * \brief Drone_I2C structure
@@ -128,7 +129,7 @@ int Drone_I2C_Calibration(Drone_I2C* i2c)
 
 void Drone_I2C_Start(Drone_I2C* i2c)
 {
-    return;
+    PCA9685PW_ESC_Init(i2c);
 }
 
 int Drone_I2C_End(Drone_I2C** i2c)
@@ -300,3 +301,17 @@ void Drone_I2C_ExchangeData(Drone_DataExchange* data, Drone_I2C* i2c, uint64_t* 
     }
 }
 
+static int PCA9685PW_ESC_Init(Drone_I2C* i2c)
+{
+    int ret = 0;
+    uint32_t power[] = {PWM_MIN,PWM_MIN,PWM_MIN,PWM_MIN};
+    ret += PCA9685PW_writeOnly(i2c->PCA9685PW, power);
+    _usleep(1000);
+    for (int i=0; i<4; ++i) power[i] = PWM_MAX;
+    ret += PCA9685PW_writeOnly(i2c->PCA9685PW, power);
+    _usleep(2500);
+    for (int i=0; i<4; ++i) power[i] = PWM_MIN;
+    ret += PCA9685PW_writeOnly(i2c->PCA9685PW, power);
+    _usleep(2000);
+    return ret;
+}

@@ -8,6 +8,7 @@ typedef struct {
     float angle_expect[3];
     unsigned int power;
     unsigned char switchValue;
+    unsigned int zeroCount;
 } Drone_Command;
 
 void Drone_Command_Decode(Drone_Command*, const unsigned char*);

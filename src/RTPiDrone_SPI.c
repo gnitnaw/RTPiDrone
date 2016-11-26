@@ -61,9 +61,15 @@ int Drone_SPI_Init(Drone_SPI** spi)
     return 0;
 }
 
-void Drone_SPI_Start(Drone_SPI* spi)
+void Drone_SPI_Start(Drone_SPI* spi, Drone_DataExchange* data)
 {
     puts("SPI Start");
+    uint64_t lastUpdate;
+    do {
+        lastUpdate = get_nsec();
+        RF24_getDecodeValue(spi->RF24, &lastUpdate, &data->comm);
+        _usleep(10000);
+    } while (!data->comm.switchValue);
 }
 
 int Drone_SPI_End(Drone_SPI** spi)

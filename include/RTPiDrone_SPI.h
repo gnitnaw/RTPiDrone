@@ -19,7 +19,7 @@ int Drone_SPI_Calibration(Drone_SPI*);
  * Start all SPI devices
  * \public \memberof Drone_SPI
  */
-void Drone_SPI_Start(Drone_SPI*);
+void Drone_SPI_Start(Drone_SPI*, Drone_DataExchange*);
 
 /*!
  * Switch off all SPI devices

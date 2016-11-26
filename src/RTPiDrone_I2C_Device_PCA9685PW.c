@@ -232,12 +232,17 @@ static int pca9685PWMReadMultiOff(const int* pin, uint32_t* data)
     return 0;
 }
 
+int PCA9685PW_writeOnly(Drone_I2C_Device_PCA9685PW* PCA9685PW, const uint32_t* data)
+{
+    return pca9685PWMWriteMultiOff(nChannel, data);
+}
+
 int PCA9685PW_write(Drone_I2C_Device_PCA9685PW* PCA9685PW, const uint32_t* data, uint64_t* time)
 {
     Drone_Device* dev = &PCA9685PW->dev;
     if (*time-dev->lastUpdate > dev->period) {
         dev->lastUpdate = *time;
-        return pca9685PWMWriteMultiOff(nChannel, data);
+        return PCA9685PW_writeOnly(PCA9685PW, data);
     }
     return 0;
 }
