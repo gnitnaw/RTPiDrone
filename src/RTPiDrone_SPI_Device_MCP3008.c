@@ -64,10 +64,14 @@ static int MCP3008_convertRawToReal(void* spi_dev)
     return 0;
 }
 
-void MCP3008_getDecodeValue(Drone_SPI_Device_MCP3008* MCP3008, uint64_t* lastUpdate, float* data)
+int MCP3008_getDecodeValue(Drone_SPI_Device_MCP3008* MCP3008, uint64_t* lastUpdate, float* data)
 {
     float* f = (float*)Drone_Device_GetRefreshedData((Drone_Device*)MCP3008, lastUpdate);
-    if (f) *data = *f;
+    if (f!= NULL) {
+        *data = *f;
+        return 1;
+    }
+    return 0;
 }
 
 

@@ -47,7 +47,7 @@ int HMC5883L_setup(Drone_I2C_Device_HMC5883L** HMC5883L)
     Drone_Device_SetRawFunction(&(*HMC5883L)->dev, HMC5883L_getRawValue);
     Drone_Device_SetRealFunction(&(*HMC5883L)->dev, HMC5883L_convertRawToReal);
     Drone_Device_SetDataPointer(&(*HMC5883L)->dev, (void*)(*HMC5883L)->realData);
-    Drone_Device_SetPeriod(&(*HMC5883L)->dev, 6000000L);
+    Drone_Device_SetPeriod(&(*HMC5883L)->dev, 6500000L);
     Drone_I2C_Cali_Init(&(*HMC5883L)->cali, NITEM);
     (*HMC5883L)->mag_offset[0] = -276.919983;
     (*HMC5883L)->mag_offset[1] = -137.080002;
@@ -154,15 +154,17 @@ void HMC5883L_delete(Drone_I2C_Device_HMC5883L** HMC5883L)
     *HMC5883L = NULL;
 }
 
-void HMC5883L_getFilteredValue(Drone_I2C_Device_HMC5883L* HMC5883L, uint64_t* lastUpdate, float* data, float* data_filter)
+int HMC5883L_getFilteredValue(Drone_I2C_Device_HMC5883L* HMC5883L, uint64_t* lastUpdate, float* data, float* data_filter)
 {
     float* f = (float*)Drone_Device_GetRefreshedData((Drone_Device*)HMC5883L, lastUpdate);
-    if (f) {
+    if (f != NULL) {
         for (int i=0; i<NITEM; ++i) {
             data[i] = f[i];
             Drone_Filter_renew(&HMC5883L->filter[i], f[i], &data_filter[i]);
         }
+        return 1;
     }
+    return 0;
 }
 
 static int HMC5883L_singleMeasurement(void)

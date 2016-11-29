@@ -27,5 +27,5 @@ void Drone_SPI_Start(Drone_SPI*, Drone_DataExchange*);
  */
 int Drone_SPI_End(Drone_SPI**);
 
-void Drone_SPI_ExchangeData(Drone_DataExchange*, Drone_SPI*, uint64_t*);
+int Drone_SPI_ExchangeData(Drone_DataExchange*, Drone_SPI*, uint64_t*);
 #endif

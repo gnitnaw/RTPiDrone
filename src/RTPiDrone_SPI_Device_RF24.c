@@ -52,7 +52,7 @@ static int RF24_convertRawToReal(void* spi_dev)
     return 0;
 }
 
-void RF24_getDecodeValue(Drone_SPI_Device_RF24* RF24, uint64_t* lastUpdate, Drone_Command* comm)
+int RF24_getDecodeValue(Drone_SPI_Device_RF24* RF24, uint64_t* lastUpdate, Drone_Command* comm)
 {
     if (*lastUpdate-RF24->dev.lastUpdate > RF24->dev.period) {
         RF24->dev.lastUpdate = *lastUpdate;
@@ -61,6 +61,8 @@ void RF24_getDecodeValue(Drone_SPI_Device_RF24* RF24, uint64_t* lastUpdate, Dron
             comm->zeroCount = 0;
             Drone_Command_Decode(comm, RF24->receive_buf);
         }
+        return 1;
     }
+    return 0;
 }
 

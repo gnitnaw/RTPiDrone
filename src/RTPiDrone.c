@@ -21,6 +21,14 @@
 #define NUM_CALI_THREADS        2
 #define NUM_THREADS             2
 #define PERIOD                  CONTROL_PERIOD
+#define BILLION                 1000000000L
+#define BUFFERSIZE              4096
+
+static pthread_mutex_t  mutex;
+static pthread_cond_t   cond;
+static pthread_t        pid;
+static int32_t          iStep;
+static int              global_thread;
 /*!
  * \enum kernelType
  * \private enum kernelType
@@ -40,6 +48,7 @@ typedef enum {
 struct Drone {
     char                    logfileName[LENGTH];	//!< \private Name of log file.
     FILE*                   fLog;                   //!< \private File output
+    char                    buf[BUFFERSIZE];
     Drone_I2C*              i2c;                    //!< \private All I2C devices
     Drone_SPI*              spi;                    //!< \private All SPI devices
     Drone_AHRS*             ahrs;                   //!< \private attitude and heading reference system (AHRS)
@@ -54,6 +63,9 @@ static kernelType getKernelType(char*);         //!< \private \memberof Drone \b
 static int generateFileName(char*);             //!< \private \memberof Drone \brief generate logfile name
 static void* Calibration_I2C_Thread(void*);     //!< \private \memberof Drone \brief generate a thread for I2C calibration
 static void* Calibration_SPI_Thread(void*);     //!< \private \memberof Drone \brief generate a thread for SPI calibration
+static void Drone_Loop(Drone*);                 //!< \private \memberof Drone \brief Loop for I2C/SPI/AHRS/I2C
+static void* writeData(void*);
+
 static uint64_t currentTime;
 
 int Drone_Init(Drone** rpiDrone)
@@ -64,7 +76,7 @@ int Drone_Init(Drone** rpiDrone)
         return -1;
     }
 
-    (*rpiDrone)->fLog = fopen((*rpiDrone)->logfileName, "w");
+    (*rpiDrone)->fLog = fopen((*rpiDrone)->logfileName, "wb");
     printf("%s\n", (*rpiDrone)->logfileName);
 
     if (!bcm2835_init()) {
@@ -92,50 +104,21 @@ int Drone_Init(Drone** rpiDrone)
         return -6;
     }
 
+    pthread_cond_init(&cond,NULL);
+    pthread_mutex_init(&mutex,NULL);
     return 0;
 }
 
 void Drone_Start(Drone* rpiDrone)
 {
-    float latency = (float)PERIOD/1000000000.0;
-
     puts("Start Test");
+    setvbuf (rpiDrone->fLog , rpiDrone->buf, _IOFBF , BUFFERSIZE);
     Drone_SPI_Start(rpiDrone->spi, rpiDrone->data);
-
+    Drone_I2C_Start(rpiDrone->i2c);
     rpiDrone->lastUpdate = get_nsec();
-    float dt;
-    //Drone_I2C_Start(rpiDrone->i2c);
     _usleep(PERIOD/1000);
     clock_gettime(CLOCK_MONOTONIC, &rpiDrone->pause);
-
-    uint32_t iStep = 0;
-    while (rpiDrone->data->comm.switchValue && rpiDrone->data->comm.zeroCount < 100 ) {
-        currentTime = get_nsec();
-        rpiDrone->pause.tv_nsec += PERIOD;
-
-        // Normalize the time to account for the second boundary
-        if(rpiDrone->pause.tv_nsec >= 1000000000) {
-            rpiDrone->pause.tv_nsec -= 1000000000;
-            rpiDrone->pause.tv_sec++;
-        }
-        dt = (float)(currentTime - rpiDrone->lastUpdate)/1000000000.0;
-        rpiDrone->data->dt = dt;
-        Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime);
-        Drone_SPI_ExchangeData(rpiDrone->data, rpiDrone->spi, &currentTime);
-        Drone_AHRS_ExchangeData(rpiDrone->data, rpiDrone->ahrs);
-        Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime);
-        if (!(iStep%100)) Drone_DataExchange_PrintAngle(rpiDrone->data);
-        fprintf(rpiDrone->fLog, "%d\t", iStep);
-        Drone_DataExchange_PrintFile(rpiDrone->data, rpiDrone->fLog);
-        rpiDrone->lastUpdate = currentTime;
-        if (dt-latency < 0.002) {
-            clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &rpiDrone->pause, NULL);
-        } else {
-            puts("You get problem for the timing!");
-            break;
-        }
-        ++iStep;
-    }
+    Drone_Loop(rpiDrone);
 }
 
 int Drone_Calibration(Drone* rpiDrone)
@@ -153,8 +136,11 @@ int Drone_Calibration(Drone* rpiDrone)
 int Drone_End(Drone** rpiDrone)
 {
     fclose((*rpiDrone)->fLog);
+
     Drone_AHRS_End(&(*rpiDrone)->ahrs);
     Drone_DataExchange_End(&(*rpiDrone)->data);
+    pthread_cond_destroy(&cond);
+    pthread_mutex_destroy(&mutex);
 
     if (Drone_I2C_End(&(*rpiDrone)->i2c)) {
         perror("Drone I2C End error");
@@ -165,6 +151,21 @@ int Drone_End(Drone** rpiDrone)
         perror("Drone SPI End error");
         return -2;
     }
+
+    FILE* forg = fopen((*rpiDrone)->logfileName, "rb");
+    char output[LENGTH];
+    strcpy(output, (*rpiDrone)->logfileName);
+    strcat(output, ".out");
+
+    Drone_DataExchange data;
+    FILE* fout = fopen(output, "w");
+    while (!feof(forg)) {
+        fread( &data , sizeof(Drone_DataExchange) , 1 , forg);
+        Drone_DataExchange_PrintAngle(&data);
+        Drone_DataExchange_PrintTextFile(&data, fout);
+    }
+    fclose(forg);
+    fclose(fout);
 
     free(*rpiDrone);
     *rpiDrone = NULL;
@@ -234,3 +235,65 @@ static void* Calibration_SPI_Thread(void* temp)
     pthread_exit(NULL);
 }
 
+void Drone_Loop(Drone* rpiDrone)
+{
+    const float latency = (float)PERIOD/1000000000.0;
+    float dt;
+    iStep = 0;
+    pthread_create(&pid, NULL, writeData, (void*)rpiDrone);
+    int ret, ret2;
+    while (rpiDrone->data->comm.switchValue && rpiDrone->data->comm.zeroCount < 100 ) {
+        ret = 0;
+        ret2 = 0;
+        currentTime = get_nsec();
+        rpiDrone->pause.tv_nsec += PERIOD;
+
+        // Normalize the time to account for the second boundary
+        if(rpiDrone->pause.tv_nsec >= BILLION) {
+            rpiDrone->pause.tv_nsec -= BILLION;
+            rpiDrone->pause.tv_sec++;
+        }
+        dt = (float)(currentTime - rpiDrone->lastUpdate)/BILLION;
+        rpiDrone->data->dt = dt;
+        rpiDrone->data->T += dt;
+        if (dt>0.003) {
+            ret2 += Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime);
+            ret2 += Drone_SPI_ExchangeData(rpiDrone->data, rpiDrone->spi, &currentTime);
+            Drone_AHRS_ExchangeData(rpiDrone->data, rpiDrone->ahrs);
+            ret += Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime);
+            if (!(iStep%1000)) Drone_DataExchange_PrintAngle(rpiDrone->data);
+
+            if (!ret) {
+                //Drone_DataExchange_PrintFile(rpiDrone->data, rpiDrone->fLog);
+                //if (!ret2) fflush(rpiDrone->fLog);
+                global_thread = 1;
+                pthread_cond_signal(&cond);
+            }
+        }
+
+        rpiDrone->lastUpdate = currentTime;
+        if (dt-latency < 0.003) {
+            clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &rpiDrone->pause, NULL);
+        } else {
+            printf("At %u you get problem for the timing! You got latency = %f !\n", iStep, dt);
+            break;
+        }
+        ++iStep;
+    }
+    iStep = -1;
+    pthread_cond_signal(&cond);
+    pthread_join(pid, NULL);
+}
+
+static void* writeData(void* x)
+{
+    Drone* rpiDrone = (Drone*)x;
+    while (iStep >=0) {
+        pthread_mutex_lock(&mutex);
+        if (!global_thread) pthread_cond_wait(&cond, &mutex);
+        Drone_DataExchange_PrintFile(rpiDrone->data, rpiDrone->fLog);
+        global_thread = 0;
+        pthread_mutex_unlock(&mutex);
+    }
+    pthread_exit(NULL);
+}

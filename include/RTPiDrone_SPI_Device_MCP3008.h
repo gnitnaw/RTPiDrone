@@ -18,6 +18,6 @@ int MCP3008_setup(Drone_SPI_Device_MCP3008**);
  */
 void MCP3008_delete(Drone_SPI_Device_MCP3008**);
 
-void MCP3008_getDecodeValue(Drone_SPI_Device_MCP3008*, uint64_t*, float*);
+int MCP3008_getDecodeValue(Drone_SPI_Device_MCP3008*, uint64_t*, float*);
 #endif
 

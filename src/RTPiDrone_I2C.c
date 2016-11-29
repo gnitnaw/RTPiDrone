@@ -287,18 +287,20 @@ void Drone_I2C_DataInit(Drone_DataExchange* data, Drone_I2C* i2c)
     data->angle[2] = acos(data->mag[1]/getSqrt(data->mag, 2)) * RAD_TO_DEG;    // yaw
 }
 
-void Drone_I2C_ExchangeData(Drone_DataExchange* data, Drone_I2C* i2c, uint64_t* lastUpdate)
+int Drone_I2C_ExchangeData(Drone_DataExchange* data, Drone_I2C* i2c, uint64_t* lastUpdate)
 {
+    int ret = 0;
     if (!i2c->isWrite) {
         ADXL345_getFilteredValue(i2c->ADXL345, lastUpdate, data->acc, data->acc_est);
         L3G4200D_getFilteredValue(i2c->L3G4200D, lastUpdate, data->gyr, data->gyr_est);
-        HMC5883L_getFilteredValue(i2c->HMC5883L, lastUpdate, data->mag, data->mag_est);
-        BMP085_getFilteredValue(i2c->BMP085, lastUpdate, &data->attitude, &data->att_est);
+        ret += HMC5883L_getFilteredValue(i2c->HMC5883L, lastUpdate, data->mag, data->mag_est);
+        if (ret == 2) ret += BMP085_getFilteredValue(i2c->BMP085, lastUpdate, &data->attitude, &data->att_est);
         i2c->isWrite = true;
     } else {
-        PCA9685PW_write(i2c->PCA9685PW, data->power, lastUpdate);
+        ret += PCA9685PW_write(i2c->PCA9685PW, data->power, lastUpdate);
         i2c->isWrite = false;
     }
+    return ret;
 }
 
 static int PCA9685PW_ESC_Init(Drone_I2C* i2c)

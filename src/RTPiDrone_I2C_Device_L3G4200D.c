@@ -170,7 +170,7 @@ void L3G4200D_delete(Drone_I2C_Device_L3G4200D** L3G4200D)
     *L3G4200D = NULL;
 }
 
-void L3G4200D_getFilteredValue(Drone_I2C_Device_L3G4200D* L3G4200D, uint64_t* lastUpdate, float* data, float* data_filter)
+int L3G4200D_getFilteredValue(Drone_I2C_Device_L3G4200D* L3G4200D, uint64_t* lastUpdate, float* data, float* data_filter)
 {
     float* f = (float*)Drone_Device_GetRefreshedData((Drone_Device*)L3G4200D, lastUpdate);
     if (f) {
@@ -180,7 +180,9 @@ void L3G4200D_getFilteredValue(Drone_I2C_Device_L3G4200D* L3G4200D, uint64_t* la
             Drone_Filter_renew(&L3G4200D->filter[i], f[i], &filtered);
             data_filter[i] = filtered - Drone_I2C_Cali_getMean(L3G4200D->cali)[i];
         }
+        return 1;
     }
+    return 0;
 }
 
 void L3G4200D_inputFilter(Drone_I2C_Device_L3G4200D* L3G4200D)

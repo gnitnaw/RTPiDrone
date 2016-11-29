@@ -20,6 +20,6 @@ int RF24_setup(Drone_SPI_Device_RF24**);
  */
 void RF24_delete(Drone_SPI_Device_RF24**);
 
-void RF24_getDecodeValue(Drone_SPI_Device_RF24*, uint64_t*, Drone_Command*);
+int RF24_getDecodeValue(Drone_SPI_Device_RF24*, uint64_t*, Drone_Command*);
 #endif
 

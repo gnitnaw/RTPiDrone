@@ -162,13 +162,14 @@ static void* Calibration_Single_Thread(void* temp)
     pthread_exit(NULL);
 }
 
-void Drone_SPI_ExchangeData(Drone_DataExchange* data, Drone_SPI* spi, uint64_t* lastUpdate)
+int Drone_SPI_ExchangeData(Drone_DataExchange* data, Drone_SPI* spi, uint64_t* lastUpdate)
 {
     /*
     void* f = Drone_Device_GetRefreshedData((Drone_Device*)spi->RF24, lastUpdate);
     if (f!=NULL) {
         data->controller = *(uint32_t*)f;
     }*/
-    RF24_getDecodeValue(spi->RF24, lastUpdate, &data->comm);
-    MCP3008_getDecodeValue(spi->MCP3008, lastUpdate, &data->volt);
+    int ret = RF24_getDecodeValue(spi->RF24, lastUpdate, &data->comm);
+    if (!ret) ret += MCP3008_getDecodeValue(spi->MCP3008, lastUpdate, &data->volt);
+    return ret;
 }

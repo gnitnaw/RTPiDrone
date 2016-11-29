@@ -54,7 +54,7 @@ static int BMP085_getRawTemp(long*);
 static int BMP085_getRawPressure(long*);
 static int BMP085_getRawValue(void*);
 static int BMP085_convertRawToReal(void*);
-const static uint64_t BMP085_Period[] = {25500000L, 4500000L};
+const static uint64_t BMP085_Period[] = {26000000L, 5000000L};
 
 Drone_I2C_CaliInfo* BMP085_getCaliInfo(Drone_I2C_Device_BMP085* BMP085)
 {
@@ -219,15 +219,17 @@ void BMP085_delete(Drone_I2C_Device_BMP085** BMP085)
     *BMP085 = NULL;
 }
 
-void BMP085_getFilteredValue(Drone_I2C_Device_BMP085* BMP085, uint64_t* lastUpdate, float* data, float* data_filter)
+int BMP085_getFilteredValue(Drone_I2C_Device_BMP085* BMP085, uint64_t* lastUpdate, float* data, float* data_filter)
 {
     float* f = (float*) Drone_Device_GetRefreshedData((Drone_Device*)BMP085, lastUpdate);
-    if (f) {
+    if (f!=NULL) {
         *data = *f-Drone_I2C_Cali_getMean(BMP085->cali)[0];
         float filtered;
         Drone_Filter_renew(&BMP085->filter, *f, &filtered);
         *data_filter = filtered - Drone_I2C_Cali_getMean(BMP085->cali)[0];
+        return 1;
     }
+    return 0;
 }
 
 void BMP085_inputFilter(Drone_I2C_Device_BMP085* BMP085)

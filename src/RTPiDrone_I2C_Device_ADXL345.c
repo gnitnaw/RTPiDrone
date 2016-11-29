@@ -167,7 +167,7 @@ void ADXL345_delete(Drone_I2C_Device_ADXL345** axdl345)
     *axdl345 = NULL;
 }
 
-void ADXL345_getFilteredValue(Drone_I2C_Device_ADXL345* ADXL345, uint64_t* lastUpdate, float* data, float* data_filter)
+int ADXL345_getFilteredValue(Drone_I2C_Device_ADXL345* ADXL345, uint64_t* lastUpdate, float* data, float* data_filter)
 {
     float* f = (float*)Drone_Device_GetRefreshedData((Drone_Device*)ADXL345, lastUpdate);
     if (f) {
@@ -175,7 +175,9 @@ void ADXL345_getFilteredValue(Drone_I2C_Device_ADXL345* ADXL345, uint64_t* lastU
             data[i] = f[i];
             Drone_Filter_renew(&ADXL345->filter[i], f[i], &data_filter[i]);
         }
+        return 1;
     }
+    return 0;
 }
 
 void ADXL345_inputFilter(Drone_I2C_Device_ADXL345* ADXL345)

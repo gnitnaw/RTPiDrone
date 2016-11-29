@@ -1,4 +1,10 @@
 #include "RTPiDrone_DataExchange.h"
+#include <string.h>
+#define LINESIZE        512
+#define LINETEMPSIZE    128
+
+static char LINE[LINESIZE], LINETEMP[LINETEMPSIZE];
+
 int Drone_DataExchange_Init(Drone_DataExchange** data)
 {
     *data = (Drone_DataExchange*)calloc(1, sizeof(Drone_DataExchange));
@@ -22,23 +28,78 @@ void Drone_DataExchange_Print(Drone_DataExchange* data)
 
 void Drone_DataExchange_PrintAngle(Drone_DataExchange* data)
 {
-    printf("Roll: %f, Pitch: %f, Yaw: %f\n", data->angle[0], data->angle[1], data->angle[2]);
+    printf("T = %f, Roll: %f, Pitch: %f, Yaw: %f\n", data->T, data->angle[0], data->angle[1], data->angle[2]);
 }
+
+void Drone_DataExchange_PrintTextFile(Drone_DataExchange* data, FILE *fp)
+{
+    sprintf(LINE, "%f\t%f\t", data->T, data->dt);
+    sprintf(LINETEMP, "%f\t%f\t%f\t", data->angle[0], data->angle[1], data->angle[2]);
+    strcat(LINE, LINETEMP);
+
+    sprintf(LINETEMP, "%f\t%f\t%f\t", data->acc[0], data->acc[1], data->acc[2]);
+    strcat(LINE, LINETEMP);
+    sprintf(LINETEMP, "%f\t%f\t%f\t", data->gyr[0], data->gyr[1], data->gyr[2]);
+    strcat(LINE, LINETEMP);
+    sprintf(LINETEMP, "%f\t%f\t%f\t", data->mag[0], data->mag[1], data->mag[2]);
+    strcat(LINE, LINETEMP);
+
+    sprintf(LINETEMP, "%f\t%f\t%f\t", data->acc_est[0], data->acc_est[1], data->acc_est[2]);
+    strcat(LINE, LINETEMP);
+    sprintf(LINETEMP, "%f\t%f\t%f\t", data->gyr_est[0], data->gyr_est[1], data->gyr_est[2]);
+    strcat(LINE, LINETEMP);
+    sprintf(LINETEMP, "%f\t%f\t%f\t", data->mag_est[0], data->mag_est[1], data->mag_est[2]);
+    strcat(LINE, LINETEMP);
+    sprintf(LINETEMP, "%f\t%f\t%f\t", data->attitude, data->att_est, data->volt);
+    strcat(LINE, LINETEMP);
+    sprintf(LINETEMP, "%d\t%u\t", data->comm.switchValue, data->comm.power);
+    strcat(LINE, LINETEMP);
+    sprintf(LINETEMP, "%u\t%u\t%u\t%u\t", data->power[0], data->power[1], data->power[2], data->power[3]);
+    strcat(LINE, LINETEMP);
+    fprintf(fp, "%s\n", LINE);
+}
+
 void Drone_DataExchange_PrintFile(Drone_DataExchange* data, FILE *fp)
 {
-    fprintf(fp, "%f\t", data->dt);                                                  //2
+    fwrite(data, sizeof(Drone_DataExchange), 1, fp);
+    /*
+    sprintf(LINE, "%f\t%f\t", data->T, data->dt);
+    sprintf(LINETEMP, "%f\t%f\t%f\t", data->angle[0], data->angle[1], data->angle[2]);
+    strcat(LINE, LINETEMP);
+
+    sprintf(LINETEMP, "%f\t%f\t%f\t", data->acc[0], data->acc[1], data->acc[2]);
+    strcat(LINE, LINETEMP);
+    sprintf(LINETEMP, "%f\t%f\t%f\t", data->gyr[0], data->gyr[1], data->gyr[2]);
+    strcat(LINE, LINETEMP);
+    sprintf(LINETEMP, "%f\t%f\t%f\t", data->mag[0], data->mag[1], data->mag[2]);
+    strcat(LINE, LINETEMP);
+
+    sprintf(LINETEMP, "%f\t%f\t%f\t", data->acc_est[0], data->acc_est[1], data->acc_est[2]);
+    strcat(LINE, LINETEMP);
+    sprintf(LINETEMP, "%f\t%f\t%f\t", data->gyr_est[0], data->gyr_est[1], data->gyr_est[2]);
+    strcat(LINE, LINETEMP);
+    sprintf(LINETEMP, "%f\t%f\t%f\t", data->mag_est[0], data->mag_est[1], data->mag_est[2]);
+    strcat(LINE, LINETEMP);
+    sprintf(LINETEMP, "%f\t%f\t%f\t", data->attitude, data->att_est, data->volt);
+    strcat(LINE, LINETEMP);
+    sprintf(LINETEMP, "%d\t%u\t", data->comm.switchValue, data->comm.power);
+    strcat(LINE, LINETEMP);
+    sprintf(LINETEMP, "%u\t%u\t%u\t%u\t", data->power[0], data->power[1], data->power[2], data->power[3]);
+    strcat(LINE, LINETEMP);
+    fprintf(fp, "%s\n", LINE);*/
+    /*
+    fprintf(fp, "%u\t%f\t", N, data->dt); //1-2
     fprintf(fp, "%f\t%f\t%f\t", data->angle[0], data->angle[1], data->angle[2]);    //3-5
     fprintf(fp, "%f\t%f\t%f\t", data->acc[0], data->acc[1], data->acc[2]);          //6-8
     fprintf(fp, "%f\t%f\t%f\t", data->gyr[0], data->gyr[1], data->gyr[2]);          //9-11
     fprintf(fp, "%f\t%f\t%f\t", data->mag[0], data->mag[1], data->mag[2]);          //12-14
-    fprintf(fp, "%f\t", data->attitude);                                            //15
-    fprintf(fp, "%f\t%f\t%f\t", data->acc_est[0], data->acc_est[1], data->acc_est[2]);  //16-18
-    fprintf(fp, "%f\t%f\t%f\t", data->gyr_est[0], data->gyr_est[1], data->gyr_est[2]);  //19-21
-    fprintf(fp, "%f\t%f\t%f\t", data->mag_est[0], data->mag_est[1], data->mag_est[2]);  //22-24
-    fprintf(fp, "%f\t", data->att_est); //25
-    fprintf(fp, "%f\t", data->volt);    //26
-    fprintf(fp, "%d\t", data->comm.switchValue); //27
-    fprintf(fp, "%u\t", data->comm.power); //28
+    fprintf(fp, "%f\t%f\t%f\t", data->acc_est[0], data->acc_est[1], data->acc_est[2]);  //15-17
+    fprintf(fp, "%f\t%f\t%f\t", data->gyr_est[0], data->gyr_est[1], data->gyr_est[2]);  //18-20
+    fprintf(fp, "%f\t%f\t%f\t", data->mag_est[0], data->mag_est[1], data->mag_est[2]);  //21-23
+    fprintf(fp, "%f\t%f\t%f\t", data->attitude, data->att_est, data->volt); //24-26
+    fprintf(fp, "%d\t%u\t", data->comm.switchValue, data->comm.power); //27-28
     fprintf(fp, "%u\t%u\t%u\t%u\n", data->power[0], data->power[1], data->power[2], data->power[3]); //29-32
-    fflush(fp);
+    ++data->N;
+    //fflush(fp);
+    */
 }
