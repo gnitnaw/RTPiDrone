@@ -1,3 +1,4 @@
+#include "RTPiDrone_header.h"
 #include "RTPiDrone_SPI_Device_MCP3008.h"
 #include "RTPiDrone_Device.h"
 #include <bcm2835.h>
@@ -41,7 +42,9 @@ static int MCP3008_init(void* spi_dev)
 {
     bcm2835_spi_chipSelect(BCM2835_SPI_CS1);                    //Slave Select on CS1
     bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS1, LOW);
+#ifdef  DEBUG
     puts("MCP3008 init!");
+#endif
     return 0;
 }
 

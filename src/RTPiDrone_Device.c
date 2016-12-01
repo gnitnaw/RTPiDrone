@@ -1,3 +1,4 @@
+#include "RTPiDrone_header.h"
 #include "RTPiDrone_Device.h"
 #include "Common.h"
 #include <bcm2835.h>
@@ -20,8 +21,10 @@ static inline int dummyFunction(void* e)
  */
 static inline int dummyEndFunction(void* e)
 {
+#ifdef  DEBUG
     Drone_Device* dev = (Drone_Device*)e;
     printf("%s END!\n", dev->name);
+#endif
     return 0;
 }
 

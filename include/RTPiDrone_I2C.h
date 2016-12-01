@@ -40,4 +40,7 @@ int Drone_I2C_End(Drone_I2C**);
 void Drone_I2C_DataInit(Drone_DataExchange*, Drone_I2C*);
 
 int Drone_I2C_ExchangeData(Drone_DataExchange*, Drone_I2C*, uint64_t*);
+
+void HMC5883L_PWM_Calibration(Drone_I2C*);
+
 #endif /* DRONE_I2C */

@@ -1,3 +1,4 @@
+#include "RTPiDrone_header.h"
 #include "RTPiDrone_I2C_Device_BMP085.h"
 #include "RTPiDrone_Device.h"
 #include "RTPiDrone_I2C_CaliInfo.h"
@@ -54,7 +55,7 @@ static int BMP085_getRawTemp(long*);
 static int BMP085_getRawPressure(long*);
 static int BMP085_getRawValue(void*);
 static int BMP085_convertRawToReal(void*);
-const static uint64_t BMP085_Period[] = {26000000L, 5000000L};
+const static uint64_t BMP085_Period[] = {BMP085_PeriodLong, BMP085_PeriodShort};
 
 Drone_I2C_CaliInfo* BMP085_getCaliInfo(Drone_I2C_Device_BMP085* BMP085)
 {
@@ -94,10 +95,11 @@ static int BMP085_init(void* i2c_dev)
     }
 
     exchange(buf, 22);
+#ifdef  DEBUG
     printf("ACN : %d\t%d\t%d\t", Para_BMP085->AC1, Para_BMP085->AC2, Para_BMP085->AC3);
     printf("%d\t%d\t%d\n", Para_BMP085->AC4, Para_BMP085->AC5, Para_BMP085->AC6);
     printf("B and M : %d\t%d\t%d\t%d\t%d\n", Para_BMP085->B1, Para_BMP085->B2, Para_BMP085->MB, Para_BMP085->MC, Para_BMP085->MD);
-
+#endif
     BMP085_Trigger_UTemp();
     _usleep(5000);
     return 0;

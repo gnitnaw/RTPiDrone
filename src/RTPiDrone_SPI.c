@@ -1,7 +1,7 @@
 /*! \file RTPiDrone_SPI.c
     \brief Manage all of the SPI devices
  */
-
+#include "RTPiDrone_header.h"
 #include "Common.h"
 #include "RTPiDrone_SPI.h"
 #include "RTPiDrone_Device.h"
@@ -63,7 +63,9 @@ int Drone_SPI_Init(Drone_SPI** spi)
 
 void Drone_SPI_Start(Drone_SPI* spi, Drone_DataExchange* data)
 {
+#ifdef  DEBUG
     puts("SPI Start");
+#endif
     uint64_t lastUpdate;
     do {
         lastUpdate = get_nsec();

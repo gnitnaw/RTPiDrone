@@ -130,8 +130,9 @@ static int L3G4200D_init(void* i2c_dev)
         perror("L3G4200D Init 5 fail : FIFO");
         return -5;
     }
-
+#ifdef  DEBUG
     puts("L3G4200D initialization is done");
+#endif
     return 0;
 }
 

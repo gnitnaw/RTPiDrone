@@ -25,4 +25,6 @@ void Drone_DataExchange_Print(Drone_DataExchange*);
 void Drone_DataExchange_PrintAngle(Drone_DataExchange*);
 void Drone_DataExchange_PrintFile(Drone_DataExchange*, FILE*);
 void Drone_DataExchange_PrintTextFile(Drone_DataExchange*, FILE*);
+void Drone_DataExchange_MagPWMCorrection(Drone_DataExchange*);
+
 #endif

@@ -179,8 +179,9 @@ static int PCA9685PW_PWMReset(void* P)                           // == All turn 
         perror("PCA9685PW reset error 4");
         return -4;
     }
-
+#ifdef  DEBUG
     puts("PCA9685PW reset!");
+#endif
     return 0;
 }
 

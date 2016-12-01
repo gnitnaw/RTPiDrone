@@ -26,4 +26,5 @@ void PCA9685PW_delete(Drone_I2C_Device_PCA9685PW**);
 int PCA9685PW_write(Drone_I2C_Device_PCA9685PW*, const uint32_t*, uint64_t*);
 
 int PCA9685PW_writeOnly(Drone_I2C_Device_PCA9685PW*, const uint32_t*);
+
 #endif

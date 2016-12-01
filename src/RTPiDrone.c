@@ -48,7 +48,7 @@ typedef enum {
 struct Drone {
     char                    logfileName[LENGTH];	//!< \private Name of log file.
     FILE*                   fLog;                   //!< \private File output
-    char                    buf[BUFFERSIZE];
+    //char                    buf[BUFFERSIZE];
     Drone_I2C*              i2c;                    //!< \private All I2C devices
     Drone_SPI*              spi;                    //!< \private All SPI devices
     Drone_AHRS*             ahrs;                   //!< \private attitude and heading reference system (AHRS)
@@ -77,7 +77,9 @@ int Drone_Init(Drone** rpiDrone)
     }
 
     (*rpiDrone)->fLog = fopen((*rpiDrone)->logfileName, "wb");
+#ifdef  DEBUG
     printf("%s\n", (*rpiDrone)->logfileName);
+#endif
 
     if (!bcm2835_init()) {
         perror("bcm2835_init error");
@@ -111,8 +113,10 @@ int Drone_Init(Drone** rpiDrone)
 
 void Drone_Start(Drone* rpiDrone)
 {
+#ifdef  DEBUG
     puts("Start Test");
-    setvbuf (rpiDrone->fLog , rpiDrone->buf, _IOFBF , BUFFERSIZE);
+#endif
+    //setvbuf (rpiDrone->fLog , rpiDrone->buf, _IOFBF , BUFFERSIZE);
     Drone_SPI_Start(rpiDrone->spi, rpiDrone->data);
     Drone_I2C_Start(rpiDrone->i2c);
     rpiDrone->lastUpdate = get_nsec();
@@ -161,7 +165,7 @@ int Drone_End(Drone** rpiDrone)
     FILE* fout = fopen(output, "w");
     while (!feof(forg)) {
         fread( &data , sizeof(Drone_DataExchange) , 1 , forg);
-        Drone_DataExchange_PrintAngle(&data);
+        //Drone_DataExchange_PrintAngle(&data);
         Drone_DataExchange_PrintTextFile(&data, fout);
     }
     fclose(forg);
@@ -169,7 +173,9 @@ int Drone_End(Drone** rpiDrone)
 
     free(*rpiDrone);
     *rpiDrone = NULL;
+#ifdef  DEBUG
     puts("End Test");
+#endif
     return bcm2835_close();
 }
 
@@ -258,12 +264,14 @@ void Drone_Loop(Drone* rpiDrone)
         rpiDrone->data->T += dt;
         if (dt>0.003) {
             ret2 += Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime);
+            Drone_DataExchange_MagPWMCorrection(rpiDrone->data);
             ret2 += Drone_SPI_ExchangeData(rpiDrone->data, rpiDrone->spi, &currentTime);
             Drone_AHRS_ExchangeData(rpiDrone->data, rpiDrone->ahrs);
             ret += Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime);
+#ifdef  DEBUG
             if (!(iStep%1000)) Drone_DataExchange_PrintAngle(rpiDrone->data);
-
-            if (!ret) {
+#endif
+            if (!(iStep%2)) {
                 //Drone_DataExchange_PrintFile(rpiDrone->data, rpiDrone->fLog);
                 //if (!ret2) fflush(rpiDrone->fLog);
                 global_thread = 1;

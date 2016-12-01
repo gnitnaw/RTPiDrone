@@ -53,6 +53,7 @@ static int Calibration_Single_HMC5883L(Drone_I2C*); //!< \private \memberof Dron
 static int Calibration_Single_BMP085(Drone_I2C*);   //!< \private \memberof Drone_I2C: Calibration step for BMP085
 static void* Calibration_Single_Thread(void*);      //!< \private \memberof tempCali: Template for calibration
 static int PCA9685PW_ESC_Init(Drone_I2C*);          //!< \private \memberof Drone_I2C: Initialization of ESC
+
 /*!
  * \struct Drone_I2C
  * \brief Drone_I2C structure
@@ -65,6 +66,7 @@ struct Drone_I2C {
     Drone_I2C_Device_PCA9685PW*     PCA9685PW;  //!< \private PCA9685PW : Pulse Width Modulator
     bool                            isWrite;    //!< \private : Indicate next time to read (0) or write (1)
 };
+
 
 int Drone_I2C_Init(Drone_I2C** i2c)
 {
@@ -124,12 +126,15 @@ int Drone_I2C_Calibration(Drone_I2C* i2c)
 
 
     for (int i=0; i<NUM_CALI_THREADS; ++i) pthread_join(thread_i2c[i],NULL);
+
     return 0;
 }
 
 void Drone_I2C_Start(Drone_I2C* i2c)
 {
     PCA9685PW_ESC_Init(i2c);
+    //_usleep(1000000);
+    //HMC5883L_PWM_Calibration(i2c);
 }
 
 int Drone_I2C_End(Drone_I2C** i2c)
@@ -251,6 +256,7 @@ static void* Calibration_Single_Thread(void* temp)
         free(vCali[i]);
     }
 
+#ifdef  DEBUG
     printf("Mean :");
     for (int i=0; i<nData; ++i) {
         printf("%f, ", mean[i]);
@@ -262,7 +268,7 @@ static void* Calibration_Single_Thread(void* temp)
         printf("%f, ", sd[i]);
     }
     puts("");
-
+#endif
     free(vCali);
     pthread_exit(NULL);
 }
@@ -294,7 +300,7 @@ int Drone_I2C_ExchangeData(Drone_DataExchange* data, Drone_I2C* i2c, uint64_t* l
         ADXL345_getFilteredValue(i2c->ADXL345, lastUpdate, data->acc, data->acc_est);
         L3G4200D_getFilteredValue(i2c->L3G4200D, lastUpdate, data->gyr, data->gyr_est);
         ret += HMC5883L_getFilteredValue(i2c->HMC5883L, lastUpdate, data->mag, data->mag_est);
-        if (ret == 2) ret += BMP085_getFilteredValue(i2c->BMP085, lastUpdate, &data->attitude, &data->att_est);
+        ret += BMP085_getFilteredValue(i2c->BMP085, lastUpdate, &data->attitude, &data->att_est);
         i2c->isWrite = true;
     } else {
         ret += PCA9685PW_write(i2c->PCA9685PW, data->power, lastUpdate);
@@ -303,17 +309,64 @@ int Drone_I2C_ExchangeData(Drone_DataExchange* data, Drone_I2C* i2c, uint64_t* l
     return ret;
 }
 
+void HMC5883L_PWM_Calibration(Drone_I2C* i2c)
+{
+    char fileName[FILENAMESIZE], num[FILENAMESIZE];
+    const int nSample = 10;
+    float data[3][nSample];
+    float* f;
+    float mean, sd;
+    uint64_t lastUpdate;
+    uint32_t power[] = {PWM_MIN,PWM_MIN,PWM_MIN,PWM_MIN};
+    for (int i=0; i<4; ++i) {
+        printf("HMC5883L_PWM_Calibration : %d\n", i);
+        sprintf(num, "%d", i);
+        strcpy(fileName, "HMC5883L_PWM_");
+        strcat(fileName, num);
+        strcat(fileName, ".log");
+        FILE* fp = fopen(fileName, "w");
+        for (uint32_t j=PWM_MIN; j<=PWM_MAX; ++j) {
+            power[i] = j;
+            if (!PCA9685PW_writeOnly(i2c->PCA9685PW, power)) {
+                _usleep(60000);
+                for (int k=0; k<nSample; ++k) {
+                    _usleep(6000);
+                    lastUpdate = get_nsec();
+                    f = (float*)Drone_Device_GetRefreshedData((Drone_Device*)i2c->HMC5883L, &lastUpdate);
+                    if (f) {
+                        for (int l=0; l<3; ++l) {
+                            data[l][k] = f[l];
+                        }
+                    } else {
+                        --k;
+                    }
+                }
+                fprintf(fp, "%u\t", j);
+                for (int k=0; k<3; ++k) {
+                    mean = gsl_stats_float_mean(data[k], 1, nSample);
+                    sd = gsl_stats_float_sd(data[k], 1, nSample);
+                    fprintf(fp, "%f\t%f\t", mean, sd);
+                }
+                fprintf(fp, "\n");
+            }
+        }
+        power[i] = PWM_MIN;
+        PCA9685PW_writeOnly(i2c->PCA9685PW, power);
+        fclose(fp);
+    }
+}
+
 static int PCA9685PW_ESC_Init(Drone_I2C* i2c)
 {
     int ret = 0;
     uint32_t power[] = {PWM_MIN,PWM_MIN,PWM_MIN,PWM_MIN};
     ret += PCA9685PW_writeOnly(i2c->PCA9685PW, power);
-    _usleep(1000);
+    _usleep(40000);
     for (int i=0; i<4; ++i) power[i] = PWM_MAX;
     ret += PCA9685PW_writeOnly(i2c->PCA9685PW, power);
-    _usleep(2500);
+    _usleep(40000);
     for (int i=0; i<4; ++i) power[i] = PWM_MIN;
     ret += PCA9685PW_writeOnly(i2c->PCA9685PW, power);
-    _usleep(2000);
+    _usleep(40000);
     return ret;
 }

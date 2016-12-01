@@ -15,9 +15,9 @@ void RF24WT_init(void)
 
     radio.openWritingPipe(pipes[1]);
     radio.openReadingPipe(1,pipes[0]);
-
+#ifdef DEBUG
     radio.printDetails();
-
+#endif
     radio.startListening();
 }
 

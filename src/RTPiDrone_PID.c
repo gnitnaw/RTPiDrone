@@ -57,10 +57,12 @@ void Drone_PID_update(Drone_PID* pid, float* angle_expect, float* angle_measured
     pwm[2] = (power - pid->output[1] + pid->output[0] + pid->output[2] );    //M2
     pwm[3] = (power + pid->output[1] + pid->output[0] - pid->output[2] );    //M3
     */
+
     pwm[0] = (power - pid->output[0] + pid->output[1]);    //M0
     pwm[1] = (power - pid->output[0] - pid->output[1]);    //M1
     pwm[2] = (power + pid->output[0] - pid->output[1]);    //M2
     pwm[3] = (power + pid->output[0] + pid->output[1]);    //M3
+
     /*
         pwm[0] = (power + pid->output[1]);    //M0
         pwm[1] = (power - pid->output[1]);    //M1

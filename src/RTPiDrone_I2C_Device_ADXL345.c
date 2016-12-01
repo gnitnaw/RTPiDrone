@@ -53,7 +53,6 @@ int ADXL345_setup(Drone_I2C_Device_ADXL345** axdl345)
     Drone_I2C_Cali_Init(&(*axdl345)->cali, NITEM);
     float period = CONTROL_PERIOD > (1000000000L/ADXL345_RATE) ? (float)CONTROL_PERIOD : (float)(1000000000L/ADXL345_RATE);
     period /= 1000000000.0f;
-    //printf("period = %f\n", period);
     for (int i=0; i<NITEM; ++i) {
         Drone_Filter_init(&(*axdl345)->filter[i], period );
     }
@@ -129,8 +128,9 @@ static int ADXL345_init(void* i2c_dev)
         perror("ADXL345 Init 5 fail : Switch on");
         return -5;
     }
-
+#ifdef  DEBUG
     puts("ADXL345 initialization is done");
+#endif
     return 0;
 }
 
