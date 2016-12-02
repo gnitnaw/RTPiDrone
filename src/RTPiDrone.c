@@ -119,8 +119,8 @@ void Drone_Start(Drone* rpiDrone)
     //setvbuf (rpiDrone->fLog , rpiDrone->buf, _IOFBF , BUFFERSIZE);
     Drone_SPI_Start(rpiDrone->spi, rpiDrone->data);
     Drone_I2C_Start(rpiDrone->i2c);
-    rpiDrone->lastUpdate = get_nsec();
     _usleep(PERIOD/1000);
+    rpiDrone->lastUpdate = get_nsec();
     clock_gettime(CLOCK_MONOTONIC, &rpiDrone->pause);
     Drone_Loop(rpiDrone);
 }
@@ -264,7 +264,7 @@ void Drone_Loop(Drone* rpiDrone)
         rpiDrone->data->T += dt;
         if (dt>0.003) {
             ret2 += Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime);
-            Drone_DataExchange_MagPWMCorrection(rpiDrone->data);
+            //Drone_DataExchange_MagPWMCorrection(rpiDrone->data);
             ret2 += Drone_SPI_ExchangeData(rpiDrone->data, rpiDrone->spi, &currentTime);
             Drone_AHRS_ExchangeData(rpiDrone->data, rpiDrone->ahrs);
             ret += Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime);
@@ -283,11 +283,20 @@ void Drone_Loop(Drone* rpiDrone)
         if (dt-latency < 0.003) {
             clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &rpiDrone->pause, NULL);
         } else {
+#ifdef  DEBUG
             printf("At %u you get problem for the timing! You got latency = %f !\n", iStep, dt);
+#endif
             break;
         }
         ++iStep;
     }
+
+#ifdef  DEBUG
+    if (rpiDrone->data->comm.zeroCount >= 100) {
+        puts("No signal!");
+    }
+#endif
+
     iStep = -1;
     pthread_cond_signal(&cond);
     pthread_join(pid, NULL);

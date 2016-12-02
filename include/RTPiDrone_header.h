@@ -1,6 +1,8 @@
 #ifndef H_DRONE_HEADER
 #define H_DRONE_HEADER
 
+#define DEBUG
+//#define HMC5883L_PWM_CALI
 #define CONTROL_PERIOD      (4000000L)
 #define KP                  (7.0f)
 #define KI                  (0.2f)

@@ -133,8 +133,10 @@ int Drone_I2C_Calibration(Drone_I2C* i2c)
 void Drone_I2C_Start(Drone_I2C* i2c)
 {
     PCA9685PW_ESC_Init(i2c);
-    //_usleep(1000000);
-    //HMC5883L_PWM_Calibration(i2c);
+    _usleep(5000000);
+#ifdef  HMC5883L_PWM_CALI
+    HMC5883L_PWM_Calibration(i2c);
+#endif
 }
 
 int Drone_I2C_End(Drone_I2C** i2c)
@@ -353,6 +355,7 @@ void HMC5883L_PWM_Calibration(Drone_I2C* i2c)
         power[i] = PWM_MIN;
         PCA9685PW_writeOnly(i2c->PCA9685PW, power);
         fclose(fp);
+        _usleep(3000000);
     }
 }
 
@@ -364,7 +367,7 @@ static int PCA9685PW_ESC_Init(Drone_I2C* i2c)
     _usleep(40000);
     for (int i=0; i<4; ++i) power[i] = PWM_MAX;
     ret += PCA9685PW_writeOnly(i2c->PCA9685PW, power);
-    _usleep(40000);
+    _usleep(50000);
     for (int i=0; i<4; ++i) power[i] = PWM_MIN;
     ret += PCA9685PW_writeOnly(i2c->PCA9685PW, power);
     _usleep(40000);

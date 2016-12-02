@@ -4,95 +4,64 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 
 def fitFunc(t, a, b, c):
-    return a*t**0.5 + b*t + c
+    return a*t**0.5 + b*t**0.25 + c
 
-power = []
-mag0 = []
-mag1 = []
-mag2 = []
-mag0err = []
-mag1err = []
-mag2err = []
+start = 1820
+for index in range(4) :
+    power = []
+    mag0 = []
+    mag1 = []
+    mag2 = []
+    mag0err = []
+    mag1err = []
+    mag2err = []
+    mag = [[], [], []]
+    magErr = [[], [], []]
 
-offset0 = 0
-offset1 = 0
-offset2 = 0
+    offset = [0.0,0.0,0.0]
 
-f = open('HMC5883L_PWM_3.log', 'r')
-while True :
-    i = f.readline()
-    if i=='': break
-    tA = float((i.split('\t'))[0])
-    if (tA == 1800):
-        offset0 = float((i.split('\t'))[1])
-        offset1 = float((i.split('\t'))[3])
-        offset2 = float((i.split('\t'))[5])
-    if (tA>=1800):
-        power.append(tA)
-        mag0.append(float((i.split('\t'))[1])-offset0)
-        mag1.append(float((i.split('\t'))[3])-offset1)
-        mag2.append(float((i.split('\t'))[5])-offset2)
-        mag0err.append(float((i.split('\t'))[2]))
-        mag1err.append(float((i.split('\t'))[4]))
-        mag2err.append(float((i.split('\t'))[6]))
-f.close()
+    strs = "HMC5883L_PWM_"+str(index)+".log"
 
-po = np.asarray(power)
+    f = open(strs, 'r')
 
-fitParams0, fitCovariances0 = curve_fit(fitFunc, power, mag0, sigma=mag0err)
-sigma0 = [fitCovariances0[0,0], fitCovariances0[1,1], fitCovariances0[2,2] ]
+    while True :
+        i = f.readline()
+        if i=='': break
+        tA = float((i.split('\t'))[0])
+        if (tA >= 1650 and tA < 1750):
+            for k in range(3):
+                offset[k] += float((i.split('\t'))[k*2+1])
+        if (tA == 1800):
+            for k in range(3):
+                offset[k] /= 100
+        if (tA>start):
+            power.append(tA)
+            for k in range(3):
+                mag[k].append(float((i.split('\t'))[1+k*2])-offset[k])
+                magErr[k].append(float((i.split('\t'))[2+k*2]))
 
-fitParams1, fitCovariances1 = curve_fit(fitFunc, power, mag1, sigma=mag1err)
-sigma1 = [fitCovariances1[0,0], fitCovariances1[1,1], fitCovariances1[2,2] ]
+    f.close()
 
-fitParams2, fitCovariances2 = curve_fit(fitFunc, power, mag2, sigma=mag2err)
-sigma2 = [fitCovariances2[0,0], fitCovariances2[1,1], fitCovariances2[2,2] ]
+    po = np.asarray(power)
 
-plt.ylabel('Mag', fontsize = 16) 
-plt.xlabel('Power', fontsize = 16) 
-plt.xlim(1800,3280)
-# plot the data as red circles with vertical errorbars
-plt.errorbar(power, mag0, fmt = 'ro', yerr = mag0err)
+    print('{\t')
+    for k in range(3):
+        fitParams, fitCovariances = curve_fit(fitFunc, power, mag[k], sigma=magErr[k])
+        sigma = [fitCovariances[0,0], fitCovariances[1,1], fitCovariances[2,2]]
 
-sigma = [fitCovariances0[0,0], fitCovariances0[1,1], fitCovariances0[2,2] ]
-plt.plot(power, fitFunc(po, fitParams0[0], fitParams0[1], fitParams0[2]))   
+        plt.ylabel('Mag'+str(k), fontsize = 16) 
+        plt.xlabel('Power'+str(index), fontsize = 16) 
+        plt.xlim(start,3280)
+        # plot the data as red circles with vertical errorbars
+        plt.errorbar(power, mag[k], fmt = 'ro', yerr = magErr[k])
 
-plt.savefig('Motor3_Meg0.png', bbox_inches=0)
+        plt.plot(power, fitFunc(po, fitParams[0], fitParams[1], fitParams[2]))   
 
-print(fitParams0)
-print(fitCovariances0)
-plt.close()
+        strs = "Motor"+str(index)+"_Meg"+str(k)+".png"
+        plt.savefig(strs, bbox_inches=0)
 
-plt.ylabel('Mag', fontsize = 16)
-plt.xlabel('Power', fontsize = 16)
-plt.xlim(1800,3280)
+        print('{'+str(fitParams[0])+',\t'+str(fitParams[1])+',\t'+str(fitParams[2])+'}')
+        #print(fitCovariances)
+        plt.close()
 
-# plot the data as red circles with vertical errorbars
-plt.errorbar(power, mag1, fmt = 'ro', yerr = mag1err)
-
-sigma = [fitCovariances1[0,0], fitCovariances1[1,1], fitCovariances1[2,2] ]
-plt.plot(power, fitFunc(po, fitParams1[0], fitParams1[1], fitParams1[2]))
-
-plt.savefig('Motor3_Meg1.png', bbox_inches=0)
-
-print(fitParams1)
-print(fitCovariances1)
-plt.close()
-
-
-plt.ylabel('Mag', fontsize = 16)
-plt.xlabel('Power', fontsize = 16)
-plt.xlim(1800,3280)
-
-# plot the data as red circles with vertical errorbars
-plt.errorbar(power, mag2, fmt = 'ro', yerr = mag2err)
-
-sigma = [fitCovariances2[0,0], fitCovariances2[1,1], fitCovariances2[2,2] ]
-plt.plot(power, fitFunc(po, fitParams2[0], fitParams2[1], fitParams2[2]))
-
-plt.savefig('Motor3_Meg2.png', bbox_inches=0)
-
-print(fitParams2)
-print(fitCovariances2)
-
-
+    print('}')
