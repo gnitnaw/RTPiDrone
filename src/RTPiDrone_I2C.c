@@ -53,6 +53,33 @@ static int Calibration_Single_HMC5883L(Drone_I2C*); //!< \private \memberof Dron
 static int Calibration_Single_BMP085(Drone_I2C*);   //!< \private \memberof Drone_I2C: Calibration step for BMP085
 static void* Calibration_Single_Thread(void*);      //!< \private \memberof tempCali: Template for calibration
 static int PCA9685PW_ESC_Init(Drone_I2C*);          //!< \private \memberof Drone_I2C: Initialization of ESC
+static void Drone_I2C_MagPWMCorrection(uint32_t*, float*);
+
+static float magFitFunc(uint32_t, const float*);
+
+static const float magCorr[][3][3] = {
+    {
+        {6.61611606211, -98.902117397,  364.170847984},
+        {3.25212997028, -48.7697238694, 179.022788776},
+        {-7.37160176497,    111.834418395,  -412.447306945}
+    },
+    {
+        {5.50903764712, -82.0980156356, 301.453031647},
+        {4.07467179477, -63.7918721595, 249.373180638},
+        {3.24067398825, -50.4595212277, 190.858825857}
+    },
+    {
+        {-13.3460228282,    200.930820024,  -739.962719004},
+        {29.3057756656, -445.783984334, 1662.17393418},
+        {19.629876404,  -295.721326047, 1091.7205143}
+    },
+    {
+        {-14.6725557049,    217.001761933,  -786.753669073},
+        {-17.2872454836,    259.179108995,  -952.302481154},
+        {-21.5664086508,    323.717279288,  -1190.54567997}
+    }
+};
+
 
 /*!
  * \struct Drone_I2C
@@ -67,6 +94,10 @@ struct Drone_I2C {
     bool                            isWrite;    //!< \private : Indicate next time to read (0) or write (1)
 };
 
+static float magFitFunc(uint32_t power, const float* t)
+{
+    return t[0]*sqrtf((float)power) + pow(power,0.25)*t[1] + t[2];
+}
 
 int Drone_I2C_Init(Drone_I2C** i2c)
 {
@@ -113,7 +144,7 @@ int Drone_I2C_Calibration(Drone_I2C* i2c)
     pthread_create(&thread_i2c[1], NULL, Calibration_Single_Thread, (void*) &gyrTemp);
 
     tempCali magTemp = {i2c, HMC5883L_getCaliInfo(i2c->HMC5883L), Calibration_Single_HMC5883L,
-                        Drone_Device_GetData((Drone_Device*)(i2c->HMC5883L)), N_SAMPLE_CALIBRATION/2, 3,
+                        Drone_Device_GetData((Drone_Device*)(i2c->HMC5883L)), N_SAMPLE_CALIBRATION/5, 3,
                         Drone_Device_GetName((Drone_Device*)(i2c->HMC5883L))
                        };
     pthread_create(&thread_i2c[2], NULL, Calibration_Single_Thread, (void*) &magTemp);
@@ -302,6 +333,7 @@ int Drone_I2C_ExchangeData(Drone_DataExchange* data, Drone_I2C* i2c, uint64_t* l
         ADXL345_getFilteredValue(i2c->ADXL345, lastUpdate, data->acc, data->acc_est);
         L3G4200D_getFilteredValue(i2c->L3G4200D, lastUpdate, data->gyr, data->gyr_est);
         ret += HMC5883L_getFilteredValue(i2c->HMC5883L, lastUpdate, data->mag, data->mag_est);
+        if (ret) Drone_I2C_MagPWMCorrection(data->power, data->mag_est);
         ret += BMP085_getFilteredValue(i2c->BMP085, lastUpdate, &data->attitude, &data->att_est);
         i2c->isWrite = true;
     } else {
@@ -373,3 +405,15 @@ static int PCA9685PW_ESC_Init(Drone_I2C* i2c)
     _usleep(40000);
     return ret;
 }
+
+static void Drone_I2C_MagPWMCorrection(uint32_t* power, float* mag_est)
+{
+    for (int i=0; i<4; ++i) {
+        if (power[i]>1800) {
+            for (int j=0; j<3; ++j) {
+                mag_est[j] -= magFitFunc(power[i], magCorr[i][j]);
+            }
+        }
+    }
+}
+

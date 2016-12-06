@@ -67,7 +67,8 @@ static int HMC5883L_init(void* i2c_dev)
     bcm2835_i2c_setSlaveAddress(HMC5883L_ADDR);
     char regaddr[2];
     regaddr[0] = HMC5883L_MODE_REG;
-    regaddr[1] = 0x01;              // single measument mode
+    //regaddr[1] = 0x01;              // single measument mode
+    regaddr[1] = 0x00;              // Continuous-Measurement mode
     if (bcm2835_i2c_write(regaddr,2) != BCM2835_I2C_REASON_OK) {
         perror("HMC5883L Init 1 fail : Continue mode");
         return -1;
@@ -110,12 +111,13 @@ static int HMC5883L_init(void* i2c_dev)
         perror("HMC5883L Init 3 fail : Range");
         return -3;
     }
-
-    if (HMC5883L_singleMeasurement()) {
-        perror("HMC5883L single trig");
-        return -4;
-    }
-    _usleep(6000);
+    /*
+        if (HMC5883L_singleMeasurement()) {
+            perror("HMC5883L single trig");
+            return -4;
+        }
+    */
+    _usleep(50000);
     return 0;
 }
 
@@ -144,7 +146,8 @@ static int HMC5883L_convertRawToReal(void* i2c_dev)
     for (int i=0; i<NITEM; ++i) {
         dev->realData[i] = dev->mag_gain[i] *(dev->rawData[i] - dev->mag_offset[i]) * HMC5883L_RESOLUTION;
     }
-    return HMC5883L_singleMeasurement();
+    //return HMC5883L_singleMeasurement();
+    return 0;
 }
 
 void HMC5883L_delete(Drone_I2C_Device_HMC5883L** HMC5883L)

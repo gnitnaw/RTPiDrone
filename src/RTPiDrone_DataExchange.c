@@ -5,36 +5,6 @@
 #define LINETEMPSIZE    128
 
 static char LINE[LINESIZE], LINETEMP[LINETEMPSIZE];
-static float magFitFunc(uint32_t, const float*);
-
-static const float magCorr[][3][3] = {
-    {
-        {6.61611606211, -98.902117397,  364.170847984},
-        {3.25212997028, -48.7697238694, 179.022788776},
-        {-7.37160176497,    111.834418395,  -412.447306945}
-    },
-    {
-        {5.50903764712, -82.0980156356, 301.453031647},
-        {4.07467179477, -63.7918721595, 249.373180638},
-        {3.24067398825, -50.4595212277, 190.858825857}
-    },
-    {
-        {-13.3460228282,    200.930820024,  -739.962719004},
-        {29.3057756656, -445.783984334, 1662.17393418},
-        {19.629876404,  -295.721326047, 1091.7205143}
-    },
-    {
-        {-14.6725557049,    217.001761933,  -786.753669073},
-        {-17.2872454836,    259.179108995,  -952.302481154},
-        {-21.5664086508,    323.717279288,  -1190.54567997}
-    }
-};
-
-static float magFitFunc(uint32_t power, const float* t)
-{
-    return t[0]*sqrtf((float)power) + pow(power,0.25)*t[1] + t[2];
-}
-
 
 int Drone_DataExchange_Init(Drone_DataExchange** data)
 {
@@ -93,15 +63,6 @@ void Drone_DataExchange_PrintTextFile(Drone_DataExchange* data, FILE *fp)
 void Drone_DataExchange_PrintFile(Drone_DataExchange* data, FILE *fp)
 {
     fwrite(data, sizeof(Drone_DataExchange), 1, fp);
+    fflush(fp);
 }
 
-void Drone_DataExchange_MagPWMCorrection(Drone_DataExchange* data)
-{
-    for (int i=0; i<4; ++i) {
-        if (data->power[i]>1800) {
-            for (int j=0; j<3; ++j) {
-                data->mag_est[j] -= magFitFunc(data->power[i], magCorr[i][j]);
-            }
-        }
-    }
-}

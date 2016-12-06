@@ -262,21 +262,18 @@ void Drone_Loop(Drone* rpiDrone)
         dt = (float)(currentTime - rpiDrone->lastUpdate)/BILLION;
         rpiDrone->data->dt = dt;
         rpiDrone->data->T += dt;
-        if (dt>0.003) {
-            ret2 += Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime);
-            //Drone_DataExchange_MagPWMCorrection(rpiDrone->data);
-            ret2 += Drone_SPI_ExchangeData(rpiDrone->data, rpiDrone->spi, &currentTime);
-            Drone_AHRS_ExchangeData(rpiDrone->data, rpiDrone->ahrs);
-            ret += Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime);
+        ret2 += Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime);
+        ret2 += Drone_SPI_ExchangeData(rpiDrone->data, rpiDrone->spi, &currentTime);
+        Drone_AHRS_ExchangeData(rpiDrone->data, rpiDrone->ahrs);
+        ret += Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime);
 #ifdef  DEBUG
-            if (!(iStep%1000)) Drone_DataExchange_PrintAngle(rpiDrone->data);
+        if (!(iStep%1000)) Drone_DataExchange_PrintAngle(rpiDrone->data);
 #endif
-            if (!(iStep%2)) {
-                //Drone_DataExchange_PrintFile(rpiDrone->data, rpiDrone->fLog);
-                //if (!ret2) fflush(rpiDrone->fLog);
-                global_thread = 1;
-                pthread_cond_signal(&cond);
-            }
+        if (!(iStep%2)) {
+            //Drone_DataExchange_PrintFile(rpiDrone->data, rpiDrone->fLog);
+            //if (!ret2) fflush(rpiDrone->fLog);
+            global_thread = 1;
+            pthread_cond_signal(&cond);
         }
 
         rpiDrone->lastUpdate = currentTime;
