@@ -11,6 +11,6 @@ RECURSIVE              = YES
 EXTRACT_ALL            = YES
 EXTRACT_PRIVATE        = YES
 EXTRACT_STATIC         = YES
-EXCLUDE_PATTERNS       = */src/RF24/* \
-			 */include/RF24/*
+EXCLUDE_PATTERNS       =    */src/backup/* \
+			                */include/backup/*
 USE_MDFILE_AS_MAINPAGE = @doxy_main_page@

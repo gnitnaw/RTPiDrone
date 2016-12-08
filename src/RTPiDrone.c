@@ -196,6 +196,7 @@ static int getKernelString(char* kStr)
     char buf[LENGTH];
     if (!fgets(buf, LENGTH, fkernel)) {
         perror("fgets error!");
+        fclose(fkernel);
         return -2;
     }
     sscanf(buf, "Linux version %s (", kStr);
