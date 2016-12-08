@@ -32,7 +32,9 @@ struct Drone_I2C_Device_HMC5883L {
 static int HMC5883L_init(void*);        //!< \private \memberof Drone_I2C_Device_HMC5883L function : Initialization of HMC5883L
 static int HMC5883L_getRawValue(void*); //!< \private \memberof Drone_I2C_Device_HMC5883L function : Get raw value from HMC5883L
 static int HMC5883L_convertRawToReal(void*); //!< \private \memberof Drone_I2C_Device_HMC5883L function : Convert to real value
+#ifdef HMC5883L_SINGLEMEASUREMENT
 static int HMC5883L_singleMeasurement(void);//!< \private \memberof Drone_I2C_Device_HMC5883L function:Trigger single measurement
+#endif
 
 Drone_I2C_CaliInfo* HMC5883L_getCaliInfo(Drone_I2C_Device_HMC5883L* HMC5883L)
 {
@@ -67,8 +69,11 @@ static int HMC5883L_init(void* i2c_dev)
     bcm2835_i2c_setSlaveAddress(HMC5883L_ADDR);
     char regaddr[2];
     regaddr[0] = HMC5883L_MODE_REG;
-    //regaddr[1] = 0x01;              // single measument mode
+#ifdef  HMC5883L_SINGLEMEASUREMENT
+    regaddr[1] = 0x01;              // single measument mode
+#else
     regaddr[1] = 0x00;              // Continuous-Measurement mode
+#endif
     if (bcm2835_i2c_write(regaddr,2) != BCM2835_I2C_REASON_OK) {
         perror("HMC5883L Init 1 fail : Continue mode");
         return -1;
@@ -111,13 +116,13 @@ static int HMC5883L_init(void* i2c_dev)
         perror("HMC5883L Init 3 fail : Range");
         return -3;
     }
-    /*
-        if (HMC5883L_singleMeasurement()) {
-            perror("HMC5883L single trig");
-            return -4;
-        }
-    */
-    _usleep(50000);
+#ifdef  HMC5883L_SINGLEMEASUREMENT
+    if (HMC5883L_singleMeasurement()) {
+        perror("HMC5883L single trig");
+        return -4;
+    }
+#endif
+    _usleep(20000);
     return 0;
 }
 
@@ -146,8 +151,11 @@ static int HMC5883L_convertRawToReal(void* i2c_dev)
     for (int i=0; i<NITEM; ++i) {
         dev->realData[i] = dev->mag_gain[i] *(dev->rawData[i] - dev->mag_offset[i]) * HMC5883L_RESOLUTION;
     }
-    //return HMC5883L_singleMeasurement();
+#ifdef  HMC5883L_SINGLEMEASUREMENT
+    return HMC5883L_singleMeasurement();
+#else
     return 0;
+#endif
 }
 
 void HMC5883L_delete(Drone_I2C_Device_HMC5883L** HMC5883L)
@@ -171,6 +179,7 @@ int HMC5883L_getFilteredValue(Drone_I2C_Device_HMC5883L* HMC5883L, uint64_t* las
     return 0;
 }
 
+#ifdef HMC5883L_SINGLEMEASUREMENT
 static int HMC5883L_singleMeasurement(void)
 {
     bcm2835_i2c_setSlaveAddress(HMC5883L_ADDR);
@@ -183,6 +192,7 @@ static int HMC5883L_singleMeasurement(void)
     }
     return 0;
 }
+#endif
 
 void HMC5883L_inputFilter(Drone_I2C_Device_HMC5883L* HMC5883L)
 {

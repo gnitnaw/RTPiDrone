@@ -217,7 +217,7 @@ static int Calibration_Single_HMC5883L(Drone_I2C* i2c)
     atomic_fetch_sub(&i2c_stat, 1);
     ret += Drone_Device_GetRealData((Drone_Device*)(i2c->HMC5883L));
     HMC5883L_inputFilter(i2c->HMC5883L);
-    _usleep(6000);
+    _usleep(HMC5883L_PERIOD/1000);
     return ret;
 }
 

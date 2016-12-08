@@ -31,6 +31,9 @@ void Drone_AHRS_DataInit(Drone_DataExchange* data, Drone_AHRS* ahrs)
     for (int i=0; i<1000; ++i) {
         Drone_Quaternion_renew(ahrs->Quaternion, 0.1, data->acc, data->gyr, data->mag);
     }
+    Drone_Quaternion_getAngle(ahrs->Quaternion, data->angle);
+
+    data->comm.angle_expect[2] = data->angle[2];
 }
 
 void Drone_AHRS_ExchangeData(Drone_DataExchange* data, Drone_AHRS* ahrs)

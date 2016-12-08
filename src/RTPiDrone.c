@@ -22,7 +22,7 @@
 #define NUM_THREADS             2
 #define PERIOD                  CONTROL_PERIOD
 #define BILLION                 1000000000L
-#define BUFFERSIZE              4096
+//#define BUFFERSIZE              4096
 
 static pthread_mutex_t  mutex;
 static pthread_cond_t   cond;
@@ -119,8 +119,8 @@ void Drone_Start(Drone* rpiDrone)
     //setvbuf (rpiDrone->fLog , rpiDrone->buf, _IOFBF , BUFFERSIZE);
     Drone_SPI_Start(rpiDrone->spi, rpiDrone->data);
     Drone_I2C_Start(rpiDrone->i2c);
-    _usleep(PERIOD/1000);
     rpiDrone->lastUpdate = get_nsec();
+    _usleep(PERIOD/1000);
     clock_gettime(CLOCK_MONOTONIC, &rpiDrone->pause);
     Drone_Loop(rpiDrone);
 }

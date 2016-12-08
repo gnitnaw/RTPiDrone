@@ -55,6 +55,9 @@ void Drone_DataExchange_PrintTextFile(Drone_DataExchange* data, FILE *fp)
     strcat(LINE, LINETEMP);
     sprintf(LINETEMP, "%d\t%u\t", data->comm.switchValue, data->comm.power);
     strcat(LINE, LINETEMP);
+    sprintf(LINETEMP, "%d\t%d\t", data->comm.horDirection[0], data->comm.horDirection[1]);
+    sprintf(LINETEMP, "%f\t%f\t%f\t", data->comm.angle_expect[0], data->comm.angle_expect[1], data->comm.angle_expect[2]);
+    strcat(LINE, LINETEMP);
     sprintf(LINETEMP, "%u\t%u\t%u\t%u\t", data->power[0], data->power[1], data->power[2], data->power[3]);
     strcat(LINE, LINETEMP);
     fprintf(fp, "%s\n", LINE);
