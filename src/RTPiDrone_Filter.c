@@ -1,11 +1,11 @@
 #include "RTPiDrone_Filter.h"
 const static float A1 = 2.0f * ZETA / OMEGA_N;
 const static float A2 = 1.0f / OMEGA_N / OMEGA_N;
-void Drone_Filter_init(Drone_Filter* f, float dt)
+void Drone_Filter_init(Drone_Filter* f, float dt, float omega_divide)
 {
-    f->B0 = A2/dt/dt - A1/dt + 1;
-    f->B1 = -2*A2/dt/dt + A1/dt;
-    f->B2 = A2/dt/dt;
+    f->B0 = A2*omega_divide*omega_divide/dt/dt - A1*omega_divide/dt + 1;
+    f->B1 = -2*A2*omega_divide*omega_divide/dt/dt + A1*omega_divide/dt;
+    f->B2 = A2*omega_divide*omega_divide/dt/dt;
 }
 
 void Drone_Filter_Pure(Drone_Filter* f, float rawdata)

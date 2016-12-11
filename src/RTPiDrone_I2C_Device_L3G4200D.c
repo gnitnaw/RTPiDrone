@@ -58,7 +58,7 @@ int L3G4200D_setup(Drone_I2C_Device_L3G4200D** L3G4200D)
     float period = CONTROL_PERIOD > (1000000000L/L3G4200D_RATE) ? (float)CONTROL_PERIOD : (float)(1000000000L/L3G4200D_RATE);
     period /= 1000000000.0f;
     for (int i=0; i<NITEM; ++i) {
-        Drone_Filter_init(&(*L3G4200D)->filter[i], period );
+        Drone_Filter_init(&(*L3G4200D)->filter[i], period, 1.0f );
     }
 
     return L3G4200D_init(&(*L3G4200D)->dev) + Drone_Device_Init(&(*L3G4200D)->dev);

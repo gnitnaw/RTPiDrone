@@ -59,7 +59,7 @@ int HMC5883L_setup(Drone_I2C_Device_HMC5883L** HMC5883L)
     (*HMC5883L)->mag_gain[1] = 0.992958;
     (*HMC5883L)->mag_gain[2] = 1.128000;
     for (int i=0; i<NITEM; ++i) {
-        Drone_Filter_init(&(*HMC5883L)->filter[i], 0.006 );
+        Drone_Filter_init(&(*HMC5883L)->filter[i], 0.006, 1.0f );
     }
     return HMC5883L_init(&(*HMC5883L)->dev) + Drone_Device_Init(&(*HMC5883L)->dev);
 }

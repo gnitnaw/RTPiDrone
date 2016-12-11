@@ -11,7 +11,7 @@ typedef struct {
     float B0, B1, B2;
 } Drone_Filter;
 
-void Drone_Filter_init(Drone_Filter*, float) ;
+void Drone_Filter_init(Drone_Filter*, float, float) ;
 void Drone_Filter_Pure(Drone_Filter*, float) ;
 void Drone_Filter_renew(Drone_Filter*, float, float*) ;
 

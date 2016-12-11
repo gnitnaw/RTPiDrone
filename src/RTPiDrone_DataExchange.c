@@ -1,10 +1,12 @@
 #include "RTPiDrone_DataExchange.h"
+#include "Common.h"
 #include <string.h>
 #include <math.h>
 #define LINESIZE        512
 #define LINETEMPSIZE    128
 
 static char LINE[LINESIZE], LINETEMP[LINETEMPSIZE];
+static float T_temp;
 
 int Drone_DataExchange_Init(Drone_DataExchange** data)
 {
@@ -34,22 +36,28 @@ void Drone_DataExchange_PrintAngle(Drone_DataExchange* data)
 
 void Drone_DataExchange_PrintTextFile(Drone_DataExchange* data, FILE *fp)
 {
-    sprintf(LINE, "%f\t%f\t", data->T, data->dt);
+    sprintf(LINE, "%f\t%f\t%f\t", data->T, data->dt, data->T-T_temp);
     sprintf(LINETEMP, "%f\t%f\t%f\t", data->angle[0], data->angle[1], data->angle[2]);
     strcat(LINE, LINETEMP);
 
-    sprintf(LINETEMP, "%f\t%f\t%f\t", data->acc[0], data->acc[1], data->acc[2]);
+    float norm = getSqrt(data->acc, 3);
+    sprintf(LINETEMP, "%f\t%f\t%f\t", data->acc[0]/norm, data->acc[1]/norm, data->acc[2]/norm);
     strcat(LINE, LINETEMP);
     sprintf(LINETEMP, "%f\t%f\t%f\t", data->gyr[0], data->gyr[1], data->gyr[2]);
     strcat(LINE, LINETEMP);
-    sprintf(LINETEMP, "%f\t%f\t%f\t", data->mag[0], data->mag[1], data->mag[2]);
+
+    norm = getSqrt(data->mag, 3);
+    sprintf(LINETEMP, "%f\t%f\t%f\t", data->mag[0]/norm, data->mag[1]/norm, data->mag[2]/norm);
     strcat(LINE, LINETEMP);
 
-    sprintf(LINETEMP, "%f\t%f\t%f\t", data->acc_est[0], data->acc_est[1], data->acc_est[2]);
+    norm = getSqrt(data->acc_est, 3);
+    sprintf(LINETEMP, "%f\t%f\t%f\t", data->acc_est[0]/norm, data->acc_est[1]/norm, data->acc_est[2]/norm);
     strcat(LINE, LINETEMP);
     sprintf(LINETEMP, "%f\t%f\t%f\t", data->gyr_est[0], data->gyr_est[1], data->gyr_est[2]);
     strcat(LINE, LINETEMP);
-    sprintf(LINETEMP, "%f\t%f\t%f\t", data->mag_est[0], data->mag_est[1], data->mag_est[2]);
+
+    norm = getSqrt(data->mag_est, 3);
+    sprintf(LINETEMP, "%f\t%f\t%f\t", data->mag_est[0]/norm, data->mag_est[1]/norm, data->mag_est[2]/norm);
     strcat(LINE, LINETEMP);
     sprintf(LINETEMP, "%f\t%f\t%f\t", data->attitude, data->att_est, data->volt);
     strcat(LINE, LINETEMP);
@@ -61,6 +69,7 @@ void Drone_DataExchange_PrintTextFile(Drone_DataExchange* data, FILE *fp)
     sprintf(LINETEMP, "%u\t%u\t%u\t%u\t", data->power[0], data->power[1], data->power[2], data->power[3]);
     strcat(LINE, LINETEMP);
     fprintf(fp, "%s\n", LINE);
+    T_temp = data->T ;
 }
 
 void Drone_DataExchange_PrintFile(Drone_DataExchange* data, FILE *fp)
