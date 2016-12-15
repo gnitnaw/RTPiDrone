@@ -54,7 +54,7 @@ int ADXL345_setup(Drone_I2C_Device_ADXL345** axdl345)
     float period = CONTROL_PERIOD > (1000000000L/ADXL345_RATE) ? (float)CONTROL_PERIOD : (float)(1000000000L/ADXL345_RATE);
     period /= 1000000000.0f;
     for (int i=0; i<NITEM; ++i) {
-        Drone_Filter_init(&(*axdl345)->filter[i], period, 4.0f);
+        Drone_Filter_init(&(*axdl345)->filter[i], period, 1.0f);
     }
     return ADXL345_init(&(*axdl345)->dev) + Drone_Device_Init(&(*axdl345)->dev);
 }

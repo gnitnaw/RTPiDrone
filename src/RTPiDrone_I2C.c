@@ -399,10 +399,10 @@ static int PCA9685PW_ESC_Init(Drone_I2C* i2c)
     _usleep(40000);
     for (int i=0; i<4; ++i) power[i] = PWM_MAX;
     ret += PCA9685PW_writeOnly(i2c->PCA9685PW, power);
-    _usleep(50000);
+    _usleep(70000);
     for (int i=0; i<4; ++i) power[i] = PWM_MIN;
     ret += PCA9685PW_writeOnly(i2c->PCA9685PW, power);
-    _usleep(40000);
+    _usleep(50000);
     return ret;
 }
 
