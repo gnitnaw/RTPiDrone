@@ -19,7 +19,6 @@
 
 #define LENGTH 128
 #define NUM_CALI_THREADS        2
-#define NUM_THREADS             2
 #define PERIOD                  CONTROL_PERIOD
 #define BILLION                 1000000000L
 //#define BUFFERSIZE              4096

@@ -21,4 +21,5 @@
 #define HMC5883L_PERIOD     (1000000000L/HMC5883L_RATE)
 #define BMP085_PeriodLong   (25500000L)
 #define BMP085_PeriodShort  (4500000L)
+#define MS5611_Period       (10000000L)
 #endif

@@ -10,6 +10,7 @@
 #include "RTPiDrone_I2C_Device_HMC5883L.h"
 #include "RTPiDrone_I2C_Device_BMP085.h"
 #include "RTPiDrone_I2C_Device_PCA9685PW.h"
+#include "RTPiDrone_I2C_Device_MS5611.h"
 #include "RTPiDrone_Filter.h"
 #include "Common.h"
 #include <stdio.h>
@@ -25,12 +26,12 @@
 #define RAD_TO_DEG      (180/M_PI)
 #define FILENAMESIZE            64
 #define N_SAMPLE_CALIBRATION    3000
-#define NUM_CALI_THREADS        4
+#define NUM_CALI_THREADS        5
 #define NDATA_ADXL345           3
 #define NDATA_L3G4200D          3
 #define NDATA_HMC5883L          3
 #define NDATA_BMP085            1
-
+#define NDATA_MS5611            1
 /*!
  * \struct tempCali
  * \brief Private tempCali type
@@ -51,6 +52,7 @@ static int Calibration_Single_L3G4200D(Drone_I2C*); //!< \private \memberof Dron
 static int Calibration_Single_ADXL345(Drone_I2C*);  //!< \private \memberof Drone_I2C: Calibration step for ADXL345
 static int Calibration_Single_HMC5883L(Drone_I2C*); //!< \private \memberof Drone_I2C: Calibration step for HMC5883L
 static int Calibration_Single_BMP085(Drone_I2C*);   //!< \private \memberof Drone_I2C: Calibration step for BMP085
+static int Calibration_Single_MS5611(Drone_I2C*);   //!< \private \memberof Drone_I2C: Calibration step for MS5611
 static void* Calibration_Single_Thread(void*);      //!< \private \memberof tempCali: Template for calibration
 static int PCA9685PW_ESC_Init(Drone_I2C*);          //!< \private \memberof Drone_I2C: Initialization of ESC
 static void Drone_I2C_MagPWMCorrection(uint32_t*, float*);
@@ -91,6 +93,7 @@ struct Drone_I2C {
     Drone_I2C_Device_HMC5883L*      HMC5883L;   //!< \private HMC5883L : 3-axis digital compass
     Drone_I2C_Device_BMP085*        BMP085;     //!< \private BMP085 : Barometric Pressure/Temperature/Altitude
     Drone_I2C_Device_PCA9685PW*     PCA9685PW;  //!< \private PCA9685PW : Pulse Width Modulator
+    Drone_I2C_Device_MS5611*        MS5611;
     bool                            isWrite;    //!< \private : Indicate next time to read (0) or write (1)
 };
 
@@ -120,9 +123,13 @@ int Drone_I2C_Init(Drone_I2C** i2c)
         perror("Init BMP085");
         return -4;
     }
+    if (MS5611_setup(&(*i2c)->MS5611)) {
+        perror("Init MS5611");
+        return -5; 
+    }   
     if (PCA9685PW_setup(&(*i2c)->PCA9685PW)) {
         perror("Init PCA9685PW");
-        return -5;
+        return -6;
     }
 
     return 0;
@@ -155,6 +162,11 @@ int Drone_I2C_Calibration(Drone_I2C* i2c)
                        };
     pthread_create(&thread_i2c[3], NULL, Calibration_Single_Thread, (void*) &barTemp);
 
+    tempCali bar2Temp = {i2c, MS5611_getCaliInfo(i2c->MS5611), Calibration_Single_MS5611,
+                        Drone_Device_GetData((Drone_Device*)(i2c->MS5611)), N_SAMPLE_CALIBRATION/20, 3,
+                        Drone_Device_GetName((Drone_Device*)(i2c->MS5611))
+                       };
+    pthread_create(&thread_i2c[3], NULL, Calibration_Single_Thread, (void*) &bar2Temp);
 
     for (int i=0; i<NUM_CALI_THREADS; ++i) pthread_join(thread_i2c[i],NULL);
 
@@ -177,6 +189,7 @@ int Drone_I2C_End(Drone_I2C** i2c)
     ADXL345_delete(&(*i2c)->ADXL345);
     L3G4200D_delete(&(*i2c)->L3G4200D);
     HMC5883L_delete(&(*i2c)->HMC5883L);
+    MS5611_delete(&(*i2c)->MS5611);
     BMP085_delete(&(*i2c)->BMP085);
 
     bcm2835_i2c_end();
@@ -235,6 +248,22 @@ static int Calibration_Single_BMP085(Drone_I2C* i2c)
     }
     BMP085_inputFilter(i2c->BMP085);
     return ret2;
+}
+
+static int Calibration_Single_MS5611(Drone_I2C* i2c)
+{
+    static const int sleepTime2 = 10000;
+    int ret;
+    for (int i=0; i<2; ++i) {
+        while (i2c_stat) sched_yield() ;
+        atomic_fetch_add_explicit(&i2c_stat, 1, memory_order_seq_cst);
+        ret = Drone_Device_GetRawData((Drone_Device*)(i2c->MS5611));
+        atomic_fetch_sub(&i2c_stat, 1);
+        ret += Drone_Device_GetRealData((Drone_Device*)(i2c->MS5611));
+        _usleep(sleepTime2);
+    }
+    MS5611_inputFilter(i2c->MS5611);
+    return ret;
 }
 
 static void* Calibration_Single_Thread(void* temp)

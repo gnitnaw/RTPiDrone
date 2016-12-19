@@ -9,6 +9,7 @@ set(I2C_ELEMENT
   RTPiDrone_I2C_Device_HMC5883L.c
   RTPiDrone_I2C_Device_BMP085.c
   RTPiDrone_I2C_Device_PCA9685PW.c
+  RTPiDrone_I2C_Device_MS5611.c
 )
 set(SPI_ELEMENT
     RTPiDrone_SPI_Device_MCP3008.c
