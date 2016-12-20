@@ -65,7 +65,7 @@ int MS5611_setup(Drone_I2C_Device_MS5611** MS5611)
     Drone_Device_SetPeriod(&(*MS5611)->dev, MS5611_Period);
     Drone_I2C_Cali_Init(&(*MS5611)->cali, 3);
     Drone_Filter* filter = &(*MS5611)->filter;
-    Drone_Filter_init(filter, 0.03, 1.0f);
+    Drone_Filter_init(filter, 0.03, 2.0f);
 
     return MS5611_init(*MS5611);
 }

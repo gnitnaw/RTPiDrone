@@ -163,10 +163,10 @@ int Drone_I2C_Calibration(Drone_I2C* i2c)
     pthread_create(&thread_i2c[3], NULL, Calibration_Single_Thread, (void*) &barTemp);
 
     tempCali bar2Temp = {i2c, MS5611_getCaliInfo(i2c->MS5611), Calibration_Single_MS5611,
-                        Drone_Device_GetData((Drone_Device*)(i2c->MS5611)), N_SAMPLE_CALIBRATION/20, 3,
+                        Drone_Device_GetData((Drone_Device*)(i2c->MS5611)), N_SAMPLE_CALIBRATION/10, 3,
                         Drone_Device_GetName((Drone_Device*)(i2c->MS5611))
                        };
-    pthread_create(&thread_i2c[3], NULL, Calibration_Single_Thread, (void*) &bar2Temp);
+    pthread_create(&thread_i2c[4], NULL, Calibration_Single_Thread, (void*) &bar2Temp);
 
     for (int i=0; i<NUM_CALI_THREADS; ++i) pthread_join(thread_i2c[i],NULL);
 
@@ -364,6 +364,7 @@ int Drone_I2C_ExchangeData(Drone_DataExchange* data, Drone_I2C* i2c, uint64_t* l
         ret += HMC5883L_getFilteredValue(i2c->HMC5883L, lastUpdate, data->mag, data->mag_est);
         if (ret) Drone_I2C_MagPWMCorrection(data->power, data->mag_est);
         ret += BMP085_getFilteredValue(i2c->BMP085, lastUpdate, &data->attitude, &data->att_est);
+        ret += MS5611_getFilteredValue(i2c->MS5611, lastUpdate, &data->attitudeHT, &data->attHT_est);
         i2c->isWrite = true;
     } else {
         ret += PCA9685PW_write(i2c->PCA9685PW, data->power, lastUpdate);

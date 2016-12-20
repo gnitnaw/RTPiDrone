@@ -2,20 +2,45 @@
 #include "Common.h"
 #include <string.h>
 #include <math.h>
+#include <pthread.h>
 #define LINESIZE        512
 #define LINETEMPSIZE    128
 
+typedef struct __DataChain {
+    Drone_DataExchange data;
+    struct __DataChain *next;
+} DataChain;
+
 static char LINE[LINESIZE], LINETEMP[LINETEMPSIZE];
 static float T_temp;
+static DataChain *dataStart, *dataEnd;
+static pthread_mutex_t  mutex;
+static pthread_cond_t   cond;
+static pthread_t        pid;
+static int              global_thread;
+static int              iStop;
+static void* writeData(void*);
 
-int Drone_DataExchange_Init(Drone_DataExchange** data)
+int Drone_DataExchange_Init(Drone_DataExchange** data, FILE* f)
 {
     *data = (Drone_DataExchange*)calloc(1, sizeof(Drone_DataExchange));
+    dataStart = (DataChain*) calloc(1, sizeof(DataChain));
+    dataEnd = dataStart;
+    pthread_cond_init(&cond,NULL);
+    pthread_mutex_init(&mutex,NULL);
+    pthread_create(&pid, NULL, writeData, (void*)f);
     return 0;
 }
 
 void Drone_DataExchange_End(Drone_DataExchange** data)
 {
+    iStop = -1;
+    pthread_cond_signal(&cond);
+    pthread_join(pid,NULL);
+    pthread_cond_destroy(&cond);
+    pthread_mutex_destroy(&mutex);
+    free(dataStart);
+    dataStart = dataEnd = NULL;
     free(*data);
     data = NULL;
 }
@@ -61,7 +86,9 @@ void Drone_DataExchange_PrintTextFile(Drone_DataExchange* data, FILE *fp)
     strcat(LINE, LINETEMP);
     sprintf(LINETEMP, "%f\t%f\t%f\t", data->attitude, data->att_est, data->volt);
     strcat(LINE, LINETEMP);
-    sprintf(LINETEMP, "%d\t%u\t", data->comm.switchValue, data->comm.power);
+    sprintf(LINETEMP, "%f\t%f\t", data->attitudeHT, data->attHT_est);
+    strcat(LINE, LINETEMP);
+    sprintf(LINETEMP, "%u\t", data->comm.power);
     strcat(LINE, LINETEMP);
     sprintf(LINETEMP, "%d\t%d\t", data->comm.horDirection[0], data->comm.horDirection[1]);
     sprintf(LINETEMP, "%f\t%f\t%f\t", data->comm.angle_expect[0], data->comm.angle_expect[1], data->comm.angle_expect[2]);
@@ -72,9 +99,37 @@ void Drone_DataExchange_PrintTextFile(Drone_DataExchange* data, FILE *fp)
     T_temp = data->T ;
 }
 
+void Drone_DataExchange_SaveFile(Drone_DataExchange* data)
+{
+    dataEnd->data = *data;
+    dataEnd->next = (DataChain*) calloc(1, sizeof(DataChain));
+    dataEnd = dataEnd->next;
+    global_thread = 1;
+    pthread_cond_signal(&cond);
+}
+
 void Drone_DataExchange_PrintFile(Drone_DataExchange* data, FILE *fp)
 {
     fwrite(data, sizeof(Drone_DataExchange), 1, fp);
-    fflush(fp);
+}
+
+static void* writeData(void* fp)
+{
+    FILE* f = (FILE*)fp;
+    while (!iStop) {
+        pthread_mutex_lock(&mutex);
+        if (!global_thread) pthread_cond_wait(&cond, &mutex);
+    
+        while (dataStart != dataEnd) {
+            Drone_DataExchange_PrintFile(&dataStart->data, f);
+            DataChain *dataTemp = dataStart->next;
+            free(dataStart);
+            dataStart = dataTemp;        
+        }
+        global_thread = 0;
+        pthread_mutex_unlock(&mutex);
+    }
+    fflush(f);
+    pthread_exit(NULL);
 }
 

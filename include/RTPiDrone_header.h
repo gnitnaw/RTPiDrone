@@ -7,6 +7,7 @@
 #define H_DRONE_HEADER
 
 #define DEBUG                                   /*! If DEBUG is defined, debug messages will be printed. */
+//#define DEBUG_VALGRIND
 //#define HMC5883L_PWM_CALI                     /*! If HMC5883L_PWM_CALI is defined, will calibrate PWM/MAG */
 #define CONTROL_PERIOD      (4000000L)          /*! The period of one control cycle. */
 #define KP                  (7.5f)              /*! PID -- P */

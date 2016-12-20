@@ -74,7 +74,7 @@ int BMP085_setup(Drone_I2C_Device_BMP085** BMP085)
     Drone_Device_SetPeriod(&(*BMP085)->dev, BMP085_Period[0]+BMP085_Period[1]);
     Drone_I2C_Cali_Init(&(*BMP085)->cali, 3);
     Drone_Filter* filter = &(*BMP085)->filter;
-    Drone_Filter_init(filter, 0.03, 1.0f);
+    Drone_Filter_init(filter, 0.03, 2.0f);
 
     return BMP085_init(&(*BMP085)->dev)+Drone_Device_Init(&(*BMP085)->dev);
 }

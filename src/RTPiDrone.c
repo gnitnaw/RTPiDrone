@@ -21,13 +21,8 @@
 #define NUM_CALI_THREADS        2
 #define PERIOD                  CONTROL_PERIOD
 #define BILLION                 1000000000L
-//#define BUFFERSIZE              4096
 
-static pthread_mutex_t  mutex;
-static pthread_cond_t   cond;
-static pthread_t        pid;
 static int32_t          iStep;
-static int              global_thread;
 /*!
  * \enum kernelType
  * \private enum kernelType
@@ -63,7 +58,6 @@ static int generateFileName(char*);             //!< \private \memberof Drone \b
 static void* Calibration_I2C_Thread(void*);     //!< \private \memberof Drone \brief generate a thread for I2C calibration
 static void* Calibration_SPI_Thread(void*);     //!< \private \memberof Drone \brief generate a thread for SPI calibration
 static void Drone_Loop(Drone*);                 //!< \private \memberof Drone \brief Loop for I2C/SPI/AHRS/I2C
-static void* writeData(void*);
 
 static uint64_t currentTime;
 
@@ -95,7 +89,7 @@ int Drone_Init(Drone** rpiDrone)
         return -4;
     }
 
-    if (Drone_DataExchange_Init(&(*rpiDrone)->data)) {
+    if (Drone_DataExchange_Init(&(*rpiDrone)->data, (*rpiDrone)->fLog)) {
         perror("Drone Data Init error");
         return -5;
     }
@@ -105,8 +99,6 @@ int Drone_Init(Drone** rpiDrone)
         return -6;
     }
 
-    pthread_cond_init(&cond,NULL);
-    pthread_mutex_init(&mutex,NULL);
     return 0;
 }
 
@@ -115,7 +107,6 @@ void Drone_Start(Drone* rpiDrone)
 #ifdef  DEBUG
     puts("Start Test");
 #endif
-    //setvbuf (rpiDrone->fLog , rpiDrone->buf, _IOFBF , BUFFERSIZE);
     Drone_SPI_Start(rpiDrone->spi, rpiDrone->data);
     Drone_I2C_Start(rpiDrone->i2c);
     rpiDrone->lastUpdate = get_nsec();
@@ -138,13 +129,6 @@ int Drone_Calibration(Drone* rpiDrone)
 
 int Drone_End(Drone** rpiDrone)
 {
-    fclose((*rpiDrone)->fLog);
-
-    Drone_AHRS_End(&(*rpiDrone)->ahrs);
-    Drone_DataExchange_End(&(*rpiDrone)->data);
-    pthread_cond_destroy(&cond);
-    pthread_mutex_destroy(&mutex);
-
     if (Drone_I2C_End(&(*rpiDrone)->i2c)) {
         perror("Drone I2C End error");
         return -1;
@@ -154,6 +138,10 @@ int Drone_End(Drone** rpiDrone)
         perror("Drone SPI End error");
         return -2;
     }
+
+    Drone_AHRS_End(&(*rpiDrone)->ahrs);
+    Drone_DataExchange_End(&(*rpiDrone)->data);
+    fclose((*rpiDrone)->fLog);
 
     FILE* forg = fopen((*rpiDrone)->logfileName, "rb");
     char output[LENGTH];
@@ -243,10 +231,11 @@ static void* Calibration_SPI_Thread(void* temp)
 
 void Drone_Loop(Drone* rpiDrone)
 {
+#ifndef DEBUG_VALGRIND
     const float latency = (float)PERIOD/1000000000.0;
+#endif
     float dt;
     iStep = 0;
-    pthread_create(&pid, NULL, writeData, (void*)rpiDrone);
     int ret, ret2;
     while (rpiDrone->data->comm.switchValue && rpiDrone->data->comm.zeroCount < 100 ) {
         ret = 0;
@@ -266,17 +255,15 @@ void Drone_Loop(Drone* rpiDrone)
         ret2 += Drone_SPI_ExchangeData(rpiDrone->data, rpiDrone->spi, &currentTime);
         Drone_AHRS_ExchangeData(rpiDrone->data, rpiDrone->ahrs);
         ret += Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime);
+        if (iStep%2) Drone_DataExchange_SaveFile(rpiDrone->data);
 #ifdef  DEBUG
         if (!(iStep%1000)) Drone_DataExchange_PrintAngle(rpiDrone->data);
 #endif
-        if (!(iStep%2)) {
-            //Drone_DataExchange_PrintFile(rpiDrone->data, rpiDrone->fLog);
-            //if (!ret2) fflush(rpiDrone->fLog);
-            global_thread = 1;
-            pthread_cond_signal(&cond);
-        }
 
         rpiDrone->lastUpdate = currentTime;
+#ifdef DEBUG_VALGRIND
+        clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &rpiDrone->pause, NULL);
+#else
         if (dt-latency < 0.003) {
             clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &rpiDrone->pause, NULL);
         } else {
@@ -285,6 +272,7 @@ void Drone_Loop(Drone* rpiDrone)
 #endif
             break;
         }
+#endif
         ++iStep;
     }
 
@@ -294,20 +282,4 @@ void Drone_Loop(Drone* rpiDrone)
     }
 #endif
 
-    iStep = -1;
-    pthread_cond_signal(&cond);
-    pthread_join(pid, NULL);
-}
-
-static void* writeData(void* x)
-{
-    Drone* rpiDrone = (Drone*)x;
-    while (iStep >=0) {
-        pthread_mutex_lock(&mutex);
-        if (!global_thread) pthread_cond_wait(&cond, &mutex);
-        Drone_DataExchange_PrintFile(rpiDrone->data, rpiDrone->fLog);
-        global_thread = 0;
-        pthread_mutex_unlock(&mutex);
-    }
-    pthread_exit(NULL);
 }
