@@ -3,6 +3,7 @@
 
 void Drone_Command_Decode(Drone_Command* comm, const unsigned char* control)
 {
+    for (int i=0; i<4; ++i) comm->control[i] = control[i];
     comm->horDirection[0] = (signed char)((control[0]>>4) & 0xF) -2;
     comm->horDirection[1] = (signed char)(control[0] &0xF) -2;
     comm->angle_expect[0] = 5 * comm->horDirection[0];

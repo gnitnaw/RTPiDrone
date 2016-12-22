@@ -1,7 +1,9 @@
 #ifndef H_DRONE_COMMAND
 #define H_DRONE_COMMAND
+#include <stdint.h>
 
 typedef struct {
+    uint8_t control[4];
     signed char horDirection[2];
     signed char verDirection;
     signed char rotateDirection;

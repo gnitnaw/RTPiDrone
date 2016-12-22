@@ -84,15 +84,19 @@ void Drone_DataExchange_PrintTextFile(Drone_DataExchange* data, FILE *fp)
     norm = getSqrt(data->mag_est, 3);
     sprintf(LINETEMP, "%f\t%f\t%f\t", data->mag_est[0]/norm, data->mag_est[1]/norm, data->mag_est[2]/norm);
     strcat(LINE, LINETEMP);
-    sprintf(LINETEMP, "%f\t%f\t%f\t", data->attitude, data->att_est, data->volt);
+    sprintf(LINETEMP, "%f\t%f\t", data->attitude, data->att_est);
     strcat(LINE, LINETEMP);
     sprintf(LINETEMP, "%f\t%f\t", data->attitudeHT, data->attHT_est);
     strcat(LINE, LINETEMP);
     sprintf(LINETEMP, "%u\t", data->comm.power);
     strcat(LINE, LINETEMP);
-    sprintf(LINETEMP, "%d\t%d\t", data->comm.horDirection[0], data->comm.horDirection[1]);
     sprintf(LINETEMP, "%f\t%f\t%f\t", data->comm.angle_expect[0], data->comm.angle_expect[1], data->comm.angle_expect[2]);
     strcat(LINE, LINETEMP);
+    for (int i=0; i<4; ++i) {
+        sprintf(LINETEMP, "%d\t", data->comm.control[i]);
+        strcat(LINE, LINETEMP);
+    }
+    //sprintf(LINETEMP, "%f\t%f\t%f\t%f\t", data->comm.control[0], data->comm.control[1], data->comm.control[2], data->comm.control[3]);
     sprintf(LINETEMP, "%u\t%u\t%u\t%u\t", data->power[0], data->power[1], data->power[2], data->power[3]);
     strcat(LINE, LINETEMP);
     fprintf(fp, "%s\n", LINE);
