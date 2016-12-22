@@ -110,7 +110,6 @@ void Drone_Start(Drone* rpiDrone)
     Drone_SPI_Start(rpiDrone->spi, rpiDrone->data);
     Drone_I2C_Start(rpiDrone->i2c);
     rpiDrone->lastUpdate = get_nsec();
-    clock_gettime(CLOCK_MONOTONIC, &rpiDrone->pause);
     Drone_Loop(rpiDrone);
 }
 
@@ -230,7 +229,7 @@ static void* Calibration_SPI_Thread(void* temp)
 void Drone_Loop(Drone* rpiDrone)
 {
     rpiDrone->lastUpdate = get_nsec();
-    //_usleep(PERIOD/1000);
+    clock_gettime(CLOCK_MONOTONIC, &rpiDrone->pause);
 #ifndef DEBUG_VALGRIND
     const float latency = (float)PERIOD/1000000000.0;
 #endif
