@@ -65,7 +65,7 @@ int MS5611_setup(Drone_I2C_Device_MS5611** MS5611)
     Drone_Device_SetPeriod(&(*MS5611)->dev, MS5611_Period);
     Drone_I2C_Cali_Init(&(*MS5611)->cali, 3);
     Drone_Filter* filter = &(*MS5611)->filter;
-    Drone_Filter_init(filter, 0.03, 2.0f);
+    Drone_Filter_init(filter, 0.03, 4.0f);
 
     return MS5611_init(*MS5611);
 }
@@ -111,17 +111,13 @@ static int MS5611_init(void* i2c_dev)
         return -4;
     }
     _usleep(OSR_4096);
-    if (MS5611_getRawData(MS5611) & MS5611_getRealData(MS5611)) {
-        perror("get real data 1");
-        return -5;
+    for (int i=0; i<10; ++i) {
+        if (MS5611_getRawData(MS5611) & MS5611_getRealData(MS5611)) {
+            perror("get real data 1");
+            return -5;
+        }
+        _usleep(OSR_4096);
     }
-    _usleep(OSR_4096);
-    if (MS5611_getRawData(MS5611) & MS5611_getRealData(MS5611)) {
-        perror("get real data 2");
-        return -6;
-    }
-
-    _usleep(OSR_4096);
     return 0;
 }
 

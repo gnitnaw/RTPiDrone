@@ -110,7 +110,6 @@ void Drone_Start(Drone* rpiDrone)
     Drone_SPI_Start(rpiDrone->spi, rpiDrone->data);
     Drone_I2C_Start(rpiDrone->i2c);
     rpiDrone->lastUpdate = get_nsec();
-    _usleep(PERIOD/1000);
     clock_gettime(CLOCK_MONOTONIC, &rpiDrone->pause);
     Drone_Loop(rpiDrone);
 }
@@ -123,7 +122,6 @@ int Drone_Calibration(Drone* rpiDrone)
     for (int i=0; i<NUM_CALI_THREADS; ++i) pthread_join(thread_cali[i],NULL);
     Drone_I2C_DataInit(rpiDrone->data, rpiDrone->i2c);
     Drone_AHRS_DataInit(rpiDrone->data, rpiDrone->ahrs);
-    rpiDrone->lastUpdate = get_nsec();
     return 0;
 }
 
@@ -231,15 +229,16 @@ static void* Calibration_SPI_Thread(void* temp)
 
 void Drone_Loop(Drone* rpiDrone)
 {
+    rpiDrone->lastUpdate = get_nsec();
+    //_usleep(PERIOD/1000);
 #ifndef DEBUG_VALGRIND
     const float latency = (float)PERIOD/1000000000.0;
 #endif
     float dt;
     iStep = 0;
-    int ret, ret2;
+    int ret;
     while (rpiDrone->data->comm.switchValue && rpiDrone->data->comm.zeroCount < 100 ) {
         ret = 0;
-        ret2 = 0;
         currentTime = get_nsec();
         rpiDrone->pause.tv_nsec += PERIOD;
 
@@ -251,11 +250,12 @@ void Drone_Loop(Drone* rpiDrone)
         dt = (float)(currentTime - rpiDrone->lastUpdate)/BILLION;
         rpiDrone->data->dt = dt;
         rpiDrone->data->T += dt;
-        ret2 += Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime);
-        ret2 += Drone_SPI_ExchangeData(rpiDrone->data, rpiDrone->spi, &currentTime);
+        ret += Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime, false);
         Drone_AHRS_ExchangeData(rpiDrone->data, rpiDrone->ahrs);
-        ret += Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime);
-        if (iStep%2) Drone_DataExchange_SaveFile(rpiDrone->data);
+        ret += Drone_I2C_ExchangeData(rpiDrone->data, rpiDrone->i2c, &currentTime, true);
+        ret += Drone_SPI_ExchangeData(rpiDrone->data, rpiDrone->spi, &currentTime);
+        Drone_DataExchange_SaveFile(rpiDrone->data);
+
 #ifdef  DEBUG
         if (!(iStep%1000)) Drone_DataExchange_PrintAngle(rpiDrone->data);
 #endif

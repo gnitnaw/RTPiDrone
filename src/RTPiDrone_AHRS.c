@@ -1,3 +1,4 @@
+#include "RTPiDrone_header.h"
 #include "RTPiDrone_AHRS.h"
 #include "RTPiDrone_Quaternion.h"
 #include "RTPiDrone_PID.h"
@@ -34,6 +35,9 @@ void Drone_AHRS_DataInit(Drone_DataExchange* data, Drone_AHRS* ahrs)
     Drone_Quaternion_getAngle(ahrs->Quaternion, data->angle);
 
     data->comm.angle_expect[2] = data->angle[2];
+#ifdef  DEBUG
+    Drone_DataExchange_PrintAngle(data);
+#endif
 }
 
 void Drone_AHRS_ExchangeData(Drone_DataExchange* data, Drone_AHRS* ahrs)

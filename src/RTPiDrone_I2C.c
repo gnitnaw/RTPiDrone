@@ -20,7 +20,6 @@
 #include <stdatomic.h>
 #include <sched.h>
 #include <pthread.h>
-#include <stdbool.h>
 #include <bcm2835.h>
 #include <gsl/gsl_statistics.h>
 #define RAD_TO_DEG      (180/M_PI)
@@ -94,7 +93,6 @@ struct Drone_I2C {
     Drone_I2C_Device_BMP085*        BMP085;     //!< \private BMP085 : Barometric Pressure/Temperature/Altitude
     Drone_I2C_Device_PCA9685PW*     PCA9685PW;  //!< \private PCA9685PW : Pulse Width Modulator
     Drone_I2C_Device_MS5611*        MS5611;
-    bool                            isWrite;    //!< \private : Indicate next time to read (0) or write (1)
 };
 
 static float magFitFunc(uint32_t power, const float* t)
@@ -339,36 +337,35 @@ void Drone_I2C_DataInit(Drone_DataExchange* data, Drone_I2C* i2c)
 {
     Drone_I2C_CaliInfo* c = ADXL345_getCaliInfo(i2c->ADXL345);
     for (int i=0; i<3; ++i) {
-        data->acc[i] = Drone_I2C_Cali_getMean(c)[i];
+        data->acc[i] = data->acc_est[i] = Drone_I2C_Cali_getMean(c)[i];
         data->gyr[i] = 0.0f;
     }
     c = HMC5883L_getCaliInfo(i2c->HMC5883L);
     for (int i=0; i<3; ++i) {
-        data->mag[i] = Drone_I2C_Cali_getMean(c)[i];
+        data->mag[i] = data->mag_est[i] = Drone_I2C_Cali_getMean(c)[i];
     }
     c = BMP085_getCaliInfo(i2c->BMP085);
-    data->attitude = 0.0f;
+    data->attitude = data->attitudeHT = data->att_est = data->attHT_est = 0.0f;
     data->temperature = Drone_I2C_Cali_getMean(c)[1];
     data->pressure = Drone_I2C_Cali_getMean(c)[2];
     data->angle[0] = atan2(data->acc[1], data->acc[2]) * RAD_TO_DEG;      // roll
     data->angle[1] = -atan2(data->acc[0], getSqrt(data->acc, 3)) * RAD_TO_DEG; //pitch
     data->angle[2] = acos(data->mag[1]/getSqrt(data->mag, 2)) * RAD_TO_DEG;    // yaw
+    for (int i=0; i<4; ++i) data->power[i] = PWM_MIN;
 }
 
-int Drone_I2C_ExchangeData(Drone_DataExchange* data, Drone_I2C* i2c, uint64_t* lastUpdate)
+int Drone_I2C_ExchangeData(Drone_DataExchange* data, Drone_I2C* i2c, uint64_t* lastUpdate, bool step)
 {
     int ret = 0;
-    if (!i2c->isWrite) {
+    if (!step) {
         ADXL345_getFilteredValue(i2c->ADXL345, lastUpdate, data->acc, data->acc_est);
         L3G4200D_getFilteredValue(i2c->L3G4200D, lastUpdate, data->gyr, data->gyr_est);
+    } else {
+        PCA9685PW_write(i2c->PCA9685PW, data->power, lastUpdate);
         ret += HMC5883L_getFilteredValue(i2c->HMC5883L, lastUpdate, data->mag, data->mag_est);
         if (ret) Drone_I2C_MagPWMCorrection(data->power, data->mag_est);
         ret += BMP085_getFilteredValue(i2c->BMP085, lastUpdate, &data->attitude, &data->att_est);
         ret += MS5611_getFilteredValue(i2c->MS5611, lastUpdate, &data->attitudeHT, &data->attHT_est);
-        i2c->isWrite = true;
-    } else {
-        ret += PCA9685PW_write(i2c->PCA9685PW, data->power, lastUpdate);
-        i2c->isWrite = false;
     }
     return ret;
 }

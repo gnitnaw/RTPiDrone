@@ -34,6 +34,7 @@ void Drone_PID_Delete(Drone_PID** pid)
 void Drone_PID_update(Drone_PID* pid, float* angle_expect, float* angle_measured, float* gyro, uint32_t* pwm, float dt, unsigned int power)
 {
     static uint32_t pwmLast[4];
+    for (int i=0; i<4; ++i) pwmLast[i] = pwm[i];
     for (int i=0; i<3; ++i) {
         //gyro_mean[i] = gyro_mean[i] * 0.5 + gyro[i] * 0.5;
         pid->angle_err[i] = angle_expect[i] - angle_measured[i];
@@ -53,31 +54,31 @@ void Drone_PID_update(Drone_PID* pid, float* angle_expect, float* angle_measured
         pid->output[i] = (int) round(pid->outP[i] + pid->outI[i] + pid->outD[i]);
     }
     /*
-    pwm[0] = (power + pid->output[1] - pid->output[0] + pid->output[2] );    //M0
-    pwm[1] = (power - pid->output[1] - pid->output[0] - pid->output[2] );    //M1
-    pwm[2] = (power - pid->output[1] + pid->output[0] + pid->output[2] );    //M2
-    pwm[3] = (power + pid->output[1] + pid->output[0] - pid->output[2] );    //M3
+    pwm[0] += ( pid->output[1] - pid->output[0] + pid->output[2] );    //M0
+    pwm[1] += (-pid->output[1] - pid->output[0] - pid->output[2] );    //M1
+    pwm[2] += (-pid->output[1] + pid->output[0] + pid->output[2] );    //M2
+    pwm[3] += ( pid->output[1] + pid->output[0] - pid->output[2] );    //M3
     */
 
-    pwm[0] = (power - pid->output[0] + pid->output[1]);    //M0
-    pwm[1] = (power - pid->output[0] - pid->output[1]);    //M1
-    pwm[2] = (power + pid->output[0] - pid->output[1]);    //M2
-    pwm[3] = (power + pid->output[0] + pid->output[1]);    //M3
+    pwm[0] += (-pid->output[0] + pid->output[1]);    //M0
+    pwm[1] += (-pid->output[0] - pid->output[1]);    //M1
+    pwm[2] += ( pid->output[0] - pid->output[1]);    //M2
+    pwm[3] += ( pid->output[0] + pid->output[1]);    //M3
 
 
     /*
-        pwm[0] = (power + pid->output[1]);    //M0
-        pwm[1] = (power - pid->output[1]);    //M1
-        pwm[2] = (power - pid->output[1]);    //M2
-        pwm[3] = (power + pid->output[1]);    //M3
+        pwm[0] += ( pid->output[1]);    //M0
+        pwm[1] += (-pid->output[1]);    //M1
+        pwm[2] += (-pid->output[1]);    //M2
+        pwm[3] += ( pid->output[1]);    //M3
 
-        pwm[0] = (power - pid->output[0]);    //M0
-        pwm[1] = (power - pid->output[0]);    //M1
-        pwm[2] = (power + pid->output[0]);    //M2
-        pwm[3] = (power + pid->output[0]);    //M3
+        pwm[0] += (-pid->output[0]);    //M0
+        pwm[1] += (-pid->output[0]);    //M1
+        pwm[2] += ( pid->output[0]);    //M2
+        pwm[3] += ( pid->output[0]);    //M3
     */
     for (int i=0; i<4; ++i) {
-        if (pwm[i] >  POWER_MAX || pwm[i] < POWER_MIN) {
+        if (pwm[i] >  power || pwm[i] < POWER_MIN) {
             pwm[i] = pwmLast[i];
         } else {
             pwmLast[i] = pwm[i];

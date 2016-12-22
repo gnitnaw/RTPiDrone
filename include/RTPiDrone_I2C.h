@@ -8,6 +8,7 @@
 
 #include "RTPiDrone_DataExchange.h"
 #include <stdint.h>
+#include <stdbool.h>
 typedef struct Drone_I2C    Drone_I2C;      //!< Drone_I2C type. To control all of the I2C device.
 
 /*!
@@ -57,7 +58,7 @@ void Drone_I2C_DataInit(Drone_DataExchange*, Drone_I2C*);
  * \public  \memberof Drone_I2C
  * \return  0 if everything is fine
  */
-int Drone_I2C_ExchangeData(Drone_DataExchange*, Drone_I2C*, uint64_t*);
+int Drone_I2C_ExchangeData(Drone_DataExchange*, Drone_I2C*, uint64_t*, bool);
 
 /*!
  * \fn      void HMC5883L_PWM_Calibration(Drone_I2C* i2c)

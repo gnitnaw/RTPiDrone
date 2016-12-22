@@ -5,6 +5,8 @@ Real-Time Raspberry Pi Drone (RTPiDrone)
 
 #### Operating System ###
 
+Linux Preempt_RT or Xenomai
+
 #### Hardware ####
 
 - GY80 (or ST Microelectronics L3G4200D + Analog Devices ADXL345 + Honeywell MC5883L + Bosch BMP085)
