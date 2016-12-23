@@ -361,7 +361,9 @@ int Drone_I2C_ExchangeData(Drone_DataExchange* data, Drone_I2C* i2c, uint64_t* l
         ADXL345_getFilteredValue(i2c->ADXL345, lastUpdate, data->acc, data->acc_est);
         L3G4200D_getFilteredValue(i2c->L3G4200D, lastUpdate, data->gyr, data->gyr_est);
     } else {
-        PCA9685PW_write(i2c->PCA9685PW, data->power, lastUpdate);
+        ret = PCA9685PW_write(i2c->PCA9685PW, data->power, lastUpdate);
+        if (!ret) data->dt_accu += data->dt;
+        else data->dt_accu = 0.0f;
         ret += HMC5883L_getFilteredValue(i2c->HMC5883L, lastUpdate, data->mag, data->mag_est);
         if (ret) Drone_I2C_MagPWMCorrection(data->power, data->mag_est);
         ret += BMP085_getFilteredValue(i2c->BMP085, lastUpdate, &data->attitude, &data->att_est);

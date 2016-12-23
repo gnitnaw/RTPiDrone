@@ -14,7 +14,7 @@ typedef struct {
     float attitudeHT, attHT_est;
     float temperature, pressure;
     uint32_t power[4];
-    float dt;
+    float dt, dt_accu;
     //uint32_t controller;
     float volt;
     Drone_Command comm;

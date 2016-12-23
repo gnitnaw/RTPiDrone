@@ -23,4 +23,5 @@
 #define BMP085_PeriodLong   (25500000L)
 #define BMP085_PeriodShort  (4500000L)
 #define MS5611_Period       (10000000L)
+#define PWM_CONTROLPERIOD   (2)
 #endif

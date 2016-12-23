@@ -61,7 +61,7 @@ void Drone_DataExchange_PrintAngle(Drone_DataExchange* data)
 
 void Drone_DataExchange_PrintTextFile(Drone_DataExchange* data, FILE *fp)
 {
-    sprintf(LINE, "%f\t%f\t%f\t", data->T, data->dt, data->T-T_temp);
+    sprintf(LINE, "%f\t%f\t%f\t%f\t", data->T, data->dt, data->T-T_temp, data->dt_accu);
     sprintf(LINETEMP, "%f\t%f\t%f\t", data->angle[0], data->angle[1], data->angle[2]);
     strcat(LINE, LINETEMP);
 

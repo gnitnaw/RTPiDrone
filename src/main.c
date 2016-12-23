@@ -19,6 +19,8 @@
     \author  Wan-Ting CHEN (wanting@gmail.com)
 */
 #include <stdio.h>
+#include <stdlib.h>
+#define __USE_GNU
 #include <sched.h>
 #include <sys/mman.h>
 #include "RTPiDrone.h"
@@ -30,6 +32,15 @@
  */
 int main(void)
 {
+    cpu_set_t cmask;
+    unsigned long len = sizeof(cmask);
+    CPU_ZERO(&cmask); /* 初始化 cmask */
+    CPU_SET(0, &cmask); /* 指定第一個處理器 */
+    if (sched_setaffinity(0, len, &cmask)) {
+        printf("Could not set cpu affinity for current process.\n");
+        exit(1);
+    }
+
     struct sched_param sp = {0};
     //sp.sched_priority = 49;
     sp.sched_priority = sched_get_priority_max(SCHED_FIFO);
