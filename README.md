@@ -36,3 +36,13 @@ Linux Preempt_RT or Xenomai
 - cmake
 
 - Doxygen
+
+#### Installation ####
+- Download the source code
+- cd RTPiDrone
+- mkdir build
+- cd build
+- cmake ..
+- make doc (optional, for generating document)
+- make (make sure you already install necessary libraries)
+- The excutable file will be in ./src/RTPiDrone
