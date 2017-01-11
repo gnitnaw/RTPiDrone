@@ -12,10 +12,13 @@ Linux Preempt_RT or Xenomai
 - GY80 (or ST Microelectronics L3G4200D + Analog Devices ADXL345 + Honeywell MC5883L + Bosch BMP085)
   http://selfbuilt.net/shop/gy-80-inertial-management-unit
 
-- PCA9685PW
+- MS5611 (optional, to have better precision of attitude)
+  http://www.te.com/usa-en/product-CAT-BLPS0036.html
+  
+- PCA9685PW (to adjust the power of motor)
   https://www.adafruit.com/product/815
 
-- MCP3008
+- MCP3008 (to get the voltage value of battery(single cell) )
   https://www.adafruit.com/product/856
 
 - nRF24L01+ * 2 (for the communication between the controller and drone)
