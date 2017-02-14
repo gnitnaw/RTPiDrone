@@ -1,3 +1,7 @@
+/* The original file is from https://github.com/tmrh20/RF24/ .
+ * In this repository, it has been modified by Wan-Ting CHEN (wanting@gmail.com)
+ * in order to be compatible with latest version of bcm2835 library.
+ */
 
 /*
  Copyright (C) 2011 J. Coliz <maniacbug@ymail.com>
